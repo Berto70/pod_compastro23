@@ -12,8 +12,9 @@ ARG SOFTWAREDIR=$DIRPATH/software
 #1 layer: install g++, git, cmake
 RUN  apt update && apt -y dist-upgrade \
 && apt update \
-&& apt install -y \
+&& apt install -y   \
 g++ \
+make \
 cmake \
 git \
 wget \
@@ -23,6 +24,7 @@ nano \
 emacs \
 unzip \
 libgsl-dev
+
 
 #RUN groupadd --gid $USER_GID $USERNAME \
 #    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -p $USERNAME \
@@ -35,8 +37,7 @@ RUN case "${TARGETPLATFORM}" in \
          "linux/arm64")  export MINICONDAS=Miniconda3-py310_23.5.2-0-Linux-aarch64.sh  ;; \
     esac; \
      cd /root \
-     && wget \
-     https://repo.anaconda.com/miniconda/${MINICONDAS} \
+     && wget    https://repo.anaconda.com/miniconda/${MINICONDAS} --no-check-certificate \
      &&  bash ${MINICONDAS}  -b \
      && rm -f ${MINICONDAS}
 
@@ -69,8 +70,8 @@ RUN  cd $SOFTWAREDIR && git clone https://gitlab.com/sevncodes/sevn.git \
 RUN cd $SOFTWAREDIR/sevn/SEVNpy && pip install .
 
 #8 PyFalcon
-RUN  cd $SOFTWAREDIR && git clone https://github.com/GalacticDynamics-Oxford/pyfalcon.git
-#     && cd pyfalcon &&  pip install .
+RUN  cd $SOFTWAREDIR && git clone https://gitlab.com/iogiul/pyfalcon.git \
+     && cd pyfalcon &&  pip install .
 
 #9 PyTorch
 RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
