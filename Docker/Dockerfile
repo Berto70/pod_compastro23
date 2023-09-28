@@ -98,6 +98,8 @@ RUN cd $SOFTWAREDIR && git clone https://gitlab.com/iogiul/galpynamics \
 RUN cd $SOFTWAREDIR && git clone https://github.com/giulianoiorio/OpOpGadget.git \
     && cd OpOpGadget && pip install .
 
+#16 Install sphynx for documentation \
+RUN  pip install  sphinx sphinx-rtd-theme
 
 #Final: Setup easy jupyter access
 RUN mkdir -p $HOME/.jupyter/ \
