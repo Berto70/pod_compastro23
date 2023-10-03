@@ -101,9 +101,16 @@ RUN cd $SOFTWAREDIR && git clone https://github.com/giulianoiorio/OpOpGadget.git
 #16 Install sphynx for documentation \
 RUN  pip install  sphinx sphinx-rtd-theme
 
+#17 Install pytest \
+RUN  pip install  pytest
+
 #Final: Setup easy jupyter access
 RUN mkdir -p $HOME/.jupyter/ \
     && echo "c.NotebookApp.token=''" >> $HOME/.jupyter/jupyter_notebook_config.py;
+
+#Clean to reduce
+RUN apt-get clean && pip cache purge
+
 
 CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
 
