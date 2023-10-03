@@ -104,6 +104,9 @@ RUN  pip install  sphinx sphinx-rtd-theme
 #17 Install pytest \
 RUN  pip install  pytest
 
+#18 Install twine \
+RUN  pip install  twine
+
 #Final: Setup easy jupyter access
 RUN mkdir -p $HOME/.jupyter/ \
     && echo "c.NotebookApp.token=''" >> $HOME/.jupyter/jupyter_notebook_config.py;
