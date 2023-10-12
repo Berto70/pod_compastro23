@@ -14,7 +14,8 @@ setup(
     author_email = "giuliano.iorio.astro@gmail.com",
     description = "N-body playground",
     license = "MIT",
-    packages=['fireworks',],
+    packages=['fireworks','fireworks/nbodylib'],
     long_description=long_description,
     python_requires='>=3.7',
+    install_requires=['numpy',"pyfalcon","pytest"]
 )
