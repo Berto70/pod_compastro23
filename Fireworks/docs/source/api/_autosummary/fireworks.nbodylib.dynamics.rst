@@ -1,7 +1,7 @@
-﻿fireworks.nbodylib.integrators
-==============================
+fireworks.nbodylib.dynamics
+===========================
 
-.. automodule:: fireworks.nbodylib.integrators
+.. automodule:: fireworks.nbodylib.dynamics
 
    
       
@@ -16,8 +16,8 @@
             :nosignatures:
             :template: base.rst
             
-               integrator_template
-               integrator_tsunami
+               acceleration_estimate_template
+               acceleration_pyfalcon
       
    
 

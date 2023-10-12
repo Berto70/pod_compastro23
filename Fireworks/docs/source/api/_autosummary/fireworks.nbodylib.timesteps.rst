@@ -1,7 +1,7 @@
-﻿fireworks.nbodylib.integrators
-==============================
+fireworks.nbodylib.timesteps
+============================
 
-.. automodule:: fireworks.nbodylib.integrators
+.. automodule:: fireworks.nbodylib.timesteps
 
    
       
@@ -16,8 +16,7 @@
             :nosignatures:
             :template: base.rst
             
-               integrator_template
-               integrator_tsunami
+               adaptive_timestep_simple
       
    
 

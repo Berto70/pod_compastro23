@@ -1,4 +1,4 @@
-fireworks.nbodylib
+﻿fireworks.nbodylib
 ==================
 
 .. automodule:: fireworks.nbodylib
@@ -28,5 +28,8 @@ fireworks.nbodylib
          :template: module.rst
          :recursive:
          
+            fireworks.nbodylib.dynamics
             fireworks.nbodylib.integrators
+            fireworks.nbodylib.nunits
+            fireworks.nbodylib.timesteps
    
