@@ -29,3 +29,40 @@ def ic_random_normal(N: int, mass: float=1) -> Particles:
     mass = np.ones(N)*mass
 
     return Particles(position=pos, velocity=vel, mass=mass)
+
+
+def ic_two_body(mass1: float, mass2: float, rp: float, e: float):
+    """
+    Create initial conditions for a two-body system.
+    By default the two bodies will placed along the x-axis at the
+    closest distance rp.
+    Depending on the input eccentricity the two bodies can be in a
+    circular (e<1), parabolic (e=1) or hyperbolic orbit (e>1).
+
+    :param mass1:  mass of the first body [nbody units]
+    :param mass2:  mass of the second body [nbody units]
+    :param rp: closest orbital distance [nbody units]
+    :param e: eccentricity
+    :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
+    """
+
+    Mtot=mass1+mass2
+
+    if e==1.:
+        vrel=np.sqrt(2*Mtot/rp)
+    else:
+        a=rp/(1-e)
+        vrel=np.sqrt(Mtot*(2./rp-1./a))
+
+    # To take the component velocities
+    # V1 = Vcom - m2/M Vrel
+    # V2 = Vcom + m1/M Vrel
+    # we assume Vcom=0.
+    v1 = -mass2/Mtot * vrel
+    v2 = mass1/Mtot * vrel
+
+    pos  = np.array([[0.,0.,0.],[rp,0.,0.]])
+    vel  = np.array([[0.,v1,0.],[0.,v2,0.]])
+    mass = np.array([mass1,mass2])
+
+    return Particles(position=pos, velocity=vel, mass=mass)
