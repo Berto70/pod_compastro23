@@ -26,6 +26,6 @@ def ic_random_normal(N: int, mass: float=1) -> Particles:
 
     pos  = np.random.normal(size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
     vel  = np.random.normal(size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
-    mass = np.ones(size=N)*mass
+    mass = np.ones(N)*mass
 
     return Particles(position=pos, velocity=vel, mass=mass)

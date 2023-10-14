@@ -1,4 +1,4 @@
-﻿fireworks.nbodylib
+fireworks.nbodylib
 ==================
 
 .. automodule:: fireworks.nbodylib

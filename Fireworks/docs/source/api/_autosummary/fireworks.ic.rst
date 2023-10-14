@@ -1,7 +1,7 @@
-fireworks.nbodylib.integrators
-==============================
+fireworks.ic
+============
 
-.. automodule:: fireworks.nbodylib.integrators
+.. automodule:: fireworks.ic
 
    
       
@@ -16,8 +16,7 @@ fireworks.nbodylib.integrators
             :nosignatures:
             :template: base.rst
             
-               integrator_template
-               integrator_tsunami
+               ic_random_normal
       
    
 
