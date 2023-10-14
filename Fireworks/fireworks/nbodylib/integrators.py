@@ -136,8 +136,8 @@ def integrator_tsunami(particles: Particles,
     code.Conf.wEqTides = False  # Equilibrium tides
     code.Conf.wDynTides = False  # Dynamical tides
 
-    r=np.ones_lile(particles.mass)
-    st=np.ones_lile(particles.mass)*(-1)
+    r=np.ones_like(particles.mass)
+    st=np.ones_like(particles.mass)*(-1)
     code.add_particle_set(particles.pos, particles.vel, particles.mass, r, st)
     # Synchronize internal code coordinates with the Python interface
     code.sync_internal_state(particles.pos, particles.vel)

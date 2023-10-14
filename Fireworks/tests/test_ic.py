@@ -14,3 +14,4 @@ def test_ic_random_normal():
 
     assert len(particles)==N #Test if we create the right amount of particles
     assert np.all(particles.mass==10.) #Test if the mass of the particles is set correctly
+
