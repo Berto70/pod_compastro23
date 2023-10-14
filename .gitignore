@@ -1,3 +1,6 @@
+#Python stuff
+*__pycache__
+
 # Prerequisites
 *.d
 
@@ -21,6 +24,8 @@
 # Fortran module files
 *.mod
 *.smod
+
+
 
 # Compiled Static libraries
 *.lai
@@ -58,6 +63,7 @@ confdefs.h
 /build
 .build/
 build/
+*.egg-info
 
 #ignored folder and files of KDevelop
 .kdev4/
