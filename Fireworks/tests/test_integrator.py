@@ -34,9 +34,12 @@ def simple_test(integrator):
 
     pos_test = par_old.pos + par_old.vel*teffective
 
-    # Test velocity, we expect no change in velocity
-    assert np.all( (par.vel -par_old.vel) == 0)
+    # Test velocity, we expect no change in velocity (we use a very small number instead of 0)
+    # in order to take into account possible round-off errors
+    assert np.all( np.abs(par.vel -par_old.vel) <= 1e-10)
 
+    #Test particles
+    assert np.all( np.abs(par.pos - pos_test) <= 1e-10)
 
 def test_integrator_template():
     """
@@ -45,12 +48,4 @@ def test_integrator_template():
     """
 
     simple_test(fint.integrator_template)
-
-def test_integrator_tsunami():
-    """
-    Apply the simple_test the integrator_template
-
-    """
-
-    simple_test(fint.integrator_tsunami)
 

@@ -24,7 +24,7 @@ def test_acceleration_2body():
     for facc in facc_list:
         acc,_,_=facc(part)
 
-        dx = acc-true_acc
+        dx = np.abs(acc-true_acc)
 
         assert np.all(dx<=1e-11)
 
@@ -57,4 +57,5 @@ def test_acceleartion_row():
         dx = acc[0,0]-acc_true_0
 
         assert pytest.approx(dx, 1e-10) == 0.
+        # pytest approx is used to introduc a tollerance in the comparison  (in this case 1e-10)
 
