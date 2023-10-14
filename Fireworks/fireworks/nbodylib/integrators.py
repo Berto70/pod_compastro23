@@ -1,7 +1,7 @@
 """
-=======================================================================
-ODE integrators collection data (:mod:`fireworks.nbodylib.integrators`)
-=======================================================================
+=========================================================
+ODE integrators  (:mod:`fireworks.nbodylib.integrators`)
+=========================================================
 
 This module contains a collection of integrators to integrate one step of the ODE N-body problem
 The functions included in this module should follow the input/output structure
@@ -67,7 +67,7 @@ def integrator_template(particles: Particles,
 
     acc,jerk,potential=acceleration_estimator(particles,softening)
 
-    #Exemple of an Euler estiamte
+    #Exemple of an Euler estimate
     particles.pos = particles.pos + particles.vel*tstep # Update pos
     particles.vel = particles.vel + acc*tstep # Update vel
     particles.set_acc(acc) #Set acceleration
