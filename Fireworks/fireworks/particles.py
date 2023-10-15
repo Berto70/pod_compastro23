@@ -104,7 +104,7 @@ class Particles:
         :return:  a Nx1 array containing the particles' distance from the origin of the frame of reference.
         """
 
-        return np.sqrt(np.sum(self.pos*self.pos, axis=1))
+        return np.sqrt(np.sum(self.pos*self.pos, axis=1))[:,np.newaxis]
 
     def vel_mod(self) -> npt.NDArray[np.float64]:
         """
