@@ -31,8 +31,13 @@ The function needs to return a tuple containing three elements:
 from typing import Optional, Tuple
 import numpy as np
 import numpy.typing as npt
-import pyfalcon
 from ..particles import Particles
+
+try:
+    import pyfalcon
+    pyfalcon_load=True
+except:
+    pyfalcon_load=False
 
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
@@ -86,8 +91,30 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
         - Jerk: None, the jerk is not estimated
         - Pot: a Nx1 numpy array containing the gravitational potential at each particle position
     """
+
+    if not pyfalcon_load: return ImportError("Pyfalcon is not available")
+
     acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
     jerk = None
 
     return acc, jerk, pot
+
+def acceleation_MW14(particles: Particles, softening: float =0.):
+
+    r  = particles.radius()
+    r2 = r*r
+    z = particles.pos[:,2]
+    R = np.sqrt(r2 -z*z)
+
+    acc = np.zeros_like(particles.pos)
+
+    # Loghalo
+    a     = 16 #kpc
+    fcomp = 0.35
+    acc_r = (1/(r*(a+r)) - np.log(1+r/a)/r2)*(1/r)
+    acc[:,0] += acc_r*particles.pos[:,0]
+    acc[:,1] += acc_r*particles.pos[:,1]
+    acc[:,2] += acc_r*particles.pos[:,2]
+
+    return  acc,None,None
 

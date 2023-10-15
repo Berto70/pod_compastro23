@@ -15,6 +15,10 @@ All the functions need to have the following input parameters:
         following the input/output style of the template function
         (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
     - softening, softening values used to estimate the acceleration
+    - external_accelerations, this is an optional input, if not None, it has to be a list
+    of additional callable to estimate additional acceleration terms (e.g. an external potential or
+    some drag term depending on the particles velocity). Notice that if the integrator uses the jerk
+    all this additional terms should return the jerk otherwise the jerk estimate is biased.
 
 Then, all the functions need to return the a tuple with 5 elements:
 
@@ -22,17 +26,17 @@ Then, all the functions need to return the a tuple with 5 elements:
         updates Nbody properties after the integration timestep
     - tstep, the effective timestep evolved in the simulation (for some integrator this can be
         different wrt the input tstep)
-    - acc, the acceleration estimated for each particle, it needs to be a Nx3 numpy array,
+    - acc, the total acceleration estimated for each particle, it needs to be a Nx3 numpy array,
         can be set to None
-    - jerk, time derivative of the acceleration, it is an optional value, if the method
+    - jerk, total time derivative of the acceleration, it is an optional value, if the method
         does not estimate it, just set this element to None. If it is not None, it has
         to be a Nx3 numpy array.
-    - pot, gravitational potential at the position of each particle. it is an optional value, if the method
+    - pot, total  gravitational potential at the position of each particle. it is an optional value, if the method
         does not estimate it, just set this element to None. If it is not None, it has
         to be a Nx1 numpy array.
 
 """
-from typing import Optional, Tuple, Callable
+from typing import Optional, Tuple, Callable, Union
 import numpy as np
 import numpy.typing as npt
 from ..particles import Particles
@@ -44,8 +48,9 @@ except:
 
 def integrator_template(particles: Particles,
                         tstep: float,
-                        acceleration_estimator: Callable,
-                        softening: float = 0.):
+                        acceleration_estimator: Union[Callable,List],
+                        softening: float = 0.,
+                        external_accelerations: Optional[List] = None):
     """
     This is an example template of the function you have to implement for the N-body integrators.
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
@@ -54,6 +59,8 @@ def integrator_template(particles: Particles,
     :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)
     following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
     :param softening: softening parameter for the acceleration estimate, can use 0 as default value
+    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to
+        consider to estimate the final acceleration (and if available jerk) on the particles
     :return: A tuple with 5 elements:
 
         - The updated particles instance
@@ -67,19 +74,28 @@ def integrator_template(particles: Particles,
 
     acc,jerk,potential=acceleration_estimator(particles,softening)
 
+    #Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+            acc+=acct
+            if jerkt is not None: jerk+=jerkt
+            if potentialt is not None: potential+=potentialt
+
     #Exemple of an Euler estimate
     particles.pos = particles.pos + particles.vel*tstep # Update pos
     particles.vel = particles.vel + acc*tstep # Update vel
     particles.set_acc(acc) #Set acceleration
 
-    # Now return the updated particles, the acceleration, jerk (can be None) and potential (can nbe None=
+    # Now return the updated particles, the acceleration, jerk (can be None) and potential (can be None)
 
     return (particles, tstep, acc, jerk, potential)
 
 def integrator_tsunami(particles: Particles,
                        tstep: float,
                        acceleration_estimator: Optional[Callable]= None,
-                       softening: float = 0.):
+                       softening: float = 0.,
+                       external_accelerations: Optional[List] = None):
     """
     Special integrator that is actually a wrapper of the TSUNAMI integrator.
     TSUNAMI is regularised and it has its own way to estimate the acceleration,
@@ -118,6 +134,7 @@ def integrator_tsunami(particles: Particles,
     :param tstep: final time of the current integration
     :param acceleration_estimator: Not used
     :param softening: Not used
+    :param external_accelerations: Not used
     :return: A tuple with 5 elements:
 
         - The updated particles instance
