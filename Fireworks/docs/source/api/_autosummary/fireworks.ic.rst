@@ -1,4 +1,4 @@
-fireworks.ic
+﻿fireworks.ic
 ============
 
 .. automodule:: fireworks.ic
@@ -17,6 +17,7 @@ fireworks.ic
             :template: base.rst
             
                ic_random_normal
+               ic_two_body
       
    
 

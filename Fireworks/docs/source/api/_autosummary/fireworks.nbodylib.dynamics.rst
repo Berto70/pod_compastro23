@@ -1,4 +1,4 @@
-fireworks.nbodylib.dynamics
+﻿fireworks.nbodylib.dynamics
 ===========================
 
 .. automodule:: fireworks.nbodylib.dynamics
@@ -16,6 +16,7 @@ fireworks.nbodylib.dynamics
             :nosignatures:
             :template: base.rst
             
+               acceleation_MW14
                acceleration_estimate_template
                acceleration_pyfalcon
       

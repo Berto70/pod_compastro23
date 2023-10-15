@@ -16,9 +16,9 @@ All the functions need to have the following input parameters:
         (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
     - softening, softening values used to estimate the acceleration
     - external_accelerations, this is an optional input, if not None, it has to be a list
-    of additional callable to estimate additional acceleration terms (e.g. an external potential or
-    some drag term depending on the particles velocity). Notice that if the integrator uses the jerk
-    all this additional terms should return the jerk otherwise the jerk estimate is biased.
+        of additional callable to estimate additional acceleration terms (e.g. an external potential or
+        some drag term depending on the particles velocity). Notice that if the integrator uses the jerk
+        all this additional terms should return the jerk otherwise the jerk estimate is biased.
 
 Then, all the functions need to return the a tuple with 5 elements:
 
@@ -36,7 +36,7 @@ Then, all the functions need to return the a tuple with 5 elements:
         to be a Nx1 numpy array.
 
 """
-from typing import Optional, Tuple, Callable, Union
+from typing import Optional, Tuple, Callable, Union, List
 import numpy as np
 import numpy.typing as npt
 from ..particles import Particles
@@ -60,7 +60,7 @@ def integrator_template(particles: Particles,
     following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
     :param softening: softening parameter for the acceleration estimate, can use 0 as default value
     :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to
-        consider to estimate the final acceleration (and if available jerk) on the particles
+    consider to estimate the final acceleration (and if available jerk) on the particles
     :return: A tuple with 5 elements:
 
         - The updated particles instance
