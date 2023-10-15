@@ -79,8 +79,8 @@ def integrator_template(particles: Particles,
         for ext_acc_estimator in external_accelerations:
             acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
             acc+=acct
-            if jerkt is not None: jerk+=jerkt
-            if potentialt is not None: potential+=potentialt
+            if jerk is not None and jerkt is not None: jerk+=jerkt
+            if potential is not None and potentialt is not None: potential+=potentialt
 
     #Exemple of an Euler estimate
     particles.pos = particles.pos + particles.vel*tstep # Update pos

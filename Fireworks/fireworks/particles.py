@@ -113,7 +113,7 @@ class Particles:
         :return: a Nx1 array containing the module of the particles's velocity
         """
 
-        return np.sqrt(np.sum(self.vel*self.vel, axis=1))
+        return np.sqrt(np.sum(self.vel*self.vel, axis=1))[:,np.newaxis]
 
     def com_pos(self) -> npt.NDArray[np.float64]:
         """
