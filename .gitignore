@@ -1,0 +1,108 @@
+# Python stuff
+*__pycache__
+
+# Python packages
+Fireworks/
+
+# Docker folder
+Docker/
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+*.Po
+#.*
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.x
+
+# Autotools generated files
+/ar-lib
+/compile
+#**Makefile
+#**Makefile.in
+/fontconfig
+confdefs.h
+/aclocal.m4
+/autom4te.cache/
+/config.*
+/configure
+/depcomp
+/install-sh
+/libtool
+/ltmain.sh
+/missing
+/stamp-h?
+.deps/
+.dirstamp
+.libs/
+/bin
+/build
+.build/
+build/
+*.egg-info
+
+#ignored folder and files of KDevelop
+.kdev4/
+*.kdev4
+
+#ignore macOS Finder files
+*.DS_Store
+.DS_Store/
+
+#ignore IDEE files
+.idea/
+*.idea
+/cmake-build-debug
+.cmake-build-debug/
+cmake-build-debug/
+/cmake-build-*
+.cmake-build-*/
+.vscode/
+*.vscode
+
+
+# Gnuplot files
+*.gps
+
+default_run.sh
+default_run_s1.sh
+default_run_s2.sh
+.sevn_output/
+sevn_output/
+
+#Python module file
+*.egg
+*.pytest_cache
+
+#Versioning
+sevn_version.h
