@@ -2,10 +2,9 @@
 *__pycache__
 
 # Python packages
-Fireworks/
 
 # Docker folder
-Docker/
+
 
 # Prerequisites
 *.d
