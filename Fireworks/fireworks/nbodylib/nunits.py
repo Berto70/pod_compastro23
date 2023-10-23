@@ -9,6 +9,7 @@ and units conversion
 """
 from __future__ import annotations
 from typing import Optional, Tuple, Callable, Union
+import numpy as np
 from ..particles import Particles
 
 class Nbody_units:
