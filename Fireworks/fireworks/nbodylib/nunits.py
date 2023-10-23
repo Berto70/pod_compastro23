@@ -14,15 +14,15 @@ from ..particles import Particles
 
 class Nbody_units:
     """
-    This class is used to handle tranformation from and to Nbody Units.
-    It assuems that the physical units are:
+    This class is used to handle transformation from and to Nbody Units.
+    It assumes that the physical units are:
 
         - length: pc
         - mass: Msun
         - velocity: km/s
         - time: Myr
 
-    Howerver such scales can be changed at the class initilisation
+    However, such scales can be changed at the class initialisation
     """
 
     Gcgs = 6.67430e-8 #Gravitational constants in cgs
