@@ -106,7 +106,7 @@ class Nbody_units:
         return cls(M=M, L=Nbody_units.Lau_cgs / Nbody_units.Lpc_cgs)
 
     @classmethod
-    def Henon(self,particles: Particles, L: float = 1, V: float = 1., T: float = 1.) -> Nbody_units:
+    def Henon(self,particles: Particles, L: float = 1, V: float = 1., T: float = 1., Q: float = 0.5) -> Nbody_units:
         """
         Use the Henon units, so that the mass scale is the total mass of the Nbody particles.
         Then, the scale radius is set so that the potential energy is Epot=-0.5.
@@ -129,17 +129,21 @@ class Nbody_units:
         :param L:  Set the length scale in units of pc
         :param V:  Set the velocity scale in units of km/s
         :param T:  Set the time scale in units of Myr
+        :param Q:  Virial ratio, (0.5 virial equilibrium, >0.5 super-virial, <0.5 sub-virial)
         :return: An Instance of the class
         """
 
         pcopy = particles.copy()
         Mtot = np.sum(particles.mass)
         pcopy.mass = pcopy.mass/Mtot
-        Epot = pcopy.Epot(softening=0.)
-        Rfact=-Epot/0.5
-        Rscale=1/Rfact
 
-        return cls(M=Mtot, L=L*Rscale, V=V, T=T)
+        Epot = pcopy.Epot(softening=0.)
+        Rscale = 4*Epot*(Q-1)
+
+        Ekin = pcopy.Ekin()
+        Vscale = 0.5*np.sqrt( ((1-Q)/Q)/Ekin )
+
+        return cls(M=Mtot, L=L/Rscale, V=V/Vscale, T=T)
 
     def pos_to_Nbody(self, pos: Union[npt.NDArray[np.float64],float], L: float=1.) -> npt.NDArray[np.float64]:
         """
