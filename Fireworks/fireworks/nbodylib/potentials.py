@@ -52,6 +52,31 @@ class Potential_Base:
 
         return self._acceleration(particles)
 
+    def evaluate(self,R,z=0, softening=0):
+
+        R=np.atleast_1d(R)
+        z=np.atleast_1d(z)
+
+        pos=np.zeros(shape=(len(R),3))
+        if len(R)==1:
+            pos[:,0]=R[0]
+        else:
+            pos[:,0]=R
+
+        if len(z)==1:
+            pos[:,2]=z[0]
+        else:
+            pos[:,2]=z
+
+        vel = np.zeros_like(pos)
+        mass = np.zeros(len(R))
+
+        part=Particles(position=pos, velocity=vel, mass=mass)
+
+        return self.acceleration(part,softening)
+
+
+
     def _acceleration(self, particles: Particles, softening: float = 0.) \
             -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
         """
@@ -67,6 +92,30 @@ class Potential_Base:
         """
 
         raise NotImplementedError(f"Method _acceleration for the {self.__name__} is not implemented yet")
+
+class MultiPotential(Potential_Base):
+
+    def __init__(self, potential_list=[]):
+
+        self._potentials = potential_list
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        acc  = np.zeros_like(particles.pos)
+        jerk = None
+        pot  =  0
+
+        for pot in self._potentials:
+
+            this_acc, _, this_pot = pot.acceleration(particles=particles,softening=softening)
+            acc+=this_acc
+            if this_pot is not None and pot is not None: pot+=this_pot
+            else pot=None
+
+        return acc,jerk,pot
+
+
 
 class Point_Mass(Potential_Base):
     """
@@ -108,6 +157,38 @@ class Point_Mass(Potential_Base):
         acc = -self.Mass/reff2 * (particles.pos/r) # p.pos/r means x/r, y/r, z/r, these are the three components of the acceleration
 
         return acc, None, None # not include jerk and potential atm
+
+class MyamotoNagai(Potential_Base):
+
+    def __init__(self,Mass: float, a: float, b: float):
+
+        self.Mass = Mass
+        self.a = a
+        self.b = b
+
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        a=self.a
+        b=self.b
+        z2=particles.pos[:,2]**2
+
+        Dz = (a+ np.sqrt(z2 + b*b))
+        D = np.sum(particles.pos[:,:2]**2,axis=1) + Dz*Dz
+        K = self.Mass/D**1.5
+        acc = np.ones_like(particles.pos)
+        acc[:,0] = -K*particles.pos[:,0]
+        acc[:,1] = -K*particles.pos[:,1]
+        kz = np.sqrt(b*b+z2)
+        acc[:,2] = -K*particles.pos[:,2]*(a+kz)/kz
+
+        pot = -self.Mass/np.sqrt(D)
+
+        return  acc, None, pot
+
+
+
 
 
 
