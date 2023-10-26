@@ -99,22 +99,3 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
 
     return acc, jerk, pot
 
-def acceleation_MW14(particles: Particles, softening: float =0.):
-
-    r  = particles.radius()
-    r2 = r*r
-    z = particles.pos[:,2]
-    R = np.sqrt(r2 -z*z)
-
-    acc = np.zeros_like(particles.pos)
-
-    # Loghalo
-    a     = 16 #kpc
-    fcomp = 0.35
-    acc_r = (1/(r*(a+r)) - np.log(1+r/a)/r2)*(1/r)
-    acc[:,0] += acc_r*particles.pos[:,0]
-    acc[:,1] += acc_r*particles.pos[:,1]
-    acc[:,2] += acc_r*particles.pos[:,2]
-
-    return  acc,None,None
-
