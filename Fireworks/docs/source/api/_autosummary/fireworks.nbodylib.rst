@@ -1,4 +1,4 @@
-fireworks.nbodylib
+﻿fireworks.nbodylib
 ==================
 
 .. automodule:: fireworks.nbodylib
@@ -31,5 +31,6 @@ fireworks.nbodylib
             fireworks.nbodylib.dynamics
             fireworks.nbodylib.integrators
             fireworks.nbodylib.nunits
+            fireworks.nbodylib.potentials
             fireworks.nbodylib.timesteps
    
