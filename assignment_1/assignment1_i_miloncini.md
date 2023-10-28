@@ -53,3 +53,8 @@
 		  Date:   Fri Oct 20 07:17:57 2023 +0000
 
 #### Backronym challenge
+**FIRESEX**
+**FIRE**works **S**cientific **EX**ploitation
+
+(Bonus: **FREEGAZA**)\
+(It doen't need an explanation)
