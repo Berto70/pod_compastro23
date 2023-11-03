@@ -1,9 +1,9 @@
-fireworks.nbodylib.Potential_Base
+fireworks.nbodylib.MultiPotential
 ============================================
 
 .. currentmodule:: fireworks.nbodylib.potentials
 
-.. autoclass:: Potential_Base
+.. autoclass:: MultiPotential
    :members:
    :show-inheritance:
    :special-members:
@@ -17,11 +17,8 @@ fireworks.nbodylib.Potential_Base
          .. autosummary::
             :nosignatures:
             
-               ~Potential_Base.__init__
-               ~Potential_Base.acceleration
-<<<<<<< HEAD
-=======
-               ~Potential_Base.evaluate
->>>>>>> ca23_remote/main
+               ~MultiPotential.__init__
+               ~MultiPotential.acceleration
+               ~MultiPotential.evaluate
       
    

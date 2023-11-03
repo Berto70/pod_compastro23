@@ -19,5 +19,9 @@ fireworks.nbodylib.Point_Mass
             
                ~Point_Mass.__init__
                ~Point_Mass.acceleration
+<<<<<<< HEAD
+=======
+               ~Point_Mass.evaluate
+>>>>>>> ca23_remote/main
       
    

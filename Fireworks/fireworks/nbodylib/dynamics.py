@@ -98,4 +98,3 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
     jerk = None
 
     return acc, jerk, pot
-
