@@ -13,23 +13,45 @@ an instance of the class :class:`~fireworks.particles.Particles`
 import numpy as np
 from .particles import Particles
 
-def ic_random_uniform(N: int, mass_l: float=0, mass_u: float=1, pos_l: float=0, pos_u: float=1, vel_l: float=0, vel_u: float=1) -> Particles:
+# def ic_random_uniform(N: int, mass_l: float=0, mass_u: float=1, pos_l: float=0, pos_u: float=1, vel_l: float=0, vel_u: float=1) -> Particles:
+#     """
+#     Generate random initial condition drawing from a uniform distribution
+#     (between upper and lower boundary) for the mass, position and velocity.
+
+#     :param N: number of particles to generate
+#     :param mass_l: mass lower boundary of the particles
+#     :param mass_u: mass upper boundary of the particles
+#     :param pos_l: position lower boundary of the particles
+#     :param pos_u: position upper boundary of the particles
+#     :param vel_l: velocity lower boundary of the particles
+#     :param vel_u: velocity upper boundary of the particles
+#     :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
+#     """
+#     mass = np.random.uniform(low=mass_l, high=mass_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+#     pos = np.random.uniform(low=pos_l, high=pos_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+#     vel = np.random.uniform(low=vel_l, high=vel_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+
+#     return Particles(position=pos, velocity=vel, mass=mass)
+
+def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float], vel: list[float, float] ) -> Particles:
     """
     Generate random initial condition drawing from a uniform distribution
     (between upper and lower boundary) for the mass, position and velocity.
 
     :param N: number of particles to generate
-    :param mass_l: mass lower boundary of the particles
-    :param mass_u: mass upper boundary of the particles
-    :param pos_l: position lower boundary of the particles
-    :param pos_u: position upper boundary of the particles
-    :param vel_l: velocity lower boundary of the particles
-    :param vel_u: velocity upper boundary of the particles
+    :type N: int
+    :param mass: list of lower and upper boundary for mass particle distribution
+    :type mass: list of float
+    :param pos: list of lower and upper boundary for position particle distribution
+    :type pos: list of float
+    :param vel: list of lower and upper boundary for velocity particle distribution
+    :type vel: list of float
     :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
     """
-    mass = np.random.uniform(low=mass_l, high=mass_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
-    pos = np.random.uniform(low=pos_l, high=pos_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
-    vel = np.random.uniform(low=vel_l, high=vel_u, size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+
+    mass = np.random.uniform(low=mass[0], high=mass[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    pos = np.random.uniform(low=pos[0], high=pos[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    vel = np.random.uniform(low=vel[0], high=vel[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
 
     return Particles(position=pos, velocity=vel, mass=mass)
 
