@@ -5,7 +5,7 @@ Initial conditions utilities , (:mod:`fireworks.ic`)
 
 This module contains functions and utilities to generate
 initial conditions for the Nbody simulations.
-The basic idea is that each function/class should returns
+The basic idea is that each function/class should return
 an instance of the class :class:`~fireworks.particles.Particles`
 
 """
@@ -64,5 +64,26 @@ def ic_two_body(mass1: float, mass2: float, rp: float, e: float):
     pos  = np.array([[0.,0.,0.],[rp,0.,0.]])
     vel  = np.array([[0.,v1,0.],[0.,v2,0.]])
     mass = np.array([mass1,mass2])
+
+    return Particles(position=pos, velocity=vel, mass=mass)
+
+
+def ic_random_uniform(N: int, position_bound: list, velocity_bound: list, mass_bound: list) -> Particles:
+
+    """
+    Generate random initial condition drawing from a UNIFORM distribution
+    with user-defined boundaries for the position, velocity and masses.
+   
+
+    :param N: number of particles to generate
+    :param mass: mass of the particles
+    :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
+    """
+
+    pos  = np.random.uniform(low=position_bound[0],high=position_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    vel  = np.random.uniform(low=velocity_bound[0],high=velocity_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    mass = np.random.uniform(low=mass_bound[0],high=mass_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    
+   
 
     return Particles(position=pos, velocity=vel, mass=mass)
