@@ -2,6 +2,28 @@ import pytest
 import numpy as np
 import fireworks.ic as fic
 
+def test_ic_random_uniform():
+    """
+    Simple test for the method ic_uniform_normal
+    """
+    N = 100
+    mass_l = 0.1
+    mass_u = 10.
+    pos_l = -10.
+    pos_u = 10.
+    vel_l = -10.
+    vel_u = 10.
+
+    particles = fic.ic_random_uniform(N, mass_l = mass_l, mass_u = mass_u, pos_l = pos_l, pos_u = pos_u, vel_l = vel_l, vel_u = vel_u)
+
+    assert len(particles) == N #Test if we create the right amount of particles
+    assert np.min(particles.mass) >= mass_l
+    assert np.max(particles.mass) <= mass_u
+    assert np.min(particles.pos) >= pos_l
+    assert np.max(particles.pos) <= pos_u
+    assert np.min(particles.vel) >= vel_l
+    assert np.min(particles.vel) <= vel_u
+
 
 def test_ic_random_normal():
     """
