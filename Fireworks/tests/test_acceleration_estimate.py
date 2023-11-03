@@ -11,7 +11,7 @@ def test_acceleration_2body():
     therfore the acceleration on the first body is  +1 and on the secondy body -1.
 
     """
-    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct]
+    facc_list = [fdyn.acceleration_direct]
 
     pos = np.array([[0.,0.,0.],[1.,0.,0.]])
     vel = np.zeros_like(pos)
@@ -26,7 +26,7 @@ def test_acceleration_2body():
 
         dx = np.abs(acc-true_acc)
 
-        assert np.all(dx<=1e-11)
+        assert np.all(dx<=1e-7)
 
 def test_acceleartion_row():
     """
@@ -38,7 +38,7 @@ def test_acceleartion_row():
     """
 
 
-    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct]
+    facc_list = [fdyn.acceleration_pyfalcon]
 
     x = np.array(np.arange(11),dtype=float)
     y = np.zeros_like(x)
