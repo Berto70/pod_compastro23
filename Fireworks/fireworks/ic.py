@@ -33,7 +33,7 @@ from .particles import Particles
 
 #     return Particles(position=pos, velocity=vel, mass=mass)
 
-def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float], vel: list[float, float] ) -> Particles:
+def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float], vel: list[float, float]) -> Particles:
     """
     Generate random initial condition drawing from a uniform distribution
     (between upper and lower boundary) for the mass, position and velocity.
@@ -49,7 +49,7 @@ def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float],
     :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
     """
 
-    mass = np.random.uniform(low=mass[0], high=mass[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    mass = np.random.uniform(low=mass[0], high=mass[1], size=N) # Generate 1D array of N elements
     pos = np.random.uniform(low=pos[0], high=pos[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
     vel = np.random.uniform(low=vel[0], high=vel[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
 
@@ -89,13 +89,13 @@ def ic_two_body(mass1: float, mass2: float, rp: float, e: float):
     :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
     """
 
-    Mtot=mass1+mass2
+    Mtot = mass1 + mass2
 
-    if e==1.:
-        vrel=np.sqrt(2*Mtot/rp)
+    if e == 1.:
+        vrel = np.sqrt(2*Mtot/rp)
     else:
-        a=rp/(1-e)
-        vrel=np.sqrt(Mtot*(2./rp-1./a))
+        a = rp/(1-e)
+        vrel = np.sqrt(Mtot*(2./rp-1./a))
 
     # To take the component velocities
     # V1 = Vcom - m2/M Vrel
@@ -104,8 +104,8 @@ def ic_two_body(mass1: float, mass2: float, rp: float, e: float):
     v1 = -mass2/Mtot * vrel
     v2 = mass1/Mtot * vrel
 
-    pos  = np.array([[0.,0.,0.],[rp,0.,0.]])
-    vel  = np.array([[0.,v1,0.],[0.,v2,0.]])
-    mass = np.array([mass1,mass2])
+    pos  = np.array([[0., 0., 0.], [rp, 0., 0.]])
+    vel  = np.array([[0., v1, 0.], [0., v2, 0.]])
+    mass = np.array([mass1, mass2])
 
     return Particles(position=pos, velocity=vel, mass=mass)
