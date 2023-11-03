@@ -4,7 +4,7 @@ Collection of functions to estimate the Gravitational forces and accelerations (
 ====================================================================================================================
 
 This module contains a collection of functions to estimate acceleration due to
-gravitational  forces.
+gravitational forces.
 
 Each method implemented in this module should follow the input-output structure show for the
 template function  :func:`~acceleration_estimate_template`:
@@ -32,12 +32,64 @@ from typing import Optional, Tuple
 import numpy as np
 import numpy.typing as npt
 from ..particles import Particles
+import fireworks.ic as fic
 
 try:
     import pyfalcon
     pyfalcon_load=True
 except:
     pyfalcon_load=False
+
+
+def acc_2body(particles: Particles):
+
+    acc_2body = np.zeros(shape=(len(particles), 3))
+
+    for i in range(len(particles)):
+        for j in range(len(particles)):
+            if i != j:
+                dx = particles.pos[i,0] - particles.pos[j,0]
+                dy = particles.pos[i,1] - particles.pos[j,1]
+                dz = particles.pos[i,2] - particles.pos[j,2]
+                r = np.sqrt(dx**2 + dy**2 + dz**2)
+                acc_2body[i,0] = -particles.mass[j]*dx/r**3
+                acc_2body[i,1] = -particles.mass[j]*dy/r**3
+                acc_2body[i,2] = -particles.mass[j]*dz/r**3
+
+    return acc_2body
+
+def acceleration_direct(particles: Particles, softening: float = 0.) \
+    -> Tuple[npt.NDArray[np.float64], Optional[npt.NDArray[np.float64]], Optional[npt.NDArray[np.float64]]]:
+
+    """
+    Function used to estimate the gravitational acceleration using a direct summation method.
+
+    :param particles: An instance of the class :class:`~fireworks.particles.Particles`
+    :param softening: Gravitational softening parameter. Default value is 0.
+    :type softening: float
+    :return: A tuple with 3 elements:
+
+        - Acceleration: a Nx3 numpy array containing the acceleration for each particle
+        - Jerk: Time derivative of the acceleration. If not None, it has to be a Nx3 numpy array
+        - Pot: Gravitational potential at the position of each particle. If not None, it has to be a Nx1 numpy array
+
+    """
+
+    acc = np.zeros(len(particles))
+    jerk = None
+    pot = None
+
+    # if ic == 'ic_2_body':
+    #     particles = fic.ic_two_body()
+
+    for i in range(0, len(particles)-1):
+        for j in range(i+1, len(particles)):
+            acc_ij = acc_2body(particles)
+            acc[i] += acc_ij
+            acc[j] -= particles.mass[i]/particles.mass[j]*acc_ij
+
+    return (acc, jerk, pot)    
+
 
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
