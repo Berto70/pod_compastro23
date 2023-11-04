@@ -26,7 +26,7 @@ def test_acceleration_2body():
 
         dx = np.abs(acc-true_acc)
 
-        assert np.all(dx<=1e-7)
+        assert np.all(dx<=1e-11)
 
 def test_acceleartion_row():
     """

@@ -41,13 +41,13 @@ except:
     pyfalcon_load=False
 
 
-# def acc_2body(particles: Particles):
+def acc_2body(particles: Particles):
 
-#     # acc_2body = np.zeros(shape=(len(particles), 3))
+    # acc_2body = []  # np.zeros(shape=(len(particles), 3))
 
-#     for i in range(len(particles)):
-#         for j in range(len(particles)):
-#             if i != j:
+    for i in range(len(particles)):
+        for j in range(len(particles)):
+            if i != j:
 
 #                 # dx = particles.pos[i,0] - particles.pos[j,0]
 #                 # dy = particles.pos[i,1] - particles.pos[j,1]
@@ -57,15 +57,16 @@ except:
 #                 # acc_2body[i,1] = -particles.mass[j]*dy/r**3
 #                 # acc_2body[i,2] = -particles.mass[j]*dz/r**3
 
-#                 dx = particles.pos[i,0] - particles.pos[j,0]
-#                 dy = particles.pos[i,1] - particles.pos[j,1]
-#                 dz = particles.pos[i,2] - particles.pos[j,2]
-#                 r = np.sqrt(dx**2 + dy**2 + dz**2)
-#                 acc_2body0 = -particles.mass[j]*dx/r**3
-#                 acc_2body1 = -particles.mass[j]*dy/r**3
-#                 acc_2body2 = -particles.mass[j]*dz/r**3
+                acc_2body = np.array([0., 0., 0.])
+                dx = particles.pos[i,0] - particles.pos[j,0]
+                dy = particles.pos[i,1] - particles.pos[j,1]
+                dz = particles.pos[i,2] - particles.pos[j,2]
+                r = np.sqrt(dx**2 + dy**2 + dz**2)
+                acc_2body[0] = particles.mass[j]*dx/r**3
+                acc_2body[1] = particles.mass[j]*dy/r**3
+                acc_2body[2] = particles.mass[j]*dz/r**3
 
-#     return acc_2body0, acc_2body1, acc_2body2
+    return  acc_2body # acc_2body0, acc_2body1, acc_2body2
 
     # return acc_2body
 
@@ -93,37 +94,42 @@ def acceleration_direct(particles: Particles, softening: float = 0.) \
     # if ic == 'ic_2_body':
     #     particles = fic.ic_two_body()
 
-    # for i in range(0, len(particles)-1):
-    #     for j in range(i+1, len(particles)):
-    #         acc_ij0, acc_ij1, acc_ij2 = acc_2body(particles)
-    #         acc[i, 0] += acc_ij0
-    #         acc[i, 1] += acc_ij1
-    #         acc[i, 2] += acc_ij2
-    #         acc[j, 0] -= particles.mass[i]/particles.mass[j]*acc_ij0
-    #         acc[j, 1] -= particles.mass[i]/particles.mass[j]*acc_ij1
-    #         acc[j, 2] -= particles.mass[i]/particles.mass[j]*acc_ij2
+    for i in range(len(particles)):
+        for j in range(i+1, len(particles)):
 
-    # return (acc, jerk, pot)   
+            acc_ij = acc_2body(particles)
+            acc[i, :] += acc_ij
+            acc[j, :] -= particles.mass[i]/particles.mass[j]*acc_ij
+
+            # acc_ij0, acc_ij1, acc_ij2 = acc_2body(particles)
+            # acc[i, 0] += acc_ij0
+            # acc[i, 1] += acc_ij1
+            # acc[i, 2] += acc_ij2
+            # acc[j, 0] -= particles.mass[i]/particles.mass[j]*acc_ij0
+            # acc[j, 1] -= particles.mass[i]/particles.mass[j]*acc_ij1
+            # acc[j, 2] -= particles.mass[i]/particles.mass[j]*acc_ij2
+
+    return (acc, jerk, pot)   
 
     # Get the number of particles in the system.
     #n_particles = particles.shape[0]
 
     # Initialize the acceleration array.
-    acc = np.zeros(shape=(len(particles), 3))
+    # acc = np.zeros(shape=(len(particles), 3))
 
-    # Compute the acceleration of each particle due to the force from all other particles.
-    for i in range(len(particles)):
-        for j in range(i + 1, len(particles)):
-            # Compute the distance between particles i and j.
-            r = np.linalg.norm(particles.pos[i, :3] - particles.pos[j, :3])
+    # # Compute the acceleration of each particle due to the force from all other particles.
+    # for i in range(len(particles)):
+    #     for j in range(i + 1, len(particles)):
+    #         # Compute the distance between particles i and j.
+    #         r = np.linalg.norm(particles.pos[i, :3] - particles.pos[j, :3])
 
-            # Compute the force between particles i and j.
-            #F = -particles[i, 3] * particles[j, 3] / (r**3) * (particles[i, :3] - particles[j, :3])
+    #         # Compute the force between particles i and j.
+    #         #F = -particles[i, 3] * particles[j, 3] / (r**3) * (particles[i, :3] - particles[j, :3])
 
-            # Add the force from particle j to the acceleration of particle i.
-            acc[i, :] += particles.mass[j] * (particles.pos[i, :3] - particles.pos[j, :3]) / (r**3)
+    #         # Add the force from particle j to the acceleration of particle i.
+    #         acc[i, :] += particles.mass[j] * (particles.pos[i, :3] - particles.pos[j, :3]) / (r**3)
 
-    return (acc, jerk, pot)
+    # return (acc, jerk, pot)
 
 
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
