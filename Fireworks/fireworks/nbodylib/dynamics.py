@@ -131,6 +131,44 @@ def acceleration_direct(particles: Particles, softening: float = 0.) \
 
     # return (acc, jerk, pot)
 
+import numpy as np
+
+def acceleration_direct_vectorised(particles: Particles, softening: float = 0.) \
+    -> Tuple[npt.NDArray[np.float64], Optional[npt.NDArray[np.float64]], Optional[npt.NDArray[np.float64]]]:
+
+    """
+    Function used to estimate the gravitational acceleration using a direct summation method.
+
+    :param particles: An instance of the class :class:`~fireworks.particles.Particles`
+    :param softening: Gravitational softening parameter. Default value is 0.
+    :type softening: float
+    :return: A tuple with 3 elements:
+
+        - Acceleration: a Nx3 numpy array containing the acceleration for each particle
+        - Jerk: Time derivative of the acceleration. If not None, it has to be a Nx3 numpy array
+        - Pot: Gravitational potential at the position of each particle. If not None, it has to be a Nx1 numpy array
+
+    """
+
+    # Compute all pairwise distances between particles
+    r = np.linalg.norm(particles.pos[:, None] - particles.pos[None, :], axis=2)
+
+    # Add softening to distances
+    # r += softening
+
+    # Invert distances to compute accelerations
+    accelerations = - particles.mass * (particles.pos[:, None] - particles.pos[None, :]) / (r**3)
+
+    # Compute the total acceleration for each particle
+    acceleration = np.sum(accelerations, axis=1)
+
+    # Compute jerk and potential if requested
+
+    jerk = None
+    pot = None
+
+    return (acceleration, jerk, pot)
+
 
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:

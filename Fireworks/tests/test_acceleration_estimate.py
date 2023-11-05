@@ -11,7 +11,7 @@ def test_acceleration_2body():
     therfore the acceleration on the first body is  +1 and on the secondy body -1.
 
     """
-    facc_list = [fdyn.acceleration_direct]
+    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct, fdyn.acceleration_direct_vectorised]
 
     pos = np.array([[0.,0.,0.],[1.,0.,0.]])
     vel = np.zeros_like(pos)
@@ -38,9 +38,9 @@ def test_acceleartion_row():
     """
 
 
-    facc_list = [fdyn.acceleration_pyfalcon]
+    facc_list = [fdyn.acceleration_pyfalcon,]
 
-    x = np.array(np.arange(11),dtype=float)
+    x = np.array(np.arange(11), dtype=float)
     y = np.zeros_like(x)
     z = np.zeros_like(x)
 
@@ -55,6 +55,8 @@ def test_acceleartion_row():
     for facc in facc_list:
         acc,_,_=facc(part)
         dx = acc[0,0]-acc_true_0
+
+        print(dx)
 
         assert pytest.approx(dx, 1e-10) == 0.
         # pytest approx is used to introduc a tollerance in the comparison  (in this case 1e-10)
