@@ -1,0 +1,1 @@
+Function <function acceleration_direct at 0x7f7154c4a7a0> took 1.7402999219484627e-05 secondsFunction <function acceleration_direct_vectorised at 0x7f7154c4a830> took 0.00033851499028969556 seconds
