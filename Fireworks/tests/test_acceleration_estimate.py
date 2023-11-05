@@ -7,7 +7,7 @@ from fireworks.particles import Particles
 
 def test_acceleration_2body():
     """
-    Simple two body case of two bodies alond the x axis (at x=0 and x=1) of mass 1 at a distance 1,
+    Simple two body case of two bodies along the x axis (at x=0 and x=1) of mass 1 at a distance 1,
     therfore the acceleration on the first body is  +1 and on the secondy body -1.
 
     """
@@ -23,7 +23,6 @@ def test_acceleration_2body():
 
     for facc in facc_list:
         acc,_,_=facc(part)
-        print("2 body test", facc)
         dx = np.abs(acc-true_acc)
 
         assert np.all(dx<=1e-11)
@@ -38,9 +37,8 @@ def test_acceleartion_row():
     """
 
 
-    #facc_list = [fdyn.acceleration_pyfalcon,fdyn.acceleration_direct,fdyn.acceleration_direct_vectorised]
-    facc_list = [fdyn.acceleration_pyfalcon,]
-
+    facc_list = [fdyn.acceleration_pyfalcon,fdyn.acceleration_direct,fdyn.acceleration_direct_vectorised]
+   
     x = np.array(np.arange(11),dtype=float)
     y = np.zeros_like(x) 
     z = np.zeros_like(x)
@@ -54,8 +52,7 @@ def test_acceleartion_row():
     acc_true_0 = len(mass)-1
 
     for facc in facc_list:
-        # Diego: aggiungo qualche print
-        print(f"facc is {facc}")
+        
         acc,_,_=facc(part)
         dx = acc[0,0]-acc_true_0
 
