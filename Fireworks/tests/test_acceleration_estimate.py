@@ -38,7 +38,7 @@ def test_acceleartion_row():
     """
 
 
-    facc_list = [fdyn.acceleration_pyfalcon,]
+    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct, fdyn.acceleration_direct_vectorised]
 
     x = np.array(np.arange(11), dtype=float)
     y = np.zeros_like(x)

@@ -41,44 +41,70 @@ except:
     pyfalcon_load=False
 
 
-def acc_2body(particles: Particles):
+def acceleration_direct(particles: Particles, softening: float = 0., jerk_bool = False, pot_bool = False) \
+    -> Tuple[npt.NDArray[np.float64], Optional[npt.NDArray[np.float64]], Optional[npt.NDArray[np.float64]]]:
 
-    # acc_2body = []  # np.zeros(shape=(len(particles), 3))
+    """
+    Function used to estimate the gravitational acceleration using a direct summation method.
 
-    for i in range(len(particles)):
-        for j in range(len(particles)):
+    :param particles: An instance of the class :class:`~fireworks.particles.Particles`
+    :param softening: Gravitational softening parameter. Default value is 0.
+    :param jerk_bool: If True, the function also estimates the jerk. Default value is False.
+    :param pot_bool: If True, the function also estimates the gravitational potential. Default value is False.
+    :type softening: float
+    :type jerk_bool: bool
+    :type pot_bool: bool
+    :return: A tuple with 3 elements:
+
+        - Acceleration: a Nx3 numpy array containing the acceleration for each particle
+        - Jerk: Time derivative of the acceleration. If not None, it has to be a Nx3 numpy array
+        - Pot: Gravitational potential at the position of each particle. If not None, it has to be a Nx1 numpy array
+
+    """
+    N = len(particles)
+    acc = np.zeros(shape=(N, 3))
+    
+    if jerk_bool:
+        jerk = np.zeros(shape=(N, 3))
+    else:
+        jerk = None
+
+    if pot_bool:
+        pot = np.zeros(N)
+    else:
+        pot = None    
+
+    for i in range(N):
+        for j in range(N):
             if i != j:
+                dr = particles.pos[i] - particles.pos[j]
+                r = np.sqrt(dr[0]**2 + dr[1]**2 + dr[2]**2)
+                
+                acc[i] -= particles.mass[j]*dr/r**3
 
-#                 # dx = particles.pos[i,0] - particles.pos[j,0]
-#                 # dy = particles.pos[i,1] - particles.pos[j,1]
-#                 # dz = particles.pos[i,2] - particles.pos[j,2]
-#                 # r = np.sqrt(dx**2 + dy**2 + dz**2)
-#                 # acc_2body[i,0] = -particles.mass[j]*dx/r**3
-#                 # acc_2body[i,1] = -particles.mass[j]*dy/r**3
-#                 # acc_2body[i,2] = -particles.mass[j]*dz/r**3
+                if jerk_bool:
+                    dv = particles.vel[i] - particles.vel[j]
+                    jerk[i] -= particles.mass[j]*(dv/r**3 - 3*np.dot(dr, dv)*dr/r**5)
 
-                acc_2body = np.array([0., 0., 0.])
-                dx = particles.pos[i,0] - particles.pos[j,0]
-                dy = particles.pos[i,1] - particles.pos[j,1]
-                dz = particles.pos[i,2] - particles.pos[j,2]
-                r = np.sqrt(dx**2 + dy**2 + dz**2)
-                acc_2body[0] = particles.mass[j]*dx/r**3
-                acc_2body[1] = particles.mass[j]*dy/r**3
-                acc_2body[2] = particles.mass[j]*dz/r**3
+                if pot_bool:
+                    pot[i] -= particles.mass[j]/r
 
-    return  acc_2body # acc_2body0, acc_2body1, acc_2body2
+    return acc, jerk, pot   
 
-    # return acc_2body
 
-def acceleration_direct(particles: Particles, softening: float = 0.) \
+def acceleration_direct_vectorised(particles: Particles, softening: float = 0., jerk_bool = False, pot_bool = False) \
     -> Tuple[npt.NDArray[np.float64], Optional[npt.NDArray[np.float64]], Optional[npt.NDArray[np.float64]]]:
 
     """
-    Function used to estimate the gravitational acceleration using a direct summation method.
+    Vectorized function used to estimate the gravitational acceleration using a direct summation method.
 
     :param particles: An instance of the class :class:`~fireworks.particles.Particles`
     :param softening: Gravitational softening parameter. Default value is 0.
+    :param jerk_bool: If True, the function also estimates the jerk. Default value is False.
+    :param pot_bool: If True, the function also estimates the gravitational potential. Default value is False.
     :type softening: float
+    :type jerk_bool: bool
+    :type pot_bool: bool
     :return: A tuple with 3 elements:
 
         - Acceleration: a Nx3 numpy array containing the acceleration for each particle
@@ -87,87 +113,26 @@ def acceleration_direct(particles: Particles, softening: float = 0.) \
 
     """
 
-    acc = np.zeros(shape=(len(particles), 3))
-    jerk = None
-    pot = None
+    N = len(particles)
 
-    # if ic == 'ic_2_body':
-    #     particles = fic.ic_two_body()
+    x, xT = np.zeros(shape=(3, N, N)), np.zeros(shape=(3, N, N))
+    x[0], xT[0] = np.tile(particles.pos[:,0], N).reshape(N,N), np.tile(particles.pos[:,0], N).reshape(N,N).T 
+    x[1], xT[1] = np.tile(particles.pos[:,1], N).reshape(N,N), np.tile(particles.pos[:,1], N).reshape(N,N).T
+    x[2], xT[2] = np.tile(particles.pos[:,2], N).reshape(N,N), np.tile(particles.pos[:,2], N).reshape(N,N).T
 
-    for i in range(len(particles)):
-        for j in range(i+1, len(particles)):
+    dx = xT - x
+    x_ij = np.sqrt(dx[0]**2 + dx[1]**2 + dx[2]**2)
+    r = np.ones(shape=(3, N, N))
+    r[0], r[1], r[2] = x_ij, x_ij, x_ij
+    r[r==0.] = 1
 
-            acc_ij = acc_2body(particles)
-            acc[i, :] += acc_ij
-            acc[j, :] -= particles.mass[i]/particles.mass[j]*acc_ij
-
-            # acc_ij0, acc_ij1, acc_ij2 = acc_2body(particles)
-            # acc[i, 0] += acc_ij0
-            # acc[i, 1] += acc_ij1
-            # acc[i, 2] += acc_ij2
-            # acc[j, 0] -= particles.mass[i]/particles.mass[j]*acc_ij0
-            # acc[j, 1] -= particles.mass[i]/particles.mass[j]*acc_ij1
-            # acc[j, 2] -= particles.mass[i]/particles.mass[j]*acc_ij2
-
-    return (acc, jerk, pot)   
-
-    # Get the number of particles in the system.
-    #n_particles = particles.shape[0]
-
-    # Initialize the acceleration array.
-    # acc = np.zeros(shape=(len(particles), 3))
-
-    # # Compute the acceleration of each particle due to the force from all other particles.
-    # for i in range(len(particles)):
-    #     for j in range(i + 1, len(particles)):
-    #         # Compute the distance between particles i and j.
-    #         r = np.linalg.norm(particles.pos[i, :3] - particles.pos[j, :3])
-
-    #         # Compute the force between particles i and j.
-    #         #F = -particles[i, 3] * particles[j, 3] / (r**3) * (particles[i, :3] - particles[j, :3])
-
-    #         # Add the force from particle j to the acceleration of particle i.
-    #         acc[i, :] += particles.mass[j] * (particles.pos[i, :3] - particles.pos[j, :3]) / (r**3)
-
-    # return (acc, jerk, pot)
-
-import numpy as np
-
-def acceleration_direct_vectorised(particles: Particles, softening: float = 0.) \
-    -> Tuple[npt.NDArray[np.float64], Optional[npt.NDArray[np.float64]], Optional[npt.NDArray[np.float64]]]:
-
-    """
-    Function used to estimate the gravitational acceleration using a direct summation method.
-
-    :param particles: An instance of the class :class:`~fireworks.particles.Particles`
-    :param softening: Gravitational softening parameter. Default value is 0.
-    :type softening: float
-    :return: A tuple with 3 elements:
-
-        - Acceleration: a Nx3 numpy array containing the acceleration for each particle
-        - Jerk: Time derivative of the acceleration. If not None, it has to be a Nx3 numpy array
-        - Pot: Gravitational potential at the position of each particle. If not None, it has to be a Nx1 numpy array
-
-    """
-
-    # Compute all pairwise distances between particles
-    r = np.linalg.norm(particles.pos[:, None] - particles.pos[None, :], axis=2)
-
-    # Add softening to distances
-    # r += softening
-
-    # Invert distances to compute accelerations
-    accelerations = - particles.mass * (particles.pos[:, None] - particles.pos[None, :]) / (r**3)
-
-    # Compute the total acceleration for each particle
-    acceleration = np.sum(accelerations, axis=1)
-
-    # Compute jerk and potential if requested
+    mass = np.tile(particles.mass, 3*N).reshape(3,N,N)
+    acc = - np.sum(mass*dx/np.power(r, 3), axis=2).T
 
     jerk = None
     pot = None
 
-    return (acceleration, jerk, pot)
+    return acc, jerk, pot
 
 
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
