@@ -279,6 +279,12 @@ func_list = [acc_dir_vepe,
             #  acceleration_pyfalcon]
 dt=[]
 
+## TODO: - fix the txt file: at the beginning of the file (una tantum) print the list of the functions
+##          and the list of the number of particles
+##       - prob it's better to print in the file the final file, in order to be able to access it using
+##          the same structure for the plots
+##       - fix the insert in the plot
+
 
 for N in N_list:
 
