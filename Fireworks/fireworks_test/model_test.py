@@ -205,6 +205,7 @@ def acc_vect_gia(particles: Particles, jerk_bool = False, pot_bool = False):
     return acc, jerk, pot
 
 def acc_opt_gia(particles: Particles, jerk_bool = False, pot_bool = False):
+
    
     N = len(particles) #Extract number of particles
 
@@ -257,6 +258,116 @@ def acc_opt_gia(particles: Particles, jerk_bool = False, pot_bool = False):
     
     return acc, jerk, pot
 
+def acc_dir_diego(particles: Particles, softening: float =0.) \
+        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+  
+  
+  #acc  = np.zeros(len(particles))
+  jerk = None
+  pot = None
+
+  pos  = particles.pos
+  #vel  = particles.vel
+  mass = particles.mass
+  N    = len(particles) # ? could be 
+
+  # Diego: sposto qui acc e lo rendo una matrice, cosi acc[0,:] ax,ay,az della particella 0 
+  acc  = np.zeros([N,3])
+
+  # Idea: put condition : if softening!= 0 direct brute estimate, otherwise use softening
+
+  # Using direct force estimate applcation2 - see slides Lecture 3 p.16
+
+
+  def acc_2body(position_1,position_2,mass_2):
+      
+      """
+      Implements definition of acceleration for two bodies i,j
+    
+      This is used in the following for loop
+      """
+      # Cartesian component of the i,j particles distance
+      dx = position_1[0] - position_2[0]
+      dy = position_1[1] - position_2[1]
+      dz = position_1[2] - position_2[2]
+      
+
+      # Distance module
+      r = np.sqrt(dx**2 + dy**2 + dz**2)
+
+      # Cartesian component of the i,j force
+
+      ## Diego: question -> shouldn't acceleration be divided my mass1?
+      acceleration = np.zeros(3)
+      acceleration[0] = mass_2 * dx / r**3
+      acceleration[1] = mass_2 * dy / r**3
+      acceleration[2] = mass_2 * dz / r**3
+
+      return acceleration
+  
+  def direct_acc_no_softening(mass=mass): 
+        
+        for i in range(N-1):
+            for j in range(i+1,N):
+                # Compute relative acceleration given
+                # position of particle i and j
+                mass_1 = mass[i]
+                mass_2 = mass[j]
+                acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
+
+                # Update array with accelerations
+                acc[i,:] += acc_ij
+                acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
+        
+        
+
+  if softening == 0.:
+      # If no softening compute acceleration values
+      direct_acc_no_softening()
+
+  else: print("non ho ancora implementato la funzione di softening, sorry")
+
+
+  return (acc,jerk,pot)
+
+# def acc_vect_diego(particles: Particles, softening: float =0.) \
+#         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+    
+#     #acc  = np.zeros(len(particles))
+#     jerk = None
+#     pot = None
+
+#     pos  = particles.pos
+#     #vel  = particles.vel
+#     mass = particles.mass
+#     #N    = len(particles)
+
+#     x = pos[:,0]
+#     y = pos[:,1]
+#     z = pos[:,2]
+
+#     # Coordinate-wise distance for every particle.
+#     # dx[0,:] will be an array related to particle i = 0 where each position j is the diffrence x_0 - x_j
+#     # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3 (x_0 - x_3)
+#     dx = x.T - x 
+#     dy = y.T - y
+#     dz = z.T - z 
+    
+#     # increments is a data-cube of shape 3xNxN containing all coordinate-distances 
+#     # It contains the results of r_i - r_j (see equation at p.13 in "Lecture3 - Forces" slides)
+#     increments = np.array(dx,dy,dz)
+    
+#     # To compute |r_i - r_j|**3 it is necessary to take the norm "channel wise", 
+#     # i.e. computed on the first axis (from left) of increments array. 
+#     # increments[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
+#     distance = np.linalg.norm(increments,axis=0)
+    
+#     # Now acceleration for every particle can be computed.
+#     # Sum is run over rows; the result will be a NxNx1 matrix,
+#     # where the first axis represents the coordinates (x,y,z) and the second axis is the particle.
+#     # acceleration_matrix[:,0,1] = [a_x,a_y,a_z] of particle 0 .
+#     acceleration_matrix = - np.sum(mass * increments / distance**3, axis=1)
+
 
 # def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
 #         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
@@ -269,21 +380,16 @@ def acc_opt_gia(particles: Particles, jerk_bool = False, pot_bool = False):
 #     return acc, jerk, pot
 
 
-N_list = [10, 50, 100, 500, 1000]
+N_list = [10, 50, 100, 500, 1000, 2000, 5000, 10e4, 10e5, 10e6]
 func_list = [acc_dir_vepe,
              acc_dir_gia,
              acc_vect_vepe,
              acc_vect_gia,
              acc_onearray_vepe,
-             acc_opt_gia]#,
+             acc_opt_gia,
+             acc_dir_diego]#,
             #  acceleration_pyfalcon]
 dt=[]
-
-## TODO: - fix the txt file: at the beginning of the file (una tantum) print the list of the functions
-##          and the list of the number of particles
-##       - prob it's better to print in the file the final file, in order to be able to access it using
-##          the same structure for the plots
-##       - fix the insert in the plot
 
 
 for N in N_list:
@@ -298,17 +404,19 @@ for N in N_list:
         _ = func(particles)
         t2=time.perf_counter()
         dt.append(t2-t1) # time elapsed from t1 to t2 in s
-        
-        # create and write to file
-        with open("func_dt.txt", "a") as f:
-            f.write(func.__name__ + "\n")
-            f.write(str(dt) + "\n")
 
-dt = np.reshape(dt, (5,6)).T
+dt = np.reshape(dt, (10,7)).T
 
+# create and write to file
+with open("func_dt.txt", "w") as f:
+    f.write("# N_list:\n" + "# func_list:\n" + "# dt array:\n")
+    f.write(" ".join(str(y) for y in N_list) + "\n")
+    f.write('# ' + " ".join(str(func.__name__) for func in func_list) + "\n")
+    for row in dt:
+        f.write(" ".join(str(x) for x in row) + "\n")
 
-
-# figs = []
+"""
+# plots
 pdf = matplotlib.backends.backend_pdf.PdfPages("model_test_plots.pdf")
 
 # for i in range(dt.shape[0]):
@@ -351,3 +459,4 @@ fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 pdf.savefig(fig, dpi=300)
 
 pdf.close()
+"""
