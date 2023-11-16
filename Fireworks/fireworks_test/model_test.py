@@ -380,14 +380,11 @@ def acc_dir_diego(particles: Particles, softening: float =0.) \
 #     return acc, jerk, pot
 
 
-N_list = [10, 50, 100, 500, 1000, 2000, 5000, 10e4, 10e5, 10e6]
-func_list = [acc_dir_vepe,
-             acc_dir_gia,
-             acc_vect_vepe,
+N_list = [25000, 50000]
+func_list = [acc_vect_vepe,
              acc_vect_gia,
              acc_onearray_vepe,
-             acc_opt_gia,
-             acc_dir_diego]#,
+             acc_opt_gia]#,
             #  acceleration_pyfalcon]
 dt=[]
 
@@ -405,10 +402,10 @@ for N in N_list:
         t2=time.perf_counter()
         dt.append(t2-t1) # time elapsed from t1 to t2 in s
 
-dt = np.reshape(dt, (10,7)).T
+dt = np.reshape(dt, (2,4)).T
 
 # create and write to file
-with open("func_dt.txt", "w") as f:
+with open("dt_910.txt", "w") as f:
     f.write("# N_list:\n" + "# func_list:\n" + "# dt array:\n")
     f.write(" ".join(str(y) for y in N_list) + "\n")
     f.write('# ' + " ".join(str(func.__name__) for func in func_list) + "\n")
