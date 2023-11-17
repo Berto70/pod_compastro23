@@ -6,6 +6,7 @@ import fireworks.nbodylib.dynamics as fd
 
 from typing import Optional, Tuple
 import numpy.typing as npt
+from typing import List
 
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_pdf
@@ -19,7 +20,7 @@ try:
     pyfalcon_load=True
 except:
     pyfalcon_load=False
-
+# import pyfalcon.gravity
 
 def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float], vel: list[float, float]) -> Particles:
 
@@ -330,61 +331,74 @@ def acc_dir_diego(particles: Particles, softening: float =0.) \
 
   return (acc,jerk,pot)
 
-# def acc_vect_diego(particles: Particles, softening: float =0.) \
-#         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+def acc_vect_diego(particles: Particles, softening: float =0.) \
+        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     
-#     #acc  = np.zeros(len(particles))
-#     jerk = None
-#     pot = None
-
-#     pos  = particles.pos
-#     #vel  = particles.vel
-#     mass = particles.mass
-#     #N    = len(particles)
-
-#     x = pos[:,0]
-#     y = pos[:,1]
-#     z = pos[:,2]
-
-#     # Coordinate-wise distance for every particle.
-#     # dx[0,:] will be an array related to particle i = 0 where each position j is the diffrence x_0 - x_j
-#     # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3 (x_0 - x_3)
-#     dx = x.T - x 
-#     dy = y.T - y
-#     dz = z.T - z 
     
-#     # increments is a data-cube of shape 3xNxN containing all coordinate-distances 
-#     # It contains the results of r_i - r_j (see equation at p.13 in "Lecture3 - Forces" slides)
-#     increments = np.array(dx,dy,dz)
+    jerk = None
+    pot = None
+
+    pos  = particles.pos
+    mass = particles.mass
+    N    = len(particles)
+
+    # Forcing x,y,z arrays to be 2-d --> x.shape = (N,1): this is important for broadcasting.
+    x = pos[:,0].reshape(N,1)
+    y = pos[:,1].reshape(N,1)
+    z = pos[:,2].reshape(N,1)
+
+    # Coordinate-wise distance for every particle.
+    # dx[0,:] will be an array related to particle i = 0 where each position j is the diffrence x_0 - x_j
+    # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3, i.e. (x_0 - x_3)
+    dx = x - x.T 
+    dy = y - y.T
+    dz = z - z.T
     
-#     # To compute |r_i - r_j|**3 it is necessary to take the norm "channel wise", 
-#     # i.e. computed on the first axis (from left) of increments array. 
-#     # increments[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
-#     distance = np.linalg.norm(increments,axis=0)
+    # differentials is a data-cube of shape 3xNxN containing all coordinate-distances.
+    # It contains the results of r_i - r_j (see equation at p.13 in "Lecture3 - Forces" slides)
+    differentials = np.array([dx,dy,dz])
     
-#     # Now acceleration for every particle can be computed.
-#     # Sum is run over rows; the result will be a NxNx1 matrix,
-#     # where the first axis represents the coordinates (x,y,z) and the second axis is the particle.
-#     # acceleration_matrix[:,0,1] = [a_x,a_y,a_z] of particle 0 .
-#     acceleration_matrix = - np.sum(mass * increments / distance**3, axis=1)
+    # To compute |r_i - r_j|**3 it is necessary to take the norm "channel/coordinate wise", 
+    # i.e. computed on the first axis (from left) of differentials array. 
+    # For example, differentials[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
+
+    distance = np.linalg.norm(differentials,axis=0)
+
+    # distance[i,j] is the distance of particle i from particle j.
+    # It is a NxN matrix.
+    
+    # Now acceleration for every particle can be computed.
+    # Sum is run over rows; the result will be a NxNx1 matrix,
+    # where the first axis (axis 0) represents the coordinates (x,y,z) and the second axis (axis 1) is the particle.
+    # acceleration_matrix[:,0,1] = [a_x,a_y,a_z] of particle 0 .
+   
+    # Since diagonal of distance matrix is obviously zero (distance of every particle from itself),
+    # add .00001 to it, in order to avoid division by 0.
+    # To do this properly Softening techniques should be used.
+    np.fill_diagonal(distance,np.array([.00001 for _ in np.diag(distance)]))
+
+    # Add one dimension to distance. Important for broadcasting with differentials.
+    distance = np.expand_dims(distance,axis=0)
+
+    # Summing over rows, i.e. "collapse columns to each other": axis=2 ! (not 1) 
+    acceleration_matrix = - np.sum(mass * differentials / (distance)**3, axis=2)
+    
+    return (acceleration_matrix.T, jerk, pot)
 
 
-# def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
-#         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
+        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
 
-#     if not pyfalcon_load: return ImportError("Pyfalcon is not available")
+    if not pyfalcon_load: return ImportError("Pyfalcon is not available")
 
-#     acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
-#     jerk = None
+    acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
+    jerk = None
 
-#     return acc, jerk, pot
+    return acc, jerk, pot
 
 
-N_list = [25000, 50000]
-func_list = [acc_vect_vepe,
-             acc_vect_gia,
-             acc_onearray_vepe,
-             acc_opt_gia]#,
+N_list = [100000]
+func_list = [acceleration_pyfalcon]#,
             #  acceleration_pyfalcon]
 dt=[]
 
@@ -402,10 +416,10 @@ for N in N_list:
         t2=time.perf_counter()
         dt.append(t2-t1) # time elapsed from t1 to t2 in s
 
-dt = np.reshape(dt, (2,4)).T
+dt = np.reshape(dt, (1,1)).T
 
 # create and write to file
-with open("dt_910.txt", "w") as f:
+with open("dt_pyfalcon_test.txt", "w") as f:
     f.write("# N_list:\n" + "# func_list:\n" + "# dt array:\n")
     f.write(" ".join(str(y) for y in N_list) + "\n")
     f.write('# ' + " ".join(str(func.__name__) for func in func_list) + "\n")
