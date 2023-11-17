@@ -80,73 +80,81 @@ def acceleration_estimate_template(particles: Particles, softening: float =0.) \
 
 def acceleration_direct(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
-  
-  
-  #acc  = np.zeros(len(particles))
-  jerk = None
-  pot = None
-
-  pos  = particles.pos
-  #vel  = particles.vel
-  mass = particles.mass
-  N    = len(particles) # ? could be 
-
-  # Diego: sposto qui acc e lo rendo una matrice, cosi acc[0,:] ax,ay,az della particella 0 
-  acc  = np.zeros([N,3])
-
-  # Idea: put condition : if softening!= 0 direct brute estimate, otherwise use softening
-
-  # Using direct force estimate applcation2 - see slides Lecture 3 p.16
-
-
-  def acc_2body(position_1,position_2,mass_2):
-      
-      """
-      Implements definition of acceleration for two bodies i,j
     
-      This is used in the following for loop
-      """
-      # Cartesian component of the i,j particles distance
-      dx = position_1[0] - position_2[0]
-      dy = position_1[1] - position_2[1]
-      dz = position_1[2] - position_2[2]
-      
-
-      # Distance module
-      r = np.sqrt(dx**2 + dy**2 + dz**2)
-
-      # Cartesian component of the i,j force
-      acceleration = np.zeros(3)
-      acceleration[0] = mass_2 * dx / r**3
-      acceleration[1] = mass_2 * dy / r**3
-      acceleration[2] = mass_2 * dz / r**3
-
-      return acceleration
   
-  def direct_acc_no_softening(mass=mass): 
+    """
+    Computes gravitational acceleration between particles using a direct method, considering optional softening.
+
+    This function estimates the gravitational acceleration between particles within a system. If 'softening' is provided as 0, a direct estimate with two nested for loop is used;
+    otherwise, the specified 'softening' parameter is utilized.
+
+    :param particles: An instance of the class Particles.
+    :param softening: Softening parameter for gravitational calculations.
+    :return: A tuple with 3 elements:
+
+        - acc, Nx3 numpy array storing the acceleration for each particle.
+        - jerk, Nx3 numpy array storing the time derivative of the acceleration (can be None).
+        - pot, Nx1 numpy array storing the potential at each particle position (can be None).
+    """
+  
+    jerk = None
+    pot = None
+
+    pos  = particles.pos
+    mass = particles.mass
+    N    = len(particles) 
+
+    # acc[i,:] ax,ay,az of particle i 
+    acc  = np.zeros([N,3])
+
+    # Using direct force estimate applcation2 - see slides Lecture 3 p.16
+    def acc_2body(position_1,position_2,mass_2):
         
-        for i in range(N-1):
-            for j in range(i+1,N):
-                # Compute relative acceleration given
-                # position of particle i and j
-                mass_1 = mass[i]
-                mass_2 = mass[j]
-                acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
-
-                # Update array with accelerations
-                acc[i,:] += acc_ij
-                acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
+        """
+        Implements definition of acceleration for two bodies i,j
         
+        This is used in the following for loop
+        """
+        # Cartesian component of the i,j particles distance
+        dx = position_1[0] - position_2[0]
+        dy = position_1[1] - position_2[1]
+        dz = position_1[2] - position_2[2]
         
 
-  if softening == 0.:
-      # If no softening compute acceleration values
-      direct_acc_no_softening()
+        # Distance module
+        r = np.sqrt(dx**2 + dy**2 + dz**2)
 
-  else: print("Softening not implemented yet.")
+        # Cartesian component of the i,j force
+        acceleration = np.zeros(3)
+        acceleration[0] = mass_2 * dx / r**3
+        acceleration[1] = mass_2 * dy / r**3
+        acceleration[2] = mass_2 * dz / r**3
 
+        return acceleration
+    
+    def direct_acc_no_softening(mass=mass): 
+            
+            for i in range(N-1):
+                for j in range(i+1,N):
+                    # Compute relative acceleration given
+                    # position of particle i and j
+                    mass_1 = mass[i]
+                    mass_2 = mass[j]
+                    acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
 
-  return (acc,jerk,pot)
+                    # Update array with accelerations
+                    acc[i,:] += acc_ij
+                    acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
+            
+            
+
+    if softening == 0.:
+        # If no softening compute acceleration values
+        direct_acc_no_softening()
+
+    else: print("Softening not implemented yet.")
+
+    return (acc,jerk,pot)
 
 def acceleration_direct_vectorised_onearray(particles: Particles, softening: float = 0.0):
     """
