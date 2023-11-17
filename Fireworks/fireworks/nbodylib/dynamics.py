@@ -116,8 +116,6 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
       r = np.sqrt(dx**2 + dy**2 + dz**2)
 
       # Cartesian component of the i,j force
-
-      ## Diego: question -> shouldn't acceleration be divided my mass1?
       acceleration = np.zeros(3)
       acceleration[0] = mass_2 * dx / r**3
       acceleration[1] = mass_2 * dy / r**3
