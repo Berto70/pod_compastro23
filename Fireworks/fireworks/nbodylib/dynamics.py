@@ -104,23 +104,22 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
   
   
-  #acc  = np.zeros(len(particles))
   jerk = None
   pot = None
 
   pos  = particles.pos
-  #vel  = particles.vel
   mass = particles.mass
   N    = len(particles) # ? could be 
 
-  # Diego: sposto qui acc e lo rendo una matrice, cosi acc[0,:] ax,ay,az della particella 0 
+  # acc[i,:] gives the acceleration components ax,ay,az of i-th particle
   acc  = np.zeros([N,3])
 
   # Idea: put condition : if softening!= 0 direct brute estimate, otherwise use softening
 
   # Using direct force estimate applcation2 - see slides Lecture 3 p.16
 
-
+  # Function needed to compute acceleration in the 2 body problem.
+  # Used in direct_acc_no_softening function below.
   def acc_2body(position_1,position_2,mass_2):
       
       """
@@ -129,9 +128,9 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
       This is used in the following for loop
       """
       # Cartesian component of the i,j particles distance
-      dx = position_1[0] - position_2[0]
-      dy = position_1[1] - position_2[1]
-      dz = position_1[2] - position_2[2]
+      dx = position_2[0] - position_1[0]  
+      dy = position_2[1] - position_1[1]
+      dz = position_2[2] - position_1[2]
       
 
       # Distance module
@@ -151,20 +150,18 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
         
         for i in range(N-1):
             for j in range(i+1,N):
-                # Compute relative acceleration given
-                # position of particle i and j
+
+                # Compute relative acceleration given position of particle i and j
                 mass_1 = mass[i]
                 mass_2 = mass[j]
                 acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
 
                 # Update array with accelerations
                 acc[i,:] += acc_ij
-                acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
-        
-        
+                acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiplied by m[j]
 
   if softening == 0.:
-      # If no softening compute acceleration values
+      # If no softening use the appropriate function to compute acceleration values
       direct_acc_no_softening()
 
   else: print("non ho ancora implementato la funzione di softening, sorry")
@@ -176,40 +173,56 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
 def acceleration_direct_vectorised(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     
-    #acc  = np.zeros(len(particles))
+    
     jerk = None
     pot = None
 
     pos  = particles.pos
-    #vel  = particles.vel
     mass = particles.mass
-    #N    = len(particles)
+    N    = len(particles)
 
-    x = pos[:,0]
-    y = pos[:,1]
-    z = pos[:,2]
+    # Forcing x,y,z arrays to be 2-d --> x.shape = (N,1): this is important for broadcasting.
+    x = pos[:,0].reshape(N,1)
+    y = pos[:,1].reshape(N,1)
+    z = pos[:,2].reshape(N,1)
 
     # Coordinate-wise distance for every particle.
     # dx[0,:] will be an array related to particle i = 0 where each position j is the diffrence x_0 - x_j
-    # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3 (x_0 - x_3)
-    dx = x.T - x 
-    dy = y.T - y
-    dz = z.T - z 
+    # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3, i.e. (x_0 - x_3)
+    dx = x - x.T 
+    dy = y - y.T
+    dz = z - z.T
     
-    # increments is a data-cube of shape 3xNxN containing all coordinate-distances 
+    # differentials is a data-cube of shape 3xNxN containing all coordinate-distances.
     # It contains the results of r_i - r_j (see equation at p.13 in "Lecture3 - Forces" slides)
-    increments = np.array(dx,dy,dz)
+    differentials = np.array([dx,dy,dz])
     
-    # To compute |r_i - r_j|**3 it is necessary to take the norm "channel wise", 
-    # i.e. computed on the first axis (from left) of increments array. 
-    # increments[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
-    distance = np.linalg.norm(increments,axis=0)
+    # To compute |r_i - r_j|**3 it is necessary to take the norm "channel/coordinate wise", 
+    # i.e. computed on the first axis (from left) of differentials array. 
+    # For example, differentials[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
+
+    distance = np.linalg.norm(differentials,axis=0)
+
+    # distance[i,j] is the distance of particle i from particle j.
+    # It is a NxN matrix.
     
     # Now acceleration for every particle can be computed.
     # Sum is run over rows; the result will be a NxNx1 matrix,
-    # where the first axis represents the coordinates (x,y,z) and the second axis is the particle.
+    # where the first axis (axis 0) represents the coordinates (x,y,z) and the second axis (axis 1) is the particle.
     # acceleration_matrix[:,0,1] = [a_x,a_y,a_z] of particle 0 .
-    acceleration_matrix = - np.sum(mass * increments / distance**3, axis=1)
+   
+    # Since diagonal of distance matrix is obviously zero (distance of every particle from itself),
+    # add .00001 to it, in order to avoid division by 0.
+    # To do this properly Softening techniques should be used.
+    np.fill_diagonal(distance,np.array([.00001 for _ in np.diag(distance)]))
+
+    # Add one dimension to distance. Important for broadcasting with differentials.
+    distance = np.expand_dims(distance,axis=0)
+
+    # Summing over rows, i.e. "collapse columns to each other": axis=2 ! (not 1) 
+    acceleration_matrix = - np.sum(mass * differentials / (distance)**3, axis=2)
+    
+    return (acceleration_matrix.T,jerk,pot)
 
 
 

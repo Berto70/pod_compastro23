@@ -19,8 +19,8 @@ def get_time(func,x):
     return dt
 
 # Select a grid of values for the number of particles to test.
-N   = [2] + [i for i in range(100,10_000,500)]
-#N = [1,100,1e3,5e3,1e4]
+#N   = [2] + [i for i in range(100,10_000,500)]
+N = [1,100,1e3,5e3,1e4]
 # For each N, generate random initial conditions using the function you added in fireworks in task A.
 position_bound = [-100,200]
 velocity_bound = position_bound*2
@@ -59,11 +59,9 @@ plt.xlabel("N")
 plt.ylabel("log(Time) [s]")
 plt.yscale("log")
 plt.xticks([2]+[i for i in range(200,1001,200)])
-
-
 plt.legend()
 
-plt.savefig("benchmark_plot2.png")
+#plt.savefig("benchmark_plot2.png")
 
 plt.show()
 

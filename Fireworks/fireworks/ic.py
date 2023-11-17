@@ -82,8 +82,7 @@ def ic_random_uniform(N: int, position_bound: list, velocity_bound: list, mass_b
 
     pos  = np.random.uniform(low=position_bound[0],high=position_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
     vel  = np.random.uniform(low=velocity_bound[0],high=velocity_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
-    mass = np.random.uniform(low=mass_bound[0],high=mass_bound[1],size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
-    
+    mass = np.random.uniform(low=mass_bound[0],high=mass_bound[1],size=N) 
    
 
     return Particles(position=pos, velocity=vel, mass=mass)
