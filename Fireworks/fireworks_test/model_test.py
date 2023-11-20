@@ -99,6 +99,44 @@ def acc_onearray_vepe(particles: Particles, softening: float = 0.0):
     pot = None
     return (acc, jerk, pot)
 
+def jerk_vepe(particles: Particles, softening: float =0.) \
+        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+    """
+    Estimate the acceleration and the jerk in a vectorized way 
+
+    :param particles: An instance of the class Particles
+    :param softening: Softening parameter
+    :return: A tuple with 3 elements:
+
+        - Acceleration: a NX3 numpy array containing the acceleration for each particle
+        - Jerk: None, the jerk is not estimated
+        - Pot: a Nx1 numpy array containing the gravitational potential at each particle position
+    """
+    pos_x = particles.pos[:, 0] - particles.pos[:, 0].reshape(len(particles), 1)  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+    pos_y = particles.pos[:, 1] - particles.pos[:, 1].reshape(len(particles), 1) 
+    pos_z = particles.pos[:, 2] - particles.pos[:, 2].reshape(len(particles), 1)
+
+    vel_x = particles.vel[:, 0] - particles.vel[:, 0].reshape(len(particles), 1)  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+    vel_y = particles.vel[:, 1] - particles.vel[:, 1].reshape(len(particles), 1) 
+    vel_z = particles.vel[:, 2] - particles.vel[:, 2].reshape(len(particles), 1)
+
+            
+    r = np.sqrt(pos_x**2 + pos_y**2 + pos_z**2)
+    r[r==0]=1
+    
+    pos = np.concatenate((pos_x, pos_y, pos_z)).reshape((3,len(particles),len(particles)))
+    vel = np.concatenate((vel_x, vel_y, vel_z)).reshape((3,len(particles),len(particles)))
+    
+    acc = (pos/r**3 @ particles.mass).T 
+    jerk = -((vel/r**3 - 3*(np.sum((pos*vel), axis=0))*pos/r**5) @ particles.mass).T
+            
+    
+
+    jerk = jerk
+    pot = None
+
+    return acc, jerk, pot
+
 def acc_dir_gia(particles: Particles, jerk_bool = False, pot_bool = False):
     
     N = len(particles) #Extract number of particles
@@ -397,8 +435,8 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
     return acc, jerk, pot
 
 
-N_list = [100000]
-func_list = [acceleration_pyfalcon]#,
+N_list = [10, 50, 100, 500, 1000, 2000, 5000, 6000, 7000, 8000, 9000, 10000, 25000, 50000]
+func_list = [jerk_vepe]#,
             #  acceleration_pyfalcon]
 dt=[]
 
@@ -416,10 +454,10 @@ for N in N_list:
         t2=time.perf_counter()
         dt.append(t2-t1) # time elapsed from t1 to t2 in s
 
-dt = np.reshape(dt, (1,1)).T
+dt = np.reshape(dt, (1,14)).T # (time, func)
 
 # create and write to file
-with open("dt_pyfalcon_test.txt", "w") as f:
+with open("data/dt_jerk_vepe.txt", "w") as f:
     f.write("# N_list:\n" + "# func_list:\n" + "# dt array:\n")
     f.write(" ".join(str(y) for y in N_list) + "\n")
     f.write('# ' + " ".join(str(func.__name__) for func in func_list) + "\n")
