@@ -46,7 +46,7 @@ def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float],
     :type pos: list of float
     :param vel: list of lower and upper boundary for velocity particle distribution
     :type vel: list of float
-    :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles
+    :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles, characterized by pos, vel and mass.
     """
 
     mass = np.random.uniform(low=mass[0], high=mass[1], size=N) # Generate 1D array of N elements
