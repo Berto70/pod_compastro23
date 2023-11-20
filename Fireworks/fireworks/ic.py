@@ -13,6 +13,28 @@ an instance of the class :class:`~fireworks.particles.Particles`
 import numpy as np
 from .particles import Particles
 
+def ic_random_uniform(N: int, mass: list[float, float], pos: list[float, float], vel: list[float, float]) -> Particles:
+    """
+    Generate random initial condition drawing from a uniform distribution
+    (between upper and lower boundary) for the mass, position and velocity.
+
+    :param N: number of particles to generate
+    :type N: int
+    :param mass: list of lower and upper boundary for mass particle distribution
+    :type mass: list of float
+    :param pos: list of lower and upper boundary for position particle distribution
+    :type pos: list of float
+    :param vel: list of lower and upper boundary for velocity particle distribution
+    :type vel: list of float
+    :return: An instance of the class :class:`~fireworks.particles.Particles` containing the generated particles, characterized by pos, vel and mass.
+    """
+
+    mass = np.random.uniform(low=mass[0], high=mass[1], size=N) # Generate 1D array of N elements
+    pos = np.random.uniform(low=pos[0], high=pos[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+    vel = np.random.uniform(low=vel[0], high=vel[1], size=3*N).reshape(N,3) # Generate 3xN 1D array and then reshape as a Nx3 array
+
+    return Particles(position=pos, velocity=vel, mass=mass)
+
 def ic_random_normal(N: int, mass: float=1) -> Particles:
     """
     Generate random initial condition drawing from a normal distribution
