@@ -72,15 +72,15 @@ def integrator_template(particles: Particles,
 
     """
 
-    acc,jerk,potential=acceleration_estimator(particles,softening)
+    acc, jerk, potential = acceleration_estimator(particles, softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
         for ext_acc_estimator in external_accelerations:
-            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
-            acc+=acct
-            if jerk is not None and jerkt is not None: jerk+=jerkt
-            if potential is not None and potentialt is not None: potential+=potentialt
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None: jerk += jerkt
+            if potential is not None and potentialt is not None: potential += potentialt
 
     #Exemple of an Euler estimate
     particles.pos = particles.pos + particles.vel*tstep # Update pos
@@ -118,14 +118,14 @@ def integrator_tsunami(particles: Particles,
         In general the TSUNAMI integrator is much faster than any integrator with can implement
         in this module.
         However, Before to start the proper integration, this function needs to perform some preliminary
-        steps to initialise the TSUNAMI integrator. This can add a  overhead to the function call.
-        Therefore, do not use this integrator with too small timestep. Acutally, the best timstep is the
+        steps to initialise the TSUNAMI integrator. This can add a overhead to the function call.
+        Therefore, do not use this integrator with too small timestep. Actually, the best timestep is the
         one that bring the system directly to the final time. However, if you want to save intermediate steps
         you can split the integration time windows in N sub-parts, calling N times this function.
 
     .. warning::
         It is important to notice that given the nature of the integrator (based on chain regularisation)
-        the final time won't be exactly the one put in input. Take this in mind when using this  integrator.
+        the final time won't be exactly the one put in input. Take this in mind when using this integrator.
         Notice also that the TSUNAMI integrator will rescale your system to the centre of mass frame of reference.
 
 
@@ -138,7 +138,7 @@ def integrator_tsunami(particles: Particles,
     :return: A tuple with 5 elements:
 
         - The updated particles instance
-        - tstep, the effective timestep evolved in the simulation, it wont'be exaxtly the one in input
+        - tstep, the effective timestep evolved in the simulation, it wont'be exactly the one in input
         - acc, it is None
         - jerk, it is None
         - pot, it is None
