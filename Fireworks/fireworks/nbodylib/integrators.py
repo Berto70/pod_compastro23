@@ -212,7 +212,7 @@ def integrator_rk4(particles: Particles,
 
     particles.pos = particles.pos + (1/6)*(k1r + 2*k2r + 2*k3r + k4r)
     particles.vel = particles.vel + (1/6)*(k1v + 2*k2v + 2*k3v + k4v)
-    particles.set_acc(acc)
+    particles.set_acc(acc) ## TODO: dunno if acc or acc4 here!
 
     return particles, tstep, acc, jerk, potential
     
