@@ -91,9 +91,128 @@ def integrator_template(particles: Particles,
 
     return (particles, tstep, acc, jerk, potential)
 
+def integrator_euler(particles: Particles,
+                     tstep: float,
+                     acceleration_estimator: Union[Callable,List],
+                     softening: float = 0.,
+                     external_accelerations: Optional[List] = None):
+    """
+    Simple implementation of an Euler integrator for N-body simulations.
+    :param particles: Instance of the class :class:`~fireworks.particles.Particles`
+    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to
+    achieve the final result
+    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)
+    following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
+    :param softening: softening parameter for the acceleration estimate, can use 0 as default value
+    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to
+    consider to estimate the final acceleration (and if available jerk) on the particles
+    :return: A tuple with 5 elements:
+
+        - The updated particles instance
+        - tstep, the effective timestep evolved in the simulation (for some integrator this can be
+            different wrt the input tstep)
+        - acc, Nx3 numpy array storing the final acceleration for each particle, ca be set to None
+        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None
+        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
+
+    """
+
+    acc, jerk, potential = acceleration_estimator(particles, softening)
+
+    # Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None:
+                jerk += jerkt
+            if potential is not None and potentialt is not None:
+                potential += potentialt
+
+    # Euler integration
+    particles.vel = particles.vel + acc * tstep  # Update vel
+    particles.pos = particles.pos + particles.vel * tstep  # Update pos
+    particles.set_acc(acc)  # Set acceleration
+
+    # Return the updated particles, the acceleration, jerk (can be None), and potential (can be None)
+    return particles, tstep, acc, jerk, potential
+
+def integrator_leapfrog(particles: Particles,
+                        tstep: float,
+                        acceleration_estimator: Union[Callable,List],
+                        softening: float = 0.,
+                        external_accelerations: Optional[List] = None):
+    """
+    Simple implementation of a symplectic Leapfrog (Verlet) integrator for N-body simulations.
+    :param particles: Instance of the class :class:`~fireworks.particles.Particles`
+    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to
+    achieve the final result
+    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)
+    following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
+    :param softening: softening parameter for the acceleration estimate, can use 0 as default value
+    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to
+    consider to estimate the final acceleration (and if available jerk) on the particles
+    :return: A tuple with 5 elements:
+
+        - The updated particles instance
+        - tstep, the effective timestep evolved in the simulation (for some integrator this can be
+            different wrt the input tstep)
+        - acc, Nx3 numpy array storing the final acceleration for each particle, ca be set to None
+        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None
+        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
+
+    """
+
+    acc, jerk, potential = acceleration_estimator(particles, softening)
+
+    # Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None:
+                jerk += jerkt
+            if potential is not None and potentialt is not None:
+                potential += potentialt
+
+    vel_m = particles.vel + 0.5*acc*tstep # half-step velocity
+    particles.pos = particles.pos + vel_m*tstep # Update pos
+    particles.vel = vel_m + 0.5*acc*tstep # Update vel
+    particles.set_acc(acc)  # Set acceleration
+
+    # removing half-step velocity
+    # particles.pos = particles.pos + particles.vel*tstep + 0.5*acc*(tstep**2)
+    # particles.vel = particles.vel + 0.5*acc*tstep
+    # particles.set_acc(acc)
+
+    return particles, tstep, acc, jerk, potential
+
+def integrator_rk4(particles: Particles,
+                   tstep: float,
+                   acceleration_estimator: Union[Callable,List],
+                   softening: float = 0.,
+                   external_accelerations: Optional[List] = None):
+
+    acc, jerk, potential = acceleration_estimator(particles, softening)
+
+    k1r = particles.vel*tstep
+    k1v = acc*tstep
+
+    k2r = (particles.vel + 0.5*k1v)
+    k2v = ()
+
+    k3r = (particles.vel + 0.5*k2v)*tstep
+    k3v = 
+
+    k4r = (particles.vel + k3v)*tstep
+
+    particles.pos = particles.pos + (1/6)*(k1r + 2*k2r + 2*k3r + k4r)
+    particles.vel = particles.vel + (1/6)*(k1v + 2*k2v + 2*k3v + k4v)
+    
+
 def integrator_tsunami(particles: Particles,
                        tstep: float,
-                       acceleration_estimator: Optional[Callable]= None,
+                       acceleration_estimator: Optional[Callable] = None,
                        softening: float = 0.,
                        external_accelerations: Optional[List] = None):
     """
