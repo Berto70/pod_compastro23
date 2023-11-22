@@ -193,4 +193,4 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
     acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
     jerk = None
 
-    return acc, jerk, pot
+    return acc, jerk,
