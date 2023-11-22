@@ -198,16 +198,23 @@ def integrator_rk4(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos + k1r, particles.vel + k1v, 0), softening)
     k2r = (particles.vel + 0.5*k1v)
-    k2v = ()
+    k2v = acc2*tstep
 
+    acc3, _, _ = acceleration_estimator(Particles(particles.pos + k2r, particles.vel + k2v, 0), softening)
     k3r = (particles.vel + 0.5*k2v)*tstep
-    k3v = 
+    k3v = acc3*tstep
 
+    acc4, _, _ = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, 0), softening)
     k4r = (particles.vel + k3v)*tstep
+    k4v = acc4*tstep
 
     particles.pos = particles.pos + (1/6)*(k1r + 2*k2r + 2*k3r + k4r)
     particles.vel = particles.vel + (1/6)*(k1v + 2*k2v + 2*k3v + k4v)
+    particles.set_acc(acc)
+
+    return particles, tstep, acc, jerk, potential
     
 
 def integrator_tsunami(particles: Particles,
