@@ -46,7 +46,7 @@ def test_integrator_template():
     Apply the simple_test the integrator_template
 
     """
-    fint_list = [fint.integrator_template, fint.integrator_euler, fint.integrator_leapfrog]
+    fint_list = [fint.integrator_template, fint.integrator_euler, fint.integrator_leapfrog, fint.integrator_rk4]
 
     for func in fint_list:
         simple_test(func)
