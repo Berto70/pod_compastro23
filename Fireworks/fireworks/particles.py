@@ -144,7 +144,14 @@ class Particles:
         # Use the class member, e.g. vel=self.vel, mass=self.mass
         raise NotImplementedError("Ekin method still not implemented")
 
-    def Epot(self,softening: float = 0.) -> float:
+        Ekin = 0.5 * np.sum(self.mass * self.vel * self.vel)
+
+        # vel_squared = np.square(self.vel)
+        # Ekin = 0.5 * np.sum(self.mass * vel_squared) # this is prob more efficient for large arrays
+
+        return Ekin
+
+    def Epot(self, softening: float = 0.) -> float:
         """
         Estimate the total potential energy of the particles:
         Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)
@@ -156,8 +163,13 @@ class Particles:
         #TOU HAVE TO IMPLEMENT IT
         # Use the class member, e.g. vel=self.vel, mass=self.mass
         raise NotImplementedError("Ekin method still not implemented")
+    
+        rij = np.sqrt(np.sum((self.pos[:, np.newaxis] - self.pos) ** 2, axis=2))
+        Epot = -0.5 * np.sum(self.mass[:, np.newaxis] * self.mass / np.sqrt(rij ** 2 + softening ** 2))
+        
+        return Epot
 
-    def Etot(self,softening: float = 0.) -> tuple[float,float,float]:
+    def Etot(self, softening: float = 0.) -> tuple[float,float,float]:
         """
         Estimate the total  energy of the particles: Etot=Ekintot + Epottot
 
