@@ -9,7 +9,7 @@ import fireworks.nbodylib.integrators as fint
 mass1 = 2.0
 mass2 = 1.0
 rp = 2.0
-e = 0.6  # Set eccentricity to 0 for a circular orbit
+e = 0.0  # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 # print(part.pos, part.vel, part.mass)
 Etot_0, _, _ = part.Etot()
@@ -29,6 +29,7 @@ vel_i = []
 acc_i = []
 mass_i = []
 Etot_i = []
+
 
 while t < 10*Tperiod:
     part, _, acc, _, _ = fint.integrator_template(part, tstep=0.01, acceleration_estimator=fdyn.acceleration_pyfalcon)
