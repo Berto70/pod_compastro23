@@ -220,75 +220,9 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
 
     return acc, jerk, pot
 
+"""""
 
-def acceleration_direct(particles: Particles, softening: float =0.) \
-        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
-  
-  
-  jerk = None
-  pot = None
-
-  pos  = particles.pos
-  mass = particles.mass
-  N    = len(particles) # ? could be 
-
-  # acc[i,:] gives the acceleration components ax,ay,az of i-th particle
-  acc  = np.zeros([N,3])
-
-  # Idea: put condition : if softening!= 0 direct brute estimate, otherwise use softening
-
-  # Using direct force estimate applcation2 - see slides Lecture 3 p.16
-
-  # Function needed to compute acceleration in the 2 body problem.
-  # Used in direct_acc_no_softening function below.
-  def acc_2body(position_1,position_2,mass_2):
-      
-      """
-      Implements definition of acceleration for two bodies i,j
-    
-      This is used in the following for loop
-      """
-      # Cartesian component of the i,j particles distance
-      dx = position_2[0] - position_1[0]  
-      dy = position_2[1] - position_1[1]
-      dz = position_2[2] - position_1[2]
-      
-
-      # Distance module
-      r = np.sqrt(dx**2 + dy**2 + dz**2)
-
-      # Cartesian component of the i,j force
-
-      ## Diego: question -> shouldn't acceleration be divided my mass1?
-      acceleration = np.zeros(3)
-      acceleration[0] = mass_2 * dx / r**3
-      acceleration[1] = mass_2 * dy / r**3
-      acceleration[2] = mass_2 * dz / r**3
-
-      return acceleration
-  
-  def direct_acc_no_softening(mass=mass): 
-        
-        for i in range(N-1):
-            for j in range(i+1,N):
-
-                # Compute relative acceleration given position of particle i and j
-                mass_1 = mass[i]
-                mass_2 = mass[j]
-                acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
-
-                # Update array with accelerations
-                acc[i,:] += acc_ij
-                acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiplied by m[j]
-
-  if softening == 0.:
-      # If no softening use the appropriate function to compute acceleration values
-      direct_acc_no_softening()
-
-  else: print("non ho ancora implementato la funzione di softening, sorry")
-
-
-  return (acc,jerk,pot)
+Di seguito la funzione di Diego. Non la usiamo nel pacchetto finale ma mi dispiace cancellarla.
 
 
 def acceleration_direct_vectorised(particles: Particles, softening: float =0.) \
@@ -346,6 +280,6 @@ def acceleration_direct_vectorised(particles: Particles, softening: float =0.) \
     return (acceleration_matrix.T,jerk,pot)
 
 
-
+"""
 
 
