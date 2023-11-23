@@ -97,7 +97,7 @@ def integrator_euler(particles: Particles,
                      softening: float = 0.,
                      external_accelerations: Optional[List] = None):
     """
-    Simple implementation of an Euler integrator for N-body simulations.
+    Simple implementation of a Modified Euler integrator for N-body simulations.
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
     :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to
     achieve the final result
@@ -175,15 +175,17 @@ def integrator_leapfrog(particles: Particles,
             if potential is not None and potentialt is not None:
                 potential += potentialt
 
-    vel_m = particles.vel + 0.5*acc*tstep # half-step velocity
-    particles.pos = particles.pos + vel_m*tstep # Update pos
-    particles.vel = vel_m + 0.5*acc*tstep # Update vel
-    particles.set_acc(acc)  # Set acceleration
+    # vel_m = particles.vel + 0.5*acc*tstep # half-step velocity
+    # particles.pos = particles.pos + vel_m*tstep # Update pos
+    # particles.vel = vel_m + 0.5*acc*tstep # Update vel
+    # particles.set_acc(acc)  # Set acceleration
+
 
     # removing half-step velocity
-    # particles.pos = particles.pos + particles.vel*tstep + 0.5*acc*(tstep**2)
-    # particles.vel = particles.vel + 0.5*acc*tstep
-    # particles.set_acc(acc)
+    particles.pos = particles.pos + particles.vel*tstep + 0.5*acc*(tstep**2)
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening)
+    particles.vel = particles.vel + 0.5*(acc+acc2)*tstep
+    particles.set_acc(acc)
 
     return particles, tstep, acc, jerk, potential
 
@@ -199,14 +201,14 @@ def integrator_heun(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
-    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, 0), softening)
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, particles.mass), softening)
     k2r = (particles.vel + (2/3)*k1v)*tstep
     k2v = acc2*tstep
 
     particles.pos = particles.pos + (1/4)*(k1r + 3*k2r)
     particles.vel = particles.vel + (1/4)*(k1v + 3*k2v)
 
-    particles.set_acc(acc) ## TODO: dunno if acc or acc2 here!
+    particles.set_acc(acc2) ## TODO: dunno if acc or acc2 here!
 
     return particles, tstep, acc, jerk, potential
 
@@ -221,21 +223,21 @@ def integrator_rk4(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
-    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, 0), softening)
-    k2r = (particles.vel + 0.5*k1v)
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, particles.mass), softening)
+    k2r = (particles.vel + 0.5*k1v)*tstep
     k2v = acc2*tstep
 
-    acc3, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, 0), softening)
+    acc3, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, particles.mass), softening)
     k3r = (particles.vel + 0.5*k2v)*tstep
     k3v = acc3*tstep
 
-    acc4, _, _ = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, 0), softening)
+    acc4, _, _ = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, particles.mass), softening)
     k4r = (particles.vel + k3v)*tstep
     k4v = acc4*tstep
 
     particles.pos = particles.pos + (1/6)*(k1r + 2*k2r + 2*k3r + k4r)
     particles.vel = particles.vel + (1/6)*(k1v + 2*k2v + 2*k3v + k4v)
-    particles.set_acc(acc) ## TODO: dunno if acc or acc4 here!
+    particles.set_acc(acc4) ## TODO: dunno if acc or acc4 here!
 
     return particles, tstep, acc, jerk, potential
 
