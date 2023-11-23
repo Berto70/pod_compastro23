@@ -198,6 +198,16 @@ def integrator_heun(particles: Particles,
 
     acc, jerk, potential = acceleration_estimator(particles, softening) 
 
+    # Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None:
+                jerk += jerkt
+            if potential is not None and potentialt is not None:
+                potential += potentialt
+
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
@@ -220,6 +230,16 @@ def integrator_rk4(particles: Particles,
 
     acc, jerk, potential = acceleration_estimator(particles, softening)
 
+    # Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None:
+                jerk += jerkt
+            if potential is not None and potentialt is not None:
+                potential += potentialt
+
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
@@ -240,7 +260,6 @@ def integrator_rk4(particles: Particles,
     particles.set_acc(acc4) ## TODO: dunno if acc or acc4 here!
 
     return particles, tstep, acc, jerk, potential
-
 
 def integrator_tsunami(particles: Particles,
                        tstep: float,
