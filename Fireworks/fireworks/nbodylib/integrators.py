@@ -187,6 +187,29 @@ def integrator_leapfrog(particles: Particles,
 
     return particles, tstep, acc, jerk, potential
 
+def integrator_heun(particles: Particles,
+                   tstep: float,
+                   acceleration_estimator: Union[Callable,List],
+                   softening: float = 0.,
+                   external_accelerations: Optional[List] = None):
+    # 2nd order RK, Ralston's method: minimizes the truncation error.
+
+    acc, jerk, potential = acceleration_estimator(particles, softening) 
+
+    k1r = particles.vel*tstep
+    k1v = acc*tstep
+
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, 0), softening)
+    k2r = (particles.vel + (2/3)*k1v)*tstep
+    k2v = acc2*tstep
+
+    particles.pos = particles.pos + (1/4)*(k1r + 3*k2r)
+    particles.vel = particles.vel + (1/4)*(k1v + 3*k2v)
+
+    particles.set_acc(acc) ## TODO: dunno if acc or acc2 here!
+
+    return particles, tstep, acc, jerk, potential
+
 def integrator_rk4(particles: Particles,
                    tstep: float,
                    acceleration_estimator: Union[Callable,List],
@@ -198,11 +221,11 @@ def integrator_rk4(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
-    acc2, _, _ = acceleration_estimator(Particles(particles.pos + k1r, particles.vel + k1v, 0), softening)
+    acc2, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, 0), softening)
     k2r = (particles.vel + 0.5*k1v)
     k2v = acc2*tstep
 
-    acc3, _, _ = acceleration_estimator(Particles(particles.pos + k2r, particles.vel + k2v, 0), softening)
+    acc3, _, _ = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, 0), softening)
     k3r = (particles.vel + 0.5*k2v)*tstep
     k3v = acc3*tstep
 
@@ -215,7 +238,7 @@ def integrator_rk4(particles: Particles,
     particles.set_acc(acc) ## TODO: dunno if acc or acc4 here!
 
     return particles, tstep, acc, jerk, potential
-    
+
 
 def integrator_tsunami(particles: Particles,
                        tstep: float,
