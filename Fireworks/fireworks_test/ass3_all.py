@@ -49,7 +49,7 @@ for integrator_name, integrator in integrator_dict.items():
         t = 0.
 
         while t < 10*Tperiod:
-            part, _, acc, _, _ = integrator(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_pyfalcon)
+            part, _, acc, _, _ = integrator(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorised)
             pos_ij = np.vstack(part.pos)
             vel_ij = np.vstack(part.vel)
             mass_ij.append(part.mass)

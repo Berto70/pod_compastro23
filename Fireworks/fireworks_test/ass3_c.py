@@ -32,7 +32,7 @@ Etot_i = []
 
 
 while t < 10*Tperiod:
-    part, _, acc, _, _ = fint.integrator_euler(part, tstep=0.01, acceleration_estimator=fdyn.acceleration_pyfalcon)
+    part, _, acc, _, _ = fint.integrator_rk4(part, tstep=0.01, acceleration_estimator=fdyn.acceleration_direct_vectorised)
     pos_i.append(part.pos)
     vel_i.append(part.vel)
     mass_i.append(part.mass)
