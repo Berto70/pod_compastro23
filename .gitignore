@@ -3,6 +3,11 @@
 
 # Python packages
 
+
+
+# Iphyton checkpoints
+*/.ipynb_checkpoints/*-checkpoint.ipynb
+
 # Docker folder
 
 
