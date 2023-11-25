@@ -20,7 +20,7 @@ Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 # print("Binary Period Tperiod:", Tperiod)
 
 t = 0.
-tstep = 0.0001
+tstep = 0.01
 N_end = 10
 
 ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tstep, N_end])
@@ -34,7 +34,7 @@ Etot_i = []
 
 
 while t < N_end*Tperiod:
-    part, _, acc, _, _ = fint.integrator_euler(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorized)
+    part, _, acc, _, _ = fint.integrator_heun(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorized)
     pos_i.append(part.pos)
     vel_i.append(part.vel)
     mass_i.append(part.mass)
