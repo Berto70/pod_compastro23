@@ -3,8 +3,8 @@
 
 # Python packages
 
-# Docker folder
-
+# Test data folder
+./Fireworks/fireworks_test/data/
 
 # Prerequisites
 *.d
