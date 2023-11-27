@@ -26,6 +26,8 @@ def simple_test(integrator):
 
     # Just return a Nx3 filled with 0 + two None  (Jerk and potential)
     acc_fake = lambda particles, softening: (np.zeros_like(particles.pos), None, None)
+    # Diego: Use the following if you want to test the Hermite integrator: Jerk is added.
+    #acc_fake = lambda particles, softening: (np.zeros_like(particles.pos), np.zeros_like(particles.pos), None)
 
     par,teffective,_,_,_=integrator(particles=par,
                                                tstep=tstep,
@@ -48,4 +50,21 @@ def test_integrator_template():
     """
 
     simple_test(fint.integrator_template)
+
+def test_integrator_euler():
+    simple_test(fint.integrator_euler)
+    
+def test_integrator_leapfrog():
+    simple_test(fint.integrator_leapfrog)
+
+def test_integrator_verlet():
+    simple_test(fint.integrator_verlet)
+
+def test_integrator_hermite():
+    simple_test(fint.integrator_hermite)
+
+
+        
+
+
 
