@@ -7,8 +7,8 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 
 # Initialize two stars in a circular orbit
-mass1 = 15.0
-mass2 = 2.0
+mass1 = 5.0
+mass2 = 1.0
 rp = 2
 e = 0.0 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
