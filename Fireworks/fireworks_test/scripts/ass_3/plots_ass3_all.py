@@ -96,8 +96,8 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
             ax[i,j].legend()            
             ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
             ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
-            ax[0,0].set_xlim(-0.25, 0.75)
-            ax[0,0].set_ylim(-0.5, 0.5)
+            ax[0,0].set_xlim(np.min(data_001_base[:, 0])-0.05, np.max(data_001_base[:, 0])+0.05)
+            ax[0,0].set_ylim(np.min(data_001_base[:, 1])-0.05, np.max(data_001_base[:, 1])+0.05)
     # ax11 = plt.subplot(gs[0, -2:])
     # ax11.axis('off')  # Turn off the axes for the empty subplot
     fig.delaxes(ax[1,-1])
