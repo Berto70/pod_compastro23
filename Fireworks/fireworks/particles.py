@@ -140,9 +140,13 @@ class Particles:
 
         :return: total kinetic energy
         """
-        #TOU HAVE TO IMPLEMENT IT
+        #YOU HAVE TO IMPLEMENT IT
         # Use the class member, e.g. vel=self.vel, mass=self.mass
-        raise NotImplementedError("Ekin method still not implemented")
+
+        Ekin = 0.5 * np.sum(self.mass * self.vel **2)
+        #raise NotImplementedError("Ekin method still not implemented")
+
+        return Ekin
 
     def Epot(self,softening: float = 0.) -> float:
         """
@@ -155,7 +159,26 @@ class Particles:
         """
         #TOU HAVE TO IMPLEMENT IT
         # Use the class member, e.g. vel=self.vel, mass=self.mass
-        raise NotImplementedError("Ekin method still not implemented")
+        #raise NotImplementedError("Epot method still not implemented")
+        
+
+        """
+        # mass product mi*mj
+        mass_product = self.mass[:,np.newaxis] * self.mass
+
+        # distance between particles rij
+        rij = self.pos[:,np.newaxis,:] - self.pos
+
+        # total potential energy
+        # np.sum sums over all the elements of the array
+        Epot = -0.5 * np.sum(mass_product / np.sqrt(rij**2 + softening**2))
+
+        """
+
+        # One-liner version
+        Epot = -0.5 * np.sum(self.mass[:,np.newaxis] * self.mass / np.sqrt(self.pos[:,np.newaxis,:] - self.pos)**2 + softening**2)
+
+
 
     def Etot(self,softening: float = 0.) -> tuple[float,float,float]:
         """
