@@ -15,7 +15,8 @@
 
 - **F)** **(Optional) Jerk estimate**:  
 As mentioned above, we implemented the computation of the jerk directly in `acceleration_direct_vectorised`. Since, as you can see from the benchmark, the computation of the jerk is quite computational demanding we implemented a flag `return_jerk` set, as default, `False`. So the performance, for the calculation of the acceleration only, does not decrease.
-Setting the flag to `True`, this is the best that the function can do, since we are using the `numpy.array` broadcasting.
+Setting the flag to `True`, this is the best that the function can do, since we are using the `numpy.array` broadcasting.  
+Regarding the jerk, we implemented new/updated test functions in `test_acceleration_estimate.py`.
 
 - **Challenge (not mandatory): Need for Speed!**  
 `acc_onearray_vepe` and `acc_opt_gia` are already the optimized version of the corresponding functions `acc_vect_vepe` and `acc_vect_gia`. The three models of the vectorized function are built in slightly different way, and since the best one, among them, is `acc_onearray_vepe`, probably it's the best result achievable using `numpy.array` and broadcasting.  
