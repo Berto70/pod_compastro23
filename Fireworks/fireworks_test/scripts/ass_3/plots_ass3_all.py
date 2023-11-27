@@ -4,7 +4,7 @@ from cycler import cycler
 from matplotlib.gridspec import GridSpec
 from matplotlib.backends.backend_pdf import PdfPages
 
-# LOAD DATA
+# LOAD DATA ##
 
 ic_param = np.genfromtxt('./fireworks_test/data/ass_3/ic_param_all.txt')
 mass1 = ic_param[0]
