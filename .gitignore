@@ -5,6 +5,7 @@
 
 # Test data folder
 ./Fireworks/fireworks_test/data/
+/home/bertinelli/pod_compastro23/Docker/tsunami-newspin
 
 # Prerequisites
 *.d
