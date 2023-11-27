@@ -3,8 +3,8 @@
 
 # Python packages
 
-# Docker folder
-
+# Test data folder
+./Fireworks/fireworks_test/data/
 
 # Prerequisites
 *.d
@@ -105,3 +105,15 @@ sevn_output/
 
 #Versioning
 sevn_version.h
+
+#Test data
+Fireworks/fireworks_test/data/ass_3/dt_0.0001.npz
+Fireworks/fireworks_test/data/ass_3/dt_0.01.npz
+Fireworks/fireworks_test/data/ass_3/Etot_i.npy
+Fireworks/fireworks_test/data/ass_3/pos_i.npy
+Fireworks/fireworks_test/data/ass_3/vel_i.npy
+Fireworks/fireworks_test/data/ass_3/dt_0.001.npz
+Fireworks/fireworks_test/data/ass_3/mass_i.npy
+Fireworks/fireworks_test/data/ass_3/apoastron.npy
+Fireworks/fireworks_test/data/ass_3/acc_i.npy
+Fireworks/fireworks_test/data/ass_3/periastron.npy

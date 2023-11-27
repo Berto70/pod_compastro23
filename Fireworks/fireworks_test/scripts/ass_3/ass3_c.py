@@ -6,10 +6,10 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 
 # Initialize two stars in a circular orbit
-mass1 = 5.0
-mass2 = 1.0
-rp = 2.0
-e = 0.5  # Set eccentricity to 0 for a circular orbit
+mass1 = 15.0
+mass2 = 2.0
+rp = 1.5
+e = 0.4  # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 # print(part.pos, part.vel, part.mass)
 Etot_0, _, _ = part.Etot()
@@ -34,7 +34,7 @@ Etot_i = []
 
 
 while t < N_end*Tperiod:
-    part, _, acc, _, _ = fint.integrator_rk4(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorised)
+    part, _, acc, _, _ = fint.integrator_heun(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorized)
     pos_i.append(part.pos)
     vel_i.append(part.vel)
     mass_i.append(part.mass)

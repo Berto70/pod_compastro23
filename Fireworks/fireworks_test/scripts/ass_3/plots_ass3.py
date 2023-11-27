@@ -27,7 +27,7 @@ apo = np.load('./fireworks_test/data/ass_3/apoastron.npy', allow_pickle=True)
 
 fig, ax = plt.subplots(2, 1, figsize=(10, 20))
 # Plot position on x-y plane
-ax[0].plot(pos_i[:, :, 0], pos_i[:, :, 1], label=['Body 1', 'Body 2'], linewidth=0.01)
+ax[0].plot(pos_i[:, 0, 0], pos_i[:, 0, 1], label=['Body 1', 'Body 2'], linewidth=0.01)
 ax[0].set_xlabel('X')
 ax[0].set_ylabel('Y')
 ax[0].legend()

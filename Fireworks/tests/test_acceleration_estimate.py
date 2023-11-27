@@ -11,7 +11,7 @@ def test_acceleration_2body():
     therfore the acceleration on the first body is  +1 and on the secondy body -1.
 
     """
-    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct, fdyn.acceleration_direct_vectorised]
+    facc_list = [fdyn.acceleration_direct, fdyn.acceleration_direct_vectorized, fdyn.acceleration_pyfalcon,]
 
     pos = np.array([[0.,0.,0.],[1.,0.,0.]])
     vel = np.zeros_like(pos)
@@ -38,9 +38,9 @@ def test_acceleartion_row():
     """
 
 
-    facc_list = [fdyn.acceleration_pyfalcon, fdyn.acceleration_direct, fdyn.acceleration_direct_vectorised]
+    facc_list = [fdyn.acceleration_direct, fdyn.acceleration_direct_vectorized, fdyn.acceleration_pyfalcon,]
 
-    x = np.array(np.arange(11), dtype=float)
+    x = np.array(np.arange(11),dtype=float)
     y = np.zeros_like(x)
     z = np.zeros_like(x)
 
@@ -56,8 +56,61 @@ def test_acceleartion_row():
         acc,_,_=facc(part)
         dx = acc[0,0]-acc_true_0
 
-        print(dx)
-
         assert pytest.approx(dx, 1e-10) == 0.
         # pytest approx is used to introduc a tollerance in the comparison  (in this case 1e-10)
 
+def test_acceleration_2body_jerk():
+    """
+    Simple 2 body problem. The two body are alligned on the x-axis, with position x_0=0 and x_1=1,
+    the both have mass m=1 and the their velocity (also on the x_axis) are v_x0=0 and v_x1=-1. 
+    The expected acceleration are a_0 = (1, 0, 0) and a_1 = (-1, 0, 0)   
+    The expected jerk are j_0=(-2, 0, 0) and j_1=(2, 0, 0)
+    """
+    facc_list = [fdyn.acceleration_direct_vectorized]
+
+    pos = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]])
+    vel = np.array([[0.0, 0.0, 0.0], [-1.0, 0.0, 0.0]])
+    mass= np.ones(len(pos))
+    part = Particles(pos, vel, mass)
+
+    acc_true = np.array([[1.0, 0.0, 0.0],[-1.0, 0.0, 0.0]])
+    jerk_true = np.array([[2.0, 0.0, 0.0],[-2.0, 0.0, 0.0]])
+
+    for facc in facc_list:
+        acc,jerk,_ = facc(part, return_jerk=True)
+
+        d_ax = np.abs(acc - acc_true)
+        d_jx = np.abs(jerk - jerk_true)
+
+        assert np.all(d_ax<=1e-11)
+        assert np.all(d_jx<=1e-11)
+
+def test_acceleration_2body_circular_orbit_jerk():
+    """
+    Simple 2 body problem, where the second object is less massive and orbit around the first more massive one. 
+    The two body are alligned on the y=x line, with:
+    position: r_0 = (0, 0, 0) and r_1 = (1, 1, 0)
+    velocity: v_0=(0, 0, 0), v_1=(-1, 1, 0) 
+    mass:     m_0=100 and m_1=1
+    
+    The expected acceleration:  a_0 = (1, 1, 0)*(2**(-3/2)), a_1 = (-100, -100, 0)*(2**(-3/2)) 
+    The expected jerk:          j_0 = (1, -1, 0)*(2**(-3/2)), j_1 = (-100, 100, 0)*(2**(-3/2))
+    """
+    facc_list = [fdyn.acceleration_direct_vectorized]
+
+    pos = np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 0.0]])
+    vel = np.array([[0.0, 0.0, 0.0], [-1.0, 1.0, 0.0]])
+    mass= np.array([100.0, 1.0])
+    part = Particles(pos, vel, mass)
+
+    acc_true = np.array([[1.0, 1.0, 0.0],[-100.0, -100.0, 0.0]])*(2**(-3/2))
+    jerk_true = np.array([[-1.0, 1.0, 0.0],[100.0, -100.0, 0.0]])*(2**(-3/2))
+
+    for facc in facc_list:
+        acc,jerk,_ = facc(part,  return_jerk=True)
+
+        d_ax = np.abs(acc - acc_true)
+        d_jx = np.abs(jerk - jerk_true)
+
+        assert np.all(d_ax<=1e-11)
+        assert np.all(d_jx<=1e-11)
