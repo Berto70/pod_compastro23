@@ -11,7 +11,10 @@
 	- `plot_vect_model.pdf` contains the benchmark and comparison between the acceleration estimation functions built in a _vectorized_ fashion. Data gathered with `pyfalcon` are displayed too. This time we run the simulation till a maximum of 50.000 particles, thanks to the computational power of the **Demoblack** server. You can see that among them, the one with the better performance is `acc_onearray_vepe` (in this case slightly better than `acc_vect_diego`). Thus we decided to implement it in the main code as our `acceleration_direct_vectorized`. The function uses the broadcasting operations of `numpy.array`.
 	In this function we also implemented the computation of the jerk: the line `jerk_vepe` refers to this case (further considerations below).  
 
-	- `plot_tot.pdf` contains the comparison between all the models we implemented. It's remarkable the increasing in performance (almost 2 orders) relative to the vectorized models. [`pyfalcon`, using C and memory allocation is playing in another league (it's like Pinerolo vs Bayern Monaco)]
+	- `plot_tot.pdf` contains the comparison between all the models we implemented. It's remarkable the increasing in performance (almost 2 orders) relative to the vectorized models. [`pyfalcon`, using C and memory allocation is playing in another league (it's like Pinerolo vs Roma)]  
+
+	Speacking about maximum number of particles, `pyfalcon`, based on the [tests](https://iopscience.iop.org/article/10.1086/312724/pdf) run by its developers, for $N>=10^5$ the scaling of the CPU time required for the mutual forces becomes essentially linear allowing for a substantial improvement in simulations employing large number of bodies. The only disadvantage is the increased requirement of memory.
+	Regarding the vectorized functions, a maximum affordable N could be $10^5$ ... continue
 
 - **F)** **(Optional) Jerk estimate**:  
 As mentioned above, we implemented the computation of the jerk directly in `acceleration_direct_vectorised`. Since, as you can see from the benchmark, the computation of the jerk is quite computational demanding we implemented a flag `return_jerk` set, as default, `False`. So the performance, for the calculation of the acceleration only, does not decrease.
