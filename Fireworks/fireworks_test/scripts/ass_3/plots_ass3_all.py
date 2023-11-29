@@ -605,6 +605,73 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
 
 ##############################################################################################################
 
+# # ENERGY ERR PLOTS (DIFF INT)
+
+#     custom_cycler9 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '--', '-.']))
+#     plt.rc('axes', prop_cycle=custom_cycler9)
+
+#     fig9, ax9 = plt.subplots(2, 3, figsize=(40, 27))
+#     gs9 = GridSpec(2,3)
+#     # Plot position on x-y plane
+#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.log10(np.abs((data_001_base[:, 4]-Etot_0)/Etot_0))
+#                   , alpha=0.8, label='h=0.01')
+#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.log10(np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0))
+#                   , alpha=0.8, label='h=0.001')
+#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.log10(np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0))
+#                   , alpha=0.8, label='h=0.0001')
+#     ax9[0,0].set_title('Euler_base')
+
+#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.log10(np.abs((data_001_mod[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.01')
+#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.log10(np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.001')
+#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.log10(np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.0001')
+#     ax9[0,1].set_title('Euler_modified')
+
+#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.log10(np.abs((data_001_rk2[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.01')
+#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.log10(np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.001')
+#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.log10(np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.0001')
+#     ax9[0,2].set_title('RK2-Heun')
+
+#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.log10(np.abs((data_001_leap[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.01')
+#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.log10(np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.001')
+#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.log10(np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.0001')
+#     ax9[1,0].set_title('Leapfrog')
+
+#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.log10(np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.01')
+#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.log10(np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.001')
+#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.log10(np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.0001')
+#     ax9[1,1].set_title('RK4')
+
+#     for i in range(2):
+#         for j in range(3):
+#             ax9[i,j].set_xlabel('absolute time')
+#             ax9[i,j].set_ylabel('$log_{10}|\Delta E/E0|$')
+#             #ax2[i,j].set_yscale('log')
+#             ax9[i,j].set_prop_cycle(custom_cycler9)
+#             ax9[i,j].legend()
+
+#     # ax212 = plt.subplot(gs2[1, -1])
+#     # ax212.axis('off')  # Turn off the axes for the empty subplot
+#     fig9.delaxes(ax9[1,-1])
+
+#     fig9.suptitle('ΔE evolution', fontsize=52, fontweight='600')
+
+#     pdf.savefig()
+#     plt.close()
+
+##############################################################################################################
+
     # # same but w/o euler_base
     # ints = np.array(['Euler_mod', 'RK2', 'Leap', 'RK4'])
     # fig9, ax9 = plt.subplots(1, 3, figsize=(40, 15))
