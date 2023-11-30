@@ -92,7 +92,7 @@ def integrator_template(particles: Particles,
     return (particles, tstep, acc, jerk, potential)
 
 
-
+# 1st order Euler
 def integrator_euler(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
@@ -113,14 +113,16 @@ def integrator_euler(particles: Particles,
     #Modified Euler - Sympletic integrator
     particles.vel = particles.vel + acc*tstep # Update vel
     particles.pos = particles.pos + particles.vel*tstep # Update pos
-    # do not update time...
     particles.set_acc(acc) #Set acceleration
 
     # Now return the updated particles, the acceleration,  jerk (can be None) and potential (can be None)
 
+    #Maybe tstep should be updated?
+    #tstep += 1 
+
     return (particles, tstep, acc, jerk, potential)
 
-
+# 2nd order Leapfrog p. 48
 def integrator_leapfrog(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
@@ -138,12 +140,13 @@ def integrator_leapfrog(particles: Particles,
             if jerk is not None and jerkt is not None: jerk+=jerkt
             if potential is not None and potentialt is not None: potential+=potentialt
 
-    #Leapfrog - Sympletic integrator
-    # Using temporary variable vel_midpoint instead of assigning it to particles.vel
-    vel_midpoint = particles.vel + acc*tstep # Update vel
+    # Leapfrog - Sympletic integrator
+    # Not using temporary variable vel_midpoint, becuase
+    # once updated I dont need the old value of vel
+    particles.vel = particles.vel + acc*tstep # Update vel
     particles.pos = particles.pos + particles.vel*tstep # Update pos
     acc,jerk,potential=acceleration_estimator(particles,softening)
-
+    
     #Check additional accelerations
     if external_accelerations is not None:
         for ext_acc_estimator in external_accelerations:
@@ -154,12 +157,12 @@ def integrator_leapfrog(particles: Particles,
 
 
     particles.set_acc(acc) #Set acceleration
-    particles.vel = vel_midpoint + acc*tstep
+    particles.vel = particles.vel + acc*tstep
     # Now return the updated particles, the acceleration,  jerk (can be None) and potential (can be None)
     return (particles, tstep, acc, jerk, potential)
 
-
-
+"""
+# It's equivalent to the Leapfrog integrator
 def integrator_verlet(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
@@ -201,45 +204,7 @@ def integrator_verlet(particles: Particles,
     # Now return the updated particles, the acceleration,  jerk (can be None) and potential (can be None)
     return (particles, tstep, acc2, jerk, potential)
 
-
-
-def integrator_leapfrog(particles: Particles,
-                        tstep: float,
-                        acceleration_estimator: Union[Callable,List],
-                        softening: float = 0.,
-                        external_accelerations: Optional[List] = None):
-    
-
-    acc,jerk,potential=acceleration_estimator(particles,softening)
-
-    #Check additional accelerations
-    if external_accelerations is not None:
-        for ext_acc_estimator in external_accelerations:
-            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
-            acc+=acct
-            if jerk is not None and jerkt is not None: jerk+=jerkt
-            if potential is not None and potentialt is not None: potential+=potentialt
-
-    #Leapfrog - Sympletic integrator
-    # Using temporary variable vel_midpoint instead of assigning it to particles.vel
-    vel_midpoint = particles.vel + acc*tstep # Update vel
-    particles.pos = particles.pos + particles.vel*tstep # Update pos
-    acc,jerk,potential=acceleration_estimator(particles,softening)
-
-    #Check additional accelerations
-    if external_accelerations is not None:
-        for ext_acc_estimator in external_accelerations:
-            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
-            acc+=acct
-            if jerk is not None and jerkt is not None: jerk+=jerkt
-            if potential is not None and potentialt is not None: potential+=potentialt
-
-
-    particles.set_acc(acc) #Set acceleration
-    particles.vel = vel_midpoint + acc*tstep
-    # Now return the updated particles, the acceleration,  jerk (can be None) and potential (can be None)
-    return (particles, tstep, acc, jerk, potential)
-
+"""
 
 
 def integrator_hermite(particles: Particles,
@@ -250,6 +215,9 @@ def integrator_hermite(particles: Particles,
     
 
     acc,jerk,potential=acceleration_estimator(particles,softening)
+
+    # This integrator requires jerk
+    if jerk is None: raise ValueError("Hermite integrator requires jerk")
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -266,13 +234,12 @@ def integrator_hermite(particles: Particles,
     # 10
     pos_p = particles.pos + particles.vel + acc * tstep**2 / 2 + jerk*tstep**3 / 6
 
-    # Istantiate sub-step particles object
-    particles_p = Particles(pos_p,vel_p,mass) 
     # 11 # 12
-    acc_p, jerk_p, _ = acceleration_estimator(particles_p,softening)
+    acc_p, jerk_p, _ = acceleration_estimator( Particles(pos_p,vel_p,particles.mass) ,softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
+        
         for ext_acc_estimator in external_accelerations:
             acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
             acc_p+=acct
@@ -281,6 +248,7 @@ def integrator_hermite(particles: Particles,
 
 
     # Corrector sub-step
+    # alternative more accurate version p. 34
 
     # First derivative jerk 
     j_1 = (-6 * (acc - acc_p) - (4*jerk + 2*jerk_p)*tstep)* tstep**(-2)
@@ -289,16 +257,12 @@ def integrator_hermite(particles: Particles,
     j_2 = (12*(acc - acc_p) + 6*(jerk + jerk_p)*tstep)* tstep**(-3)
     
     # 13b
-    particles.vel = vel_p + h**3 / 6 * j_1 + tstep**4 / 24 * j_2
+    particles.vel = vel_p + tstep**3 / 6 * j_1 + tstep**4 / 24 * j_2
 
     # 14b
     particles.pos = pos_p + tstep**4 / 24 * j_1 + tstep**5 / 120 * j_2
 
     return (particles, tstep, acc, jerk, potential)
-
-
-
-
 
 
 def integrator_tsunami(particles: Particles,

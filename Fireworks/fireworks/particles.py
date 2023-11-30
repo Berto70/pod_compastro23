@@ -142,8 +142,7 @@ class Particles:
         """
         #YOU HAVE TO IMPLEMENT IT
         # Use the class member, e.g. vel=self.vel, mass=self.mass
-
-        Ekin = 0.5 * np.sum(self.mass * self.vel **2)
+        Ekin = 0.5 * np.sum(self.mass[:,np.newaxis] * self.vel **2)
         #raise NotImplementedError("Ekin method still not implemented")
 
         return Ekin
@@ -162,7 +161,7 @@ class Particles:
         #raise NotImplementedError("Epot method still not implemented")
         
 
-        """
+        
         # mass product mi*mj
         mass_product = self.mass[:,np.newaxis] * self.mass
 
@@ -171,14 +170,15 @@ class Particles:
 
         # total potential energy
         # np.sum sums over all the elements of the array
-        Epot = -0.5 * np.sum(mass_product / np.sqrt(rij**2 + softening**2))
+        Epot = -0.5 * np.sum(mass_product[:,:,np.newaxis] / np.sqrt(rij**2 + softening**2))
 
-        """
+        
 
         # One-liner version
-        Epot = -0.5 * np.sum(self.mass[:,np.newaxis] * self.mass / np.sqrt(self.pos[:,np.newaxis,:] - self.pos)**2 + softening**2)
+        
+        #Epot = -0.5 * np.sum(self.mass[:,np.newaxis] * self.mass / np.sqrt((self.pos[:,np.newaxis,:] - self.pos)**2 + softening**2))
 
-
+        return Epot
 
     def Etot(self,softening: float = 0.) -> tuple[float,float,float]:
         """
