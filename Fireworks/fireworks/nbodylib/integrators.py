@@ -265,6 +265,61 @@ def integrator_hermite(particles: Particles,
     return (particles, tstep, acc, jerk, potential)
 
 
+def integrator_hermite_basic(particles: Particles,
+                        tstep: float,
+                        acceleration_estimator: Union[Callable,List],
+                        softening: float = 0.,
+                        external_accelerations: Optional[List] = None):
+    
+
+    acc,jerk,potential=acceleration_estimator(particles,softening)
+
+    # This integrator requires jerk
+    if jerk is None: raise ValueError("Hermite integrator requires jerk")
+
+    #Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+            acc+=acct
+            if jerk is not None and jerkt is not None: jerk+=jerkt
+            if potential is not None and potentialt is not None: potential+=potentialt
+
+    # Preditor sub-step
+    # 9 
+    vel_p = particles.vel + acc + jerk * tstep**2 / 2
+
+    # 10
+    pos_p = particles.pos + particles.vel + acc * tstep**2 / 2 + jerk*tstep**3 / 6
+
+    # 11 # 12
+    acc_p, jerk_p, _ = acceleration_estimator( Particles(pos_p,vel_p,particles.mass) ,softening)
+
+    #Check additional accelerations
+    if external_accelerations is not None:
+        
+        for ext_acc_estimator in external_accelerations:
+            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+            acc_p+=acct
+            if jerk is not None and jerkt is not None: jerk_p+=jerkt
+           # if potential is not None and potentialt is not None: potential+=potentialt
+
+
+    # Corrector sub-step
+    # basic version p.33
+
+    # 13
+    old_vel = particles.vel
+    particles.vel = particles.vel + tstep/2 * (acc + acc_p) + tstep**2 / 12 * (jerk - jerk_p)
+    
+    # 14
+    particles.pos = particles.pos + tstep/2 * (old_vel + particles.vel) + tstep**2 / 12 * (acc - acc_p)
+
+    
+    return (particles, tstep, acc, jerk, potential)
+
+
+
 def integrator_tsunami(particles: Particles,
                        tstep: float,
                        acceleration_estimator: Optional[Callable]= None,
