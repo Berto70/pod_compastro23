@@ -91,6 +91,67 @@ def integrator_template(particles: Particles,
 
     return (particles, tstep, acc, jerk, potential)
 
+
+
+def integrator_hermite(particles: Particles,
+                        tstep: float,
+                        acceleration_estimator: Union[Callable,List],
+                        softening: float = 0.,
+                        external_accelerations: Optional[List] = None):
+    
+
+    acc,jerk,potential=acceleration_estimator(particles,softening)
+
+    # This integrator requires jerk
+    if jerk is None: raise ValueError("Hermite integrator requires jerk")
+
+    #Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+            acc+=acct
+            if jerk is not None and jerkt is not None: jerk+=jerkt
+            if potential is not None and potentialt is not None: potential+=potentialt
+
+    # Preditor sub-step
+    # 9 
+    vel_p = particles.vel + acc + jerk * tstep**2 / 2
+
+    # 10
+    pos_p = particles.pos + particles.vel + acc * tstep**2 / 2 + jerk*tstep**3 / 6
+
+    # 11 # 12
+    acc_p, jerk_p, _ = acceleration_estimator( Particles(pos_p,vel_p,particles.mass) ,softening)
+
+    #Check additional accelerations
+    if external_accelerations is not None:
+        
+        for ext_acc_estimator in external_accelerations:
+            acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+            acc_p+=acct
+            if jerk is not None and jerkt is not None: jerk_p+=jerkt
+           # if potential is not None and potentialt is not None: potential+=potentialt
+
+
+    # Corrector sub-step
+    # alternative more accurate version p. 34
+
+    # First derivative jerk 
+    j_1 = (-6 * (acc - acc_p) - (4*jerk + 2*jerk_p)*tstep)* tstep**(-2)
+    
+    # Second derivative jerk
+    j_2 = (12*(acc - acc_p) + 6*(jerk + jerk_p)*tstep)* tstep**(-3)
+    
+    # 13b
+    particles.vel = vel_p + tstep**3 / 6 * j_1 + tstep**4 / 24 * j_2
+
+    # 14b
+    particles.pos = pos_p + tstep**4 / 24 * j_1 + tstep**5 / 120 * j_2
+
+    return (particles, tstep, acc, jerk, potential)
+
+
+
 def integrator_tsunami(particles: Particles,
                        tstep: float,
                        acceleration_estimator: Optional[Callable]= None,
