@@ -156,9 +156,12 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
 
     return (acc,jerk,pot)
 
-def acceleration_direct_vectorised_onearray(particles: Particles, softening: float = 0.0):
+
+def acceleration_direct_vectorized(particles: Particles, softening: float =0., return_jerk= False) \
+        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
-    This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array with one array
+    This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
+    If return_flag = True it returns also the jerk, otherwise it is set to None.
 
         - particles, that is an instance of the class :class:`~fireworks.particles.Particles`
         - softening, it is the gravitational softening. The parameters need to be included even
@@ -183,20 +186,30 @@ def acceleration_direct_vectorised_onearray(particles: Particles, softening: flo
         - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
     """
-    pos_x = particles.pos[:, 0] - particles.pos[:, 0].reshape(len(particles), 1)  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
-    pos_y = particles.pos[:, 1] - particles.pos[:, 1].reshape(len(particles), 1) 
-    pos_z = particles.pos[:, 2] - particles.pos[:, 2].reshape(len(particles), 1)
-    
-    r = np.sqrt(pos_x**2 + pos_y**2 + pos_z**2)
+    N_particles =  len(particles)
+    dx = particles.pos[:, 0].reshape(N_particles, 1) - particles.pos[:, 0] #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+    dy = particles.pos[:, 1].reshape(N_particles, 1) - particles.pos[:, 1] 
+    dz = particles.pos[:, 2].reshape(N_particles, 1) - particles.pos[:, 2] 
+      
+    r = np.sqrt(dx**2 + dy**2 + dz**2)
     r[r==0]=1
     
-    pos = np.concatenate((pos_x, pos_y, pos_z)).reshape((3,len(particles),len(particles)))
-    acc = (pos/r**3 @ particles.mass).T 
+    dpos = np.concatenate((dx, dy, dz)).reshape((3,N_particles,N_particles)) 
+    acc = - (dpos/r**3 @ particles.mass).T 
 
-    jerk = None
+    jerk= None
+    if return_jerk == True:
+        dvx = particles.vel[:, 0].reshape(N_particles, 1) - particles.vel[:, 0]  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+        dvy = particles.vel[:, 1].reshape(N_particles, 1) - particles.vel[:, 1]
+        dvz = particles.vel[:, 2].reshape(N_particles, 1) - particles.vel[:, 2] 
+    
+        dvel = np.concatenate((dvx, dvy, dvz)).reshape((3,N_particles,N_particles))
+          
+        jerk = -((dvel/r**3 - 3*(np.sum((dpos*dvel), axis=0))*dpos/r**5) @ particles.mass).T                
+        
     pot = None
-    return (acc, jerk, pot)
 
+    return acc, jerk, pot
 
 def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
