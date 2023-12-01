@@ -157,7 +157,7 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
     return (acc,jerk,pot)
 
 
-def acceleration_direct_vectorized(particles: Particles, softening: float =0., return_jerk= False) \
+def acceleration_direct_vectorized(particles: Particles, softening: float =0., return_jerk= True) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
     This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
