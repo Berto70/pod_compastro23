@@ -170,10 +170,8 @@ def integrator_leapfrog(particles: Particles,
         for ext_acc_estimator in external_accelerations:
             acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
             acc += acct
-            if jerk is not None and jerkt is not None:
-                jerk += jerkt
-            if potential is not None and potentialt is not None:
-                potential += potentialt
+            if jerk is not None and jerkt is not None: jerk += jerkt
+            if potential is not None and potentialt is not None: potential += potentialt
 
     # vel_m = particles.vel + 0.5*acc*tstep # half-step velocity
     # particles.pos = particles.pos + vel_m*tstep # Update pos
@@ -193,10 +191,49 @@ def integrator_leapfrog(particles: Particles,
             if jerk2 is not None and jerkt is not None: jerk2 += jerkt
             if pot2 is not None and potentialt is not None: pot2 += potentialt
 
-    particles.vel = particles.vel + 0.5*(acc+acc2)*tstep
+    particles.vel = particles.vel + 0.5*(acc + acc2)*tstep
     particles.set_acc(acc2)
 
     return (particles, tstep, acc2, jerk2, pot2)
+
+## LEAPFROG DIEGO
+# def integrator_leapfrog(particles: Particles,
+#                         tstep: float,
+#                         acceleration_estimator: Union[Callable,List],
+#                         softening: float = 0.,
+#                         external_accelerations: Optional[List] = None):
+    
+
+#     acc, jerk, potential = acceleration_estimator(particles,softening)
+
+#     #Check additional accelerations
+#     if external_accelerations is not None:
+#         for ext_acc_estimator in external_accelerations:
+#             acct,jerkt,potentialt=ext_acc_estimator(particles,softening)
+#             acc+=acct
+#             if jerk is not None and jerkt is not None: jerk+=jerkt
+#             if potential is not None and potentialt is not None: potential+=potentialt
+
+#     # Leapfrog - Sympletic integrator
+#     # Not using temporary variable vel_midpoint, becuase
+#     # once updated I dont need the old value of vel
+#     particles.vel = particles.vel + acc*tstep # Update vel
+#     particles.pos = particles.pos + particles.vel*tstep # Update pos
+#     acc2, jerk2, potential2 = acceleration_estimator(particles, softening)
+    
+#     #Check additional accelerations
+#     if external_accelerations is not None:
+#         for ext_acc_estimator in external_accelerations:
+#             acct, jerkt, potentialt=ext_acc_estimator(particles, softening)
+#             acc2 += acct
+#             if jerk2 is not None and jerkt is not None: jerk2+=jerkt
+#             if potential2 is not None and potentialt is not None: potential2+=potentialt
+
+
+#     particles.set_acc(acc2) #Set acceleration
+#     particles.vel = particles.vel + acc2*tstep
+#     # Now return the updated particles, the acceleration,  jerk (can be None) and potential (can be None)
+#     return (particles, tstep, acc, jerk, potential)
 
 def integrator_heun(particles: Particles,
                    tstep: float,
@@ -305,6 +342,64 @@ def integrator_rk4(particles: Particles,
     particles.set_acc(acc4) 
 
     return (particles, tstep, acc4, jerk4, pot4)
+
+def integrator_hermite(particles: Particles,
+                        tstep: float,
+                        acceleration_estimator: Union[Callable,List],
+                        softening: float = 0.,
+                        external_accelerations: Optional[List] = None):
+    
+
+    acc, jerk, potential = acceleration_estimator(particles, softening)
+
+    # This integrator requires jerk
+    if jerk is None: raise ValueError("Hermite integrator requires jerk")
+
+    #Check additional accelerations
+    if external_accelerations is not None:
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc += acct
+            if jerk is not None and jerkt is not None: jerk += jerkt
+            if potential is not None and potentialt is not None: potential += potentialt
+
+    # Preditor sub-step
+    # 9 
+    vel_p = particles.vel + acc + (jerk * tstep**2)/2
+
+    # 10
+    pos_p = particles.pos + particles.vel + (acc * tstep**2)/2 + (jerk*tstep**3)/6
+
+    # 11 # 12
+    acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening)
+
+    #Check additional accelerations
+    if external_accelerations is not None:        
+        for ext_acc_estimator in external_accelerations:
+            acct, jerkt, potentialt = ext_acc_estimator(particles, softening)
+            acc_p += acct
+            if jerk_p is not None and jerkt is not None: jerk_p += jerkt
+            if potential is not None and potentialt is not None: potential += potentialt
+
+
+    # Corrector sub-step
+    # alternative more accurate version p. 34
+
+    # First derivative jerk 
+    j_1 = (-6*(acc - acc_p) - (4*jerk + 2*jerk_p)*tstep)* tstep**(-2)
+    
+    # Second derivative jerk
+    j_2 = (12*(acc - acc_p) + 6*(jerk + jerk_p)*tstep)* tstep**(-3)
+    
+    # 13b
+    particles.vel = vel_p + (tstep**3)*j_1/6 + (tstep**4)*j_2/24
+
+    # 14b
+    particles.pos = pos_p + (tstep**4)*j_1/24 + (tstep**5)*j_2/120
+
+    particles.set_acc(acc)
+
+    return (particles, tstep, acc, jerk, potential)
 
 def integrator_tsunami(particles: Particles,
                        tstep: float,
