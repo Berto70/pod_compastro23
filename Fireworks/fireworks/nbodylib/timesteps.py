@@ -32,3 +32,14 @@ def adaptive_timestep_simple(particles: Particles, tmin: Optional[float] = None,
     if tmax is not None: ts=np.min(ts,tmax)
 
     return ts
+
+def euler_timestep(particles: Particles, eta: float, acc = npt.NDArray[np.float64], tmin: Optional[float] = None, tmax: Optional[float] = None) -> float:
+
+    acc_mod = np.sqrt(np.sum(acc*acc, axis=1))[:,np.newaxis]
+
+    ts = eta*np.nanmin(np.linalg.norm(particles.vel_mod(), axis=1)/np.linalg.norm(particles.acc, axis=1))
+
+    if tmin is not None: ts=np.max(ts,tmin)
+    if tmax is not None: ts=np.min(ts,tmax)
+
+    return ts
