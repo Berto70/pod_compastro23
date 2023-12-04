@@ -33,8 +33,8 @@ def update(frame,positions):
     ax.scatter(x, y, c="b", s=5, label="Star 1")
     
 
+print("starting ani")
+ani = animation.FuncAnimation(fig=fig, func=update, frames=np.arange(0,len(positions)-1,1000),fargs=(positions,))
 
-ani = animation.FuncAnimation(fig=fig, func=update, frames=1000,fargs=(positions,))
-
-ani.save("test4.gif")
+ani.save("test5.gif")
 print("done")
