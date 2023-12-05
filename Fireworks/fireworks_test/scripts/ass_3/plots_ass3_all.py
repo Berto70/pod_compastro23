@@ -7,7 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 # LOAD DATA #####
 
 ic_param = np.genfromtxt('./fireworks_test/data/ass_3/ic_param_all.txt')
-mass1 = ic_param[0]
+mass_1 = ic_param[0]
 mass_2 = ic_param[1]
 rp = ic_param[2]
 e = ic_param[3]
@@ -38,7 +38,7 @@ data_001_rk2 = data_001['RK2-Heun']
 data_001_leap = data_001['Leapfrog']
 data_001_rk4 = data_001['RK4']
 
-with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
+with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     # POSITION X-Y PLOTS
 
@@ -104,7 +104,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
     # ax12 = plt.subplot(gs[1, -1])
     # ax12.axis('off')  # Turn off the axes for the empty subplot
 
-    fig.suptitle('Position on X-Y Plane (e=%.1f)'%e, fontsize=52, fontweight='600')
+    fig.suptitle('Position on X-Y Plane\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
 
     pdf.savefig()
     plt.close()
@@ -196,7 +196,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
     # ax212.axis('off')  # Turn off the axes for the empty subplot
     fig2.delaxes(ax2[1,-1])
 
-    fig2.suptitle('ΔE evolution', fontsize=52, fontweight='600')
+    fig2.suptitle('ΔE evolution\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
 
     pdf.savefig()
     plt.close()
@@ -274,7 +274,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
     ax3[2].yaxis.set_minor_formatter(mticker.NullFormatter())
     ax3[2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-    fig3.suptitle('ΔE evolution', fontsize=52, fontweight='600')
+    fig3.suptitle('ΔE evolution\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
     
     pdf.savefig()
     plt.close()
@@ -471,7 +471,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
 
     ax6[1,2].axis('off')
 
-    fig6.suptitle('Energy Error vs. Time Step', fontsize=52, fontweight='600')
+    fig6.suptitle('Energy Error vs. Time Step\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
 
 
     for i in range(2):
@@ -535,7 +535,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
 
     ax7[1,2].axis('off')
 
-    fig7.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
+    fig7.suptitle('Relative Energy errors\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
 
     for i in range(2):
         for j in range(3):
@@ -584,7 +584,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots.pdf') as pdf:
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
     ax8[2].set_title('h=0.01')
 
-    fig8.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
+    fig8.suptitle('Relative Energy errors\n(M1%.1f, M2%.1f, e=%.1f, rp=%.1f)'%{mass_1, mass_2, e, rp}, fontsize=52, fontweight='600')
     
     for i in range(3):
         # ax8[i,j].set_xticklabels(['0.0001', '0.001', '0.01'])
