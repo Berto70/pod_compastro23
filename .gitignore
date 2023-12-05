@@ -110,6 +110,8 @@ sevn_version.h
 #Test data
 Fireworks/fireworks_test/data/ass_3/dt_0.0001.npz
 Fireworks/fireworks_test/data/ass_3/dt_0.01.npz
+Fireworks/fireworks_test/data/ass_3/dt_0.1.npz
+Fireworks/fireworks_test/data/ass_3/dt_1e-05.npz
 Fireworks/fireworks_test/data/ass_3/Etot_i.npy
 Fireworks/fireworks_test/data/ass_3/pos_i.npy
 Fireworks/fireworks_test/data/ass_3/vel_i.npy
