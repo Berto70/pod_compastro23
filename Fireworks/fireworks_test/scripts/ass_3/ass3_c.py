@@ -7,10 +7,10 @@ import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
 
 # Initialize two stars in a circular orbit
-mass1 = 1.0
+mass1 = 15.0
 mass2 = 1.0
-rp = 10
-e = 0.0  # Set eccentricity to 0 for a circular orbit
+rp = 0.01
+e = 0.7 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 # print(part.pos, part.vel, part.mass)
 Etot_0, _, _ = part.Etot()
@@ -21,7 +21,7 @@ Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 # print("Binary Period Tperiod:", Tperiod)
 
 t = 0.
-tstep = 0.001
+tstep = 0.0001
 N_end = 10
 
 pos_i = []
@@ -32,8 +32,9 @@ Etot_i = []
 
 
 while t < N_end*Tperiod:
+    t += tstep
     # tstep = 0.0001
-    part, _, acc, _, _ = fint.integrator_hermite(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorized)
+    part, _, acc, _, _ = fint.integrator_heun(part, tstep=tstep, acceleration_estimator=fdyn.acceleration_direct_vectorized)
     pos_i.append(part.pos)
     vel_i.append(part.vel)
     mass_i.append(part.mass)
@@ -42,7 +43,7 @@ while t < N_end*Tperiod:
     Etot_j, _, _ = part.Etot()
     Etot_i.append(Etot_j)
 
-    t += tstep
+    # t += tstep
     # tstep = fts.euler_timestep(part, eta=0.0001, acc = acc)
 
 pos_i = np.array(pos_i)
