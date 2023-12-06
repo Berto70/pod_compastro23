@@ -10,7 +10,7 @@ import fireworks.nbodylib.integrators as fint
 # Initialize two stars in a circular orbit
 mass1 = 8.0
 mass2 = 2.0
-rp = 1
+rp = 2
 e = 0.0 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 
@@ -20,7 +20,7 @@ Etot_0, _, _ = part.Etot()
 a = rp / (1 - e)  # Semi-major axis
 Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 
-N_end = 1 # -> N_end*Tperiod
+N_end = 10 # -> N_end*Tperiod
 
 # config file
 ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
