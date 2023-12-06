@@ -17,8 +17,8 @@ Tperiod = ic_param[6]
 N_end = ic_param[7]
 
 #downsample
-n = 5
-m = 1
+n = 100
+m = 10
 w = 1
 
 data_00001 = np.load('./fireworks_test/data/ass_3/dt_1e-05.npz', allow_pickle=True)
@@ -72,9 +72,9 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f.pdf' % (e, 
     ax[0,0].plot(data_001_base[:, 0], data_001_base[:, 1], alpha=0.5, label='h=0.001')
     ax[0,0].plot(data_0001_base[:, 0], data_0001_base[:, 1], alpha=0.5, label='h=0.0001')
     ax[0,0].plot(data_00001_base[:, 0], data_00001_base[:, 1], alpha=0.8, label='h=0.00001')
-    ax[0,0].plot(data_001_base[:, 2], data_001_base[:, 3], alpha=0.5, label='h=0.001')
-    ax[0,0].plot(data_0001_base[:, 2], data_0001_base[:, 3], alpha=0.5, label='h=0.0001')
-    ax[0,0].plot(data_00001_base[:, 2], data_00001_base[:, 3], alpha=0.8, label='h=0.00001')
+    # ax[0,0].plot(data_001_base[:, 2], data_001_base[:, 3], alpha=0.5, label='h=0.001')
+    # ax[0,0].plot(data_0001_base[:, 2], data_0001_base[:, 3], alpha=0.5, label='h=0.0001')
+    # ax[0,0].plot(data_00001_base[:, 2], data_00001_base[:, 3], alpha=0.8, label='h=0.00001')
     ax[0,0].set_title('Euler_base')
 
     ax[0,1].plot(data_001_mod[:, 0], data_001_mod[:, 1], alpha=0.5, label='h=0.001')
@@ -105,8 +105,8 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f.pdf' % (e, 
             ax[i,j].legend()            
             ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
             ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
-            ax[0,0].set_xlim(np.min(data_001_base[:, 2])-0.05, np.max(data_001_base[:, 2])+0.05)
-            ax[0,0].set_ylim(np.min(data_001_base[:, 3])-0.05, np.max(data_001_base[:, 3])+0.05)
+            ax[0,0].set_xlim(np.min(data_001_base[:, 0])-0.05, np.max(data_001_base[:, 0])+0.05)
+            ax[0,0].set_ylim(np.min(data_001_base[:, 1])-0.05, np.max(data_001_base[:, 1])+0.05)
 
         # default ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
         #         ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
@@ -132,7 +132,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f.pdf' % (e, 
     # plt.rcParams['font.size'] = '12'
     # plt.rcParams['lines.linewidth'] = '2'
 
-    custom_cycler2 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '-', '-']))
+    custom_cycler2 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '-.', '--']))
     plt.rc('axes', prop_cycle=custom_cycler2)
 
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
@@ -226,7 +226,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f.pdf' % (e, 
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
     locmajy = mticker.LogLocator(base=10, numticks=100)
 
-    custom_cycler3 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-', ':', '-', '-']))
+    custom_cycler3 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-.', ':', '-', '-']))
     plt.rc('axes', prop_cycle=custom_cycler3)
 
     fig3, ax3 = plt.subplots(1, 3, figsize=(40, 17))
