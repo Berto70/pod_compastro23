@@ -17,8 +17,8 @@ Tperiod = ic_param[6]
 N_end = ic_param[7]
 
 #downsample
-n = 100
-m = 10
+n = 5
+m = 1
 w = 1
 
 data_00001 = np.load('./fireworks_test/data/ass_3/dt_1e-05.npz', allow_pickle=True)
@@ -43,7 +43,7 @@ data_001_rk2 = data_001['RK2-Heun'][::w]
 data_001_leap = data_001['Leapfrog'][::w]
 data_001_rk4 = data_001['RK4'][::w]
 
-with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
+with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f.pdf' % (e, rp)) as pdf:
 
     # POSITION X-Y PLOTS
 
@@ -69,29 +69,32 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     fig, ax = plt.subplots(2, 3, figsize=(40, 27))
     gs = GridSpec(2,3)
     # Plot position on x-y plane
-    ax[0,0].plot(data_001_base[:, 0], data_001_base[:, 1], alpha=0.5, label='h=0.01')
-    ax[0,0].plot(data_0001_base[:, 0], data_0001_base[:, 1], alpha=0.5, label='h=0.001')
-    ax[0,0].plot(data_00001_base[:, 0], data_00001_base[:, 1], alpha=0.8, label='h=0.0001')
+    ax[0,0].plot(data_001_base[:, 0], data_001_base[:, 1], alpha=0.5, label='h=0.001')
+    ax[0,0].plot(data_0001_base[:, 0], data_0001_base[:, 1], alpha=0.5, label='h=0.0001')
+    ax[0,0].plot(data_00001_base[:, 0], data_00001_base[:, 1], alpha=0.8, label='h=0.00001')
+    ax[0,0].plot(data_001_base[:, 2], data_001_base[:, 3], alpha=0.5, label='h=0.001')
+    ax[0,0].plot(data_0001_base[:, 2], data_0001_base[:, 3], alpha=0.5, label='h=0.0001')
+    ax[0,0].plot(data_00001_base[:, 2], data_00001_base[:, 3], alpha=0.8, label='h=0.00001')
     ax[0,0].set_title('Euler_base')
 
-    ax[0,1].plot(data_001_mod[:, 0], data_001_mod[:, 1], alpha=0.5, label='h=0.01')
-    ax[0,1].plot(data_0001_mod[:, 0], data_0001_mod[:, 1], alpha=0.5, label='h=0.001')
-    ax[0,1].plot(data_00001_mod[:, 0], data_00001_mod[:, 1], alpha=0.8, label='h=0.0001')
+    ax[0,1].plot(data_001_mod[:, 0], data_001_mod[:, 1], alpha=0.5, label='h=0.001')
+    ax[0,1].plot(data_0001_mod[:, 0], data_0001_mod[:, 1], alpha=0.5, label='h=0.0001')
+    ax[0,1].plot(data_00001_mod[:, 0], data_00001_mod[:, 1], alpha=0.8, label='h=0.00001')
     ax[0,1].set_title('Euler_modified')
 
-    ax[0,2].plot(data_001_rk2[:, 0], data_001_rk2[:, 1], alpha=0.5, label='h=0.01')
-    ax[0,2].plot(data_0001_rk2[:, 0], data_0001_rk2[:, 1], alpha=0.5, label='h=0.001')
-    ax[0,2].plot(data_00001_rk2[:, 0], data_00001_rk2[:, 1], alpha=0.8, label='h=0.0001')
+    ax[0,2].plot(data_001_rk2[:, 0], data_001_rk2[:, 1], alpha=0.5, label='h=0.001')
+    ax[0,2].plot(data_0001_rk2[:, 0], data_0001_rk2[:, 1], alpha=0.5, label='h=0.0001')
+    ax[0,2].plot(data_00001_rk2[:, 0], data_00001_rk2[:, 1], alpha=0.8, label='h=0.00001')
     ax[0,2].set_title('RK2-Heun')
 
-    ax[1,0].plot(data_001_leap[:, 0], data_001_leap[:, 1], alpha=0.5, label='h=0.01')
-    ax[1,0].plot(data_0001_leap[:, 0], data_0001_leap[:, 1], alpha=0.5, label='h=0.001')
-    ax[1,0].plot(data_00001_leap[:, 0], data_00001_leap[:, 1], alpha=0.8, label='h=0.0001')
+    ax[1,0].plot(data_001_leap[:, 0], data_001_leap[:, 1], alpha=0.5, label='h=0.001')
+    ax[1,0].plot(data_0001_leap[:, 0], data_0001_leap[:, 1], alpha=0.5, label='h=0.0001')
+    ax[1,0].plot(data_00001_leap[:, 0], data_00001_leap[:, 1], alpha=0.8, label='h=0.00001')
     ax[1,0].set_title('Leapfrog')
 
-    ax[1,1].plot(data_001_rk4[:, 0], data_001_rk4[:, 1], alpha=0.5, label='h=0.01')
-    ax[1,1].plot(data_0001_rk4[:, 0], data_0001_rk4[:, 1], alpha=0.5, label='h=0.001')
-    ax[1,1].plot(data_00001_rk4[:, 0], data_00001_rk4[:, 1], alpha=0.8, label='h=0.0001')
+    ax[1,1].plot(data_001_rk4[:, 0], data_001_rk4[:, 1], alpha=0.5, label='h=0.001')
+    ax[1,1].plot(data_0001_rk4[:, 0], data_0001_rk4[:, 1], alpha=0.5, label='h=0.0001')
+    ax[1,1].plot(data_00001_rk4[:, 0], data_00001_rk4[:, 1], alpha=0.8, label='h=0.00001')
     ax[1,1].set_title('RK4')
 
     for i in range(2):
@@ -102,15 +105,23 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
             ax[i,j].legend()            
             ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
             ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
-            ax[0,0].set_xlim(np.min(data_001_base[:, 0])-0.05, np.max(data_001_base[:, 0])+0.05)
-            ax[0,0].set_ylim(np.min(data_001_base[:, 1])-0.05, np.max(data_001_base[:, 1])+0.05)
+            ax[0,0].set_xlim(np.min(data_001_base[:, 2])-0.05, np.max(data_001_base[:, 2])+0.05)
+            ax[0,0].set_ylim(np.min(data_001_base[:, 3])-0.05, np.max(data_001_base[:, 3])+0.05)
+
+        # default ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
+        #         ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
+        #         ax[0,0].set_xlim(np.min(data_001_base[:, 0])-0.05, np.max(data_001_base[:, 0])+0.05)
+        #         ax[0,0].set_ylim(np.min(data_001_base[:, 1])-0.05, np.max(data_001_base[:, 1])+0.05)
+
+
     # ax11 = plt.subplot(gs[0, -2:])
     # ax11.axis('off')  # Turn off the axes for the empty subplot
     fig.delaxes(ax[1,-1])
     # ax12 = plt.subplot(gs[1, -1])
     # ax12.axis('off')  # Turn off the axes for the empty subplot
 
-    fig.suptitle('Position on X-Y Plane\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig.suptitle('Position on X-Y Plane\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+                 fontsize=52, fontweight='600')
 
     pdf.savefig(dpi = 100)
     plt.close()
@@ -121,7 +132,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     # plt.rcParams['font.size'] = '12'
     # plt.rcParams['lines.linewidth'] = '2'
 
-    custom_cycler2 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '--', '-.']))
+    custom_cycler2 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '-', '-']))
     plt.rc('axes', prop_cycle=custom_cycler2)
 
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
@@ -131,19 +142,19 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     gs2 = GridSpec(2,3)
     # Plot position on x-y plane
     ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs((data_001_base[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.01')
-    ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.001')
-    ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0)
+    ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.0001')
+    ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0)
+                  , alpha=0.8, label='h=0.00001')
     ax2[0,0].set_title('Euler_base')
 
     ax2[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs((data_001_mod[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.01')
-    ax2[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.001')
-    ax2[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0)
+    ax2[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.0001')
+    ax2[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0)
+                  , alpha=0.8, label='h=0.00001')
     ax2[0,1].set_title('Euler_modiefied')
 
     # ax2[0,1].yaxis.set_minor_locator(locminy)
@@ -152,27 +163,27 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     # ax2[0,1].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
     ax2[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs((data_001_rk2[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.01')
-    ax2[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.001')
-    ax2[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0)
+    ax2[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.0001')
+    ax2[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0)
+                  , alpha=0.8, label='h=0.00001')
     ax2[0,2].set_title('RK2-Heun')
 
     ax2[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs((data_001_leap[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.01')
-    ax2[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.001')
-    ax2[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0)
+    ax2[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0)
                   , alpha=0.8, label='h=0.0001')
+    ax2[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0)
+                  , alpha=0.8, label='h=0.00001')
     ax2[1,0].set_title('Leapfrog')
 
     ax2[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.01')
+                  , alpha=0.8, label='h=0.001')
     ax2[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0),
-     alpha=0.8, label='h=0.001')
+     alpha=0.8, label='h=0.0001')
     ax2[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0)
-                  , alpha=0.8, label='h=0.0001')
+                  , alpha=0.8, label='h=0.00001')
     ax2[1,1].set_title('RK4')
 
     for j in range(3):
@@ -202,7 +213,8 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     # ax212.axis('off')  # Turn off the axes for the empty subplot
     fig2.delaxes(ax2[1,-1])
 
-    fig2.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig2.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+                  fontsize=52, fontweight='600')
 
     pdf.savefig(dpi=100)
     plt.close()
@@ -214,7 +226,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
     locmajy = mticker.LogLocator(base=10, numticks=100)
 
-    custom_cycler3 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-.', ':', '-', '-']))
+    custom_cycler3 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-', ':', '-', '-']))
     plt.rc('axes', prop_cycle=custom_cycler3)
 
     fig3, ax3 = plt.subplots(1, 3, figsize=(40, 17))
@@ -235,7 +247,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
                  alpha=0.8, label='Leapfrog')
     ax3[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0),
                  alpha=0.8, label='RK4')    
-    ax3[2].set_title('h=0.0001')
+    ax3[2].set_title('h=0.00001')
     ax3[2].legend(loc='upper right')    
 
     ax3[1].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0), 
@@ -248,7 +260,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
                 alpha=0.8, label='Leapfrog')
     ax3[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0), 
                 alpha=0.8, label='RK4')    
-    ax3[1].set_title('h=0.001')
+    ax3[1].set_title('h=0.0001')
     ax3[1].legend(loc='upper right')
 
     
@@ -262,7 +274,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
                 alpha=0.8, label='Leapfrog')
     ax3[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0), 
                 alpha=0.8, label='RK4')    
-    ax3[0].set_title('h=0.01')
+    ax3[0].set_title('h=0.001')
     ax3[0].legend(loc='lower right')
 
     for i in range(3):
@@ -286,7 +298,8 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
     ax3[2].yaxis.set_minor_formatter(mticker.NullFormatter())
     ax3[2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-    fig3.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig3.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+                  fontsize=52, fontweight='600')
     
     pdf.savefig(dpi=100)
     plt.close()
@@ -306,29 +319,29 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 #     fig4, ax4 = plt.subplots(2, 3, figsize=(40, 27))
 #     gs4 = GridSpec(2,3)
 #     # Plot position on x-y plane
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='h=0.01')
+#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='h=0.00001')
+#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='h=0.0001')
+#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='h=0.001')
 #     ax4[0,0].set_title('Euler_base')
 
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='h=0.01')
+#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='h=0.00001')
+#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='h=0.0001')
+#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='h=0.001')
 #     ax4[0,1].set_title('Euler_modiefied')
 
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='h=0.01')
+#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='h=0.00001')
+#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='h=0.0001')
+#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='h=0.001')
 #     ax4[0,2].set_title('RK2-Heun')
 
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='h=0.01')
+#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='h=0.00001')
+#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='h=0.0001')
+#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='h=0.001')
 #     ax4[1,0].set_title('Leapfrog')
 
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.01')
+#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.00001')
+#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
+#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.001')
 #     ax4[1,1].set_title('RK4')
 
 #     for i in range(2):
@@ -380,7 +393,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 #     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
 #     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='Leapfrog')
 #     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[2].set_title('h=0.0001')
+#     ax5[2].set_title('h=0.00001')
 #     ax5[2].legend(loc='upper right')
 
 #     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='Euler_base')
@@ -388,7 +401,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 #     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
 #     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='Leapfrog')
 #     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[1].set_title('h=0.001')
+#     ax5[1].set_title('h=0.0001')
 #     ax5[1].legend(loc='upper right')
 
 #     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='Euler_base')
@@ -396,7 +409,7 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 #     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
 #     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='Leapfrog')
 #     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[0].set_title('h=0.01')
+#     ax5[0].set_title('h=0.001')
 #     ax5[0].legend(loc='lower right')
 
 #     for i in range(3):
@@ -483,7 +496,8 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     ax6[1,2].axis('off')
 
-    fig6.suptitle('Energy Error vs. Time Step\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig6.suptitle('Energy Error vs. Time Step\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                   fontsize=52, fontweight='600')
 
 
     for i in range(2):
@@ -547,11 +561,12 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     ax7[1,2].axis('off')
 
-    fig7.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig7.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                   fontsize=52, fontweight='600')
 
     for i in range(2):
         for j in range(3):
-            ax7[i,j].set_xticklabels(['0.0001', '0.001', '0.01'])
+            ax7[i,j].set_xticklabels(['0.00001', '0.001', '0.01'])
             ax7[i,j].set_xlabel('Time Step')
             ax7[i,j].set_ylabel('|(E-E0)/E0|')
             ax7[i,j].set_yscale('log')
@@ -590,17 +605,18 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     ax8[0].boxplot([derr_00001_base, derr_00001_mod, derr_00001_rk2, derr_00001_leap, derr_00001_rk4], 
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[0].set_title('h=0.0001')
+    ax8[0].set_title('h=0.00001')
     
     ax8[1].boxplot([derr_0001_base, derr_0001_mod, derr_0001_rk2, derr_0001_leap, derr_0001_rk4],
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[1].set_title('h=0.001')
+    ax8[1].set_title('h=0.0001')
     
     ax8[2].boxplot([derr_001_base, derr_001_mod, derr_001_rk2, derr_001_leap, derr_001_rk4],
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[2].set_title('h=0.01')
+    ax8[2].set_title('h=0.001')
 
-    fig8.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f)'%(mass_1, mass_2, e, rp), fontsize=52, fontweight='600')
+    fig8.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.1f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+                  fontsize=52, fontweight='600')
     
     for i in range(3):
         # ax8[i,j].set_xticklabels(['0.0001', '0.001', '0.01'])
@@ -630,43 +646,43 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 #     gs9 = GridSpec(2,3)
 #     # Plot position on x-y plane
 #     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.log10(np.abs((data_001_base[:, 4]-Etot_0)/Etot_0))
-#                   , alpha=0.8, label='h=0.01')
-#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.log10(np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0))
 #                   , alpha=0.8, label='h=0.001')
-#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.log10(np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0))
+#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.log10(np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0))
 #                   , alpha=0.8, label='h=0.0001')
+#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.log10(np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0))
+#                   , alpha=0.8, label='h=0.00001')
 #     ax9[0,0].set_title('Euler_base')
 
 #     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.log10(np.abs((data_001_mod[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.01')
-#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.log10(np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.001')
-#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.log10(np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0))
+#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.log10(np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.0001')
+#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.log10(np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.00001')
 #     ax9[0,1].set_title('Euler_modified')
 
 #     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.log10(np.abs((data_001_rk2[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.01')
-#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.log10(np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.001')
-#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.log10(np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0))
+#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.log10(np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.0001')
+#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.log10(np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.00001')
 #     ax9[0,2].set_title('RK2-Heun')
 
 #     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.log10(np.abs((data_001_leap[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.01')
-#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.log10(np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.001')
-#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.log10(np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0))
+#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.log10(np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.0001')
+#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.log10(np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.00001')
 #     ax9[1,0].set_title('Leapfrog')
 
 #     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.log10(np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.01')
-#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.log10(np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.001')
-#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.log10(np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0))
+#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.log10(np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0))
 #                     , alpha=0.8, label='h=0.0001')
+#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.log10(np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0))
+#                     , alpha=0.8, label='h=0.00001')
 #     ax9[1,1].set_title('RK4')
 
 #     for i in range(2):
@@ -695,15 +711,15 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     # ax9[0].boxplot([derr_00001_mod, derr_00001_rk2, derr_00001_leap, derr_00001_rk4], 
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[0].set_title('h=0.0001')
+    # ax9[0].set_title('h=0.00001')
     
     # ax9[1].boxplot([derr_0001_mod, derr_0001_rk2, derr_0001_leap, derr_0001_rk4],
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[1].set_title('h=0.001')
+    # ax9[1].set_title('h=0.0001')
     
     # ax9[2].boxplot([derr_001_mod, derr_001_rk2, derr_001_leap, derr_001_rk4],
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[2].set_title('h=0.01')
+    # ax9[2].set_title('h=0.001')
 
     # fig9.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
     
@@ -724,15 +740,15 @@ with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f.pdf'%e) as pdf:
 
     # ax9[0].boxplot([derr_00001_rk2, derr_00001_leap, derr_00001_rk4], 
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[0].set_title('h=0.0001')
+    # ax9[0].set_title('h=0.00001')
     
     # ax9[1].boxplot([derr_0001_rk2, derr_0001_leap, derr_0001_rk4],
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[1].set_title('h=0.001')
+    # ax9[1].set_title('h=0.0001')
     
     # ax9[2].boxplot([derr_001_rk2, derr_001_leap, derr_001_rk4],
     #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[2].set_title('h=0.01')
+    # ax9[2].set_title('h=0.001')
 
     # fig9.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
     
