@@ -31,8 +31,8 @@ print("Simulation Done")
 
 
 fig, ax = plt.subplots()
-# ax.set_xlim((-1,1))
-# ax.set_ylim((-1,1))
+ax.set_xlim((-1,1))
+ax.set_ylim((-1,1))
 #scat = ax.scatter(positions[0,0,0], positions[0,0,1], c="b", s=5, label="Star 1")
 
 
@@ -43,8 +43,8 @@ def update(frame, positions):
     y1 = positions[:frame,0,1]
     y2 = positions[:frame,1,1]
     # update the scatter plot:
-    ax.plot(x1, y1, color="tab:blue", linewidth=5, label="Body 1")
-    ax.plot(x2, y2, color="tab:orange", linewidth=5, label="Body 2")
+    ax.plot(x1, y1, color="tab:blue", label="Body 1")
+    ax.plot(x2, y2, color="tab:orange", label="Body 2")
     
 
 print("Starting Animation")
