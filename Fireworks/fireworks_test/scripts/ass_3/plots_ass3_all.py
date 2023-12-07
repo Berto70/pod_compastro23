@@ -17,8 +17,8 @@ Tperiod = ic_param[6]
 N_end = ic_param[7]
 
 #downsample
-n = 100
-m = 10
+n = 1
+m = 1
 w = 1
 
 data_00001 = np.load('./fireworks_test/data/ass_3/dt_1e-05.npz', allow_pickle=True)
