@@ -141,10 +141,11 @@ def integrator_hermite(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
                         softening: float = 0.,
+                        return_jerk: bool = True,
                         external_accelerations: Optional[List] = None):
     
 
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    acc, jerk, potential = acceleration_estimator(particles, softening, return_jerk=return_jerk)
 
     # This integrator requires jerk
     if jerk is None: raise ValueError("Hermite integrator requires jerk")
