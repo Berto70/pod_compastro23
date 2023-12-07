@@ -133,53 +133,53 @@ class Nbody_units:
         :return: An Instance of the class
         """
 
-@classmethod
-def Henon(cls,particles: Particles, L: float = 1, V: float = 1., T: float = 1., Q: float = 0.5) -> Nbody_units:
-    """
-    Use the Henon units, so that the mass scale is the total mass of the Nbody particles.
-    Then, the scale radius is set so that the potential energy is Epot=-0.5.
-    These units also assume that the system is in virial equilibrium, therefore, the velocity
-    scale is set in the way that Ekin=0.25, so Etot=-0.25.
-    This of couse is not true if all the velocities are 0. In this case Etot=Epot=-0.5.
-    The assumption on what is the length scale of the particles is controlled by L, that by default
-    is 1 pc. The particles class in input is not modified.
-    Example:
+    @classmethod
+    def Henon(cls,particles: Particles, L: float = 1, V: float = 1., T: float = 1., Q: float = 0.5) -> Nbody_units:
+        """
+        Use the Henon units, so that the mass scale is the total mass of the Nbody particles.
+        Then, the scale radius is set so that the potential energy is Epot=-0.5.
+        These units also assume that the system is in virial equilibrium, therefore, the velocity
+        scale is set in the way that Ekin=0.25, so Etot=-0.25.
+        This of couse is not true if all the velocities are 0. In this case Etot=Epot=-0.5.
+        The assumption on what is the length scale of the particles is controlled by L, that by default
+        is 1 pc. The particles class in input is not modified.
+        Example:
 
-    >>> # Assume we have a code that generate a Plummer sphere with the position in kpc and the velocity in kms
-    >>> # To instansiated the Nbody units to scale the sytem we can use
-    >>> nu = Nbody_units.Henon(particles, L=1000) # L in kpc, V already in km/s
-    >>> # so since the mass scale is the total mass  to transform to Nbody units
-    >>> posnbody = nu.pos_to_Nbody(particles.pos,L=1000) # L=1000 because this function assume the input in pc, while we are using kpc
-    >>> velnbody = nu.pos_to_Nbody(particles.vel) # input scale in km/s -> ok
-    >>> massnbody = nu.pos_to_Nbody(particles.mass) # input scale in Msun -> ok
+        >>> # Assume we have a code that generate a Plummer sphere with the position in kpc and the velocity in kms
+        >>> # To instansiated the Nbody units to scale the sytem we can use
+        >>> nu = Nbody_units.Henon(particles, L=1000) # L in kpc, V already in km/s
+        >>> # so since the mass scale is the total mass  to transform to Nbody units
+        >>> posnbody = nu.pos_to_Nbody(particles.pos,L=1000) # L=1000 because this function assume the input in pc, while we are using kpc
+        >>> velnbody = nu.pos_to_Nbody(particles.vel) # input scale in km/s -> ok
+        >>> massnbody = nu.pos_to_Nbody(particles.mass) # input scale in Msun -> ok
 
-    :param particles: that is an instance of the class :class:`~fireworks.particles.Particles`
-    :param L:  Set the length scale in units of pc
-    :param V:  Set the velocity scale in units of km/s
-    :param T:  Set the time scale in units of Myr
-    :param Q:  Virial ratio, (0.5 virial equilibrium, >0.5 super-virial, <0.5 sub-virial)
-    :return: An Instance of the class
-    """
+        :param particles: that is an instance of the class :class:`~fireworks.particles.Particles`
+        :param L:  Set the length scale in units of pc
+        :param V:  Set the velocity scale in units of km/s
+        :param T:  Set the time scale in units of Myr
+        :param Q:  Virial ratio, (0.5 virial equilibrium, >0.5 super-virial, <0.5 sub-virial)
+        :return: An Instance of the class
+        """
 
-    pcopy = particles.copy()
-    Mtot = np.sum(particles.mass)
-    pcopy.mass = pcopy.mass/Mtot
-
-
-    Epot = pcopy.Epot(softening=0.)
-    Rscale = 4*Epot*(Q-1)
-
-    Ekin = pcopy.Ekin()
+        pcopy = particles.copy()
+        Mtot = np.sum(particles.mass)
+        pcopy.mass = pcopy.mass/Mtot
 
 
-    # Since V is automatically rescale based on Mtot and Lscale, lets set it to 1, take
-    # the scale to remove it from the actual scaling for Henon units
-    nu_test = Nbody_units(M=Mtot,L=L/Rscale,V=1)
-    Vscale_original = nu_test.Vscale
+        Epot = pcopy.Epot(softening=0.)
+        Rscale = 4*Epot*(Q-1)
 
-    Vscale = 0.5*np.sqrt( (Q/(1-Q))/Ekin ) * Vscale_original
+        Ekin = pcopy.Ekin()
 
-    return cls(M=Mtot, L=L/Rscale, V=V/Vscale, T=T)
+
+        # Since V is automatically rescale based on Mtot and Lscale, lets set it to 1, take
+        # the scale to remove it from the actual scaling for Henon units
+        nu_test = Nbody_units(M=Mtot,L=L/Rscale,V=1)
+        Vscale_original = nu_test.Vscale
+
+        Vscale = 0.5*np.sqrt( (Q/(1-Q))/Ekin ) * Vscale_original
+
+        return cls(M=Mtot, L=L/Rscale, V=V/Vscale, T=T)
 
     def pos_to_Nbody(self, pos: Union[npt.NDArray[np.float64],float], L: float=1.) -> npt.NDArray[np.float64]:
         """
