@@ -12,7 +12,7 @@ import fireworks.nbodylib.timesteps as fts
 mass1 = 8.0
 mass2 = 2.0
 rp = 1.0
-e = 0.0 # Set eccentricity to 0 for a circular orbit
+e = 0.3 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 
 Etot_0, _, _ = part.Etot()
@@ -25,7 +25,7 @@ N_end = 10 # -> N_end*Tperiod
 
 # config file
 ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-np.savetxt('./fireworks_test/data/ass_3/ic_param_all.txt', ic_param)
+np.savetxt('./Fireworks/fireworks_test/data/ass_3/ic_param_all.txt', ic_param)
 
 #define number of time steps per time increment
 time_increments = np.array([0.00001, 0.0001, 0.001])
@@ -33,7 +33,7 @@ n_ts = np.floor(N_end*Tperiod/time_increments)
 
 integrator_dict = {'Euler_base': fint.integrator_template, 
                    'Euler_modified': fint.integrator_euler,
-                   'Hermite': fint.integrator_hermite, 
+                #    'Hermite': fint.integrator_hermite, 
                    'RK2-Heun': fint.integrator_heun, 
                    'Leapfrog': fint.integrator_leapfrog, 
                    'RK4': fint.integrator_rk4 
@@ -41,7 +41,7 @@ integrator_dict = {'Euler_base': fint.integrator_template,
 
 for dt in time_increments:
     N_ts = int(np.floor(N_end*Tperiod/dt))
-    file_name = './fireworks_test/data/ass_3/dt_'+str(dt)
+    file_name = './Fireworks/fireworks_test/data/ass_3/dt_'+str(dt)
     data = {}
     for integrator_name, integrator in integrator_dict.items():
         if integrator_name == 'Hermite':
