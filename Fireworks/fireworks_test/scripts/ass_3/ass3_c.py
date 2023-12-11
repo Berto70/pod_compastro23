@@ -22,8 +22,8 @@ Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 # print("Binary Period Tperiod:", Tperiod)
 
 t = 0.
-tstep = 0.00001
-N_end = 1
+tstep = 0.000001
+N_end = 65
 
 pos_i = []
 vel_i = []
@@ -31,12 +31,25 @@ acc_i = []
 mass_i = []
 Etot_i = []
 
+position = np.array([[0,0,0],
+                     [0.5,0.866,9],
+                     [1,0,0]])
+vel = np.array([[0,0,0],
+                [0,0,0],
+                [0,0,0]])
+
+mass = np.array([3,4,5])
+
+
+# Create instances of the particles
+particles = Particles(position, vel, mass)
+
 
 pbar = tqdm(total=N_end*Tperiod/tstep)
 
 while t < N_end*Tperiod:
     # t += tstep
-    part, _, acc, jerk, _ = fint.integrator_hermite(part, 
+    part, _, acc, jerk, _ = fint.integrator_leapfrog(particles, 
                                                     tstep=tstep, 
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized
                                                 )
@@ -52,7 +65,7 @@ while t < N_end*Tperiod:
     pbar.update(1)
 
     t += tstep
-    # tstep = fts.euler_timestep(part, eta=0.00001, acc = acc)
+    tstep = fts.euler_timestep(part, eta=0.0001, acc = acc)
 
 pos_i = np.array(pos_i)
 vel_i = np.array(vel_i)
@@ -72,11 +85,11 @@ np.savetxt('./fireworks_test/data/ass_3/ic_param.txt', ic_param)
 print('pos_i', pos_i.shape)
 print('vel_i', vel_i.shape)
 
-# peri = np.sqrt(pos_i[:, :, 0]**2 + pos_i[:, :, 1]**2).min(axis=1)
-# apo = np.sqrt(pos_i[:, :, 0]**2 + pos_i[:, :, 1]**2).max(axis=1)
+# # peri = np.sqrt(pos_i[:, :, 0]**2 + pos_i[:, :, 1]**2).min(axis=1)
+# # apo = np.sqrt(pos_i[:, :, 0]**2 + pos_i[:, :, 1]**2).max(axis=1)
 
-# np.save('./fireworks_test/data/ass_3/periastron.npy', peri)
-# np.save('./fireworks_test/data/ass_3/apoastron.npy', apo)
+# # np.save('./fireworks_test/data/ass_3/periastron.npy', peri)
+# # np.save('./fireworks_test/data/ass_3/apoastron.npy', apo)
 
-# print('peri', peri.shape)
-# print('apo', apo.shape)
+# # print('peri', peri.shape)
+# # print('apo', apo.shape)

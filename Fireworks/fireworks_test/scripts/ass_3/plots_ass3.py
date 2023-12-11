@@ -27,7 +27,9 @@ Etot_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data
 
 fig, ax = plt.subplots(2, 1, figsize=(10, 20))
 # Plot position on x-y plane
-ax[0].plot(pos_i[:, :, 0], pos_i[:, :, 1], label=['Body 1', 'Body 2'], linewidth=0.0001)
+ax[0].plot(pos_i[:, :, 1], pos_i[:, :, 2], label=['Body 1', 'Body 2', 'Body 3'], linewidth=0.0001)
+# ax[0].plot(pos_i[:, :, 2], pos_i[:, :, 3], label=['Body 1', 'Body 2', 'Body 3'], linewidth=0.0001)
+# ax[0].plot(pos_i[:, :, 4], pos_i[:, :, 5], label=['Body 1', 'Body 2', 'Body 3'], linewidth=0.0001)
 ax[0].set_xlabel('X')
 ax[0].set_ylabel('Y')
 ax[0].legend()
