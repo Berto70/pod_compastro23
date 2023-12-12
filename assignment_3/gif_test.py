@@ -10,7 +10,7 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
 
-path = '/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test'
+path = '/home/bertinelli/pod_compastro23/Fireworks/fireworks_test'
 # path to data
 path_data = path + "/data/ass_3/"
 
@@ -101,15 +101,18 @@ def update_pos(frame):
 
     # ax.set_xlim(np.min(intr[:, 2])-0.5, np.max(intr[:, 2])+0.5)
     # ax.set_ylim(np.min(intr[:, 3])-0.5, np.max(intr[:, 3])+0.5)
+
+    ax.set_xlim(-3, 6)
+    ax.set_ylim(-0.5, 2)
     
     fig.suptitle('Position on X-Y Plane', 
                  fontsize=24, fontweight='600')
 
 print("Starting Position Animation")
 
-gif_pos = animation.FuncAnimation(fig=fig, func=update_pos, frames=frames,)
+gif_pos = animation.FuncAnimation(fig=fig, func=update_pos, frames=frames, interval=10)
 
-gif_pos.save("/ca23/ext_volume/pod_compastro23/assignment_3/animations/two_bodies_test.gif", writer="pillow")
+gif_pos.save("/home/bertinelli/pod_compastro23/assignment_3/animations/two_bodies_test.gif", writer="pillow")
 
 print("Position Animation Saved")
 
