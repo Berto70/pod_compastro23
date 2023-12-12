@@ -1,4 +1,4 @@
-fireworks.nbodylib.potentials
+﻿fireworks.nbodylib.potentials
 =============================
 
 .. automodule:: fireworks.nbodylib.potentials
@@ -20,9 +20,16 @@ fireworks.nbodylib.potentials
             :nosignatures:
             :template: class.rst
             
+               Hernquist
+               Jaffe
+               LogHalo
                MultiPotential
+               MyamotoNagai
+               NFW
+               Plummer
                Point_Mass
                Potential_Base
+               TruncatedPlaw
       
    
 

@@ -22,13 +22,17 @@
                ~Nbody_units.Lkpc
                ~Nbody_units.Lsun
                ~Nbody_units.__init__
+               ~Nbody_units.m_to_Msun
                ~Nbody_units.m_to_Nbody
                ~Nbody_units.m_to_physical
                ~Nbody_units.pos_to_Nbody
+               ~Nbody_units.pos_to_pc
                ~Nbody_units.pos_to_physical
+               ~Nbody_units.t_to_Myr
                ~Nbody_units.t_to_Nbody
                ~Nbody_units.t_to_physical
                ~Nbody_units.vel_to_Nbody
+               ~Nbody_units.vel_to_kms
                ~Nbody_units.vel_to_physical
       
    

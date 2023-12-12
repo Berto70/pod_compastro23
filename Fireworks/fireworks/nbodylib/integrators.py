@@ -110,6 +110,11 @@ def integrator_tsunami(particles: Particles,
     >>> tcurrent=0
     >>> for t in tintermediate:
     >>>     tstep=t-tcurrent
+    >>>     ## NOTICE: Sometime the efftime can be so large that the current time is now larger than the current t
+    >>>     ## the simple check below allow to skip these steps and go directly to the t in tintermediate for which
+    >>>     ## t>tcurrent and we have to actually integrate the system
+    >>>     if tstep<=: continue # continue means go to the next step (i.e. next t in the array)
+    >>>
     >>>     particles, efftime,_,_,_=integrator_tsunami(particles,tstep)
     >>>     # Here we can save stuff, plot stuff, etc.
     >>>     tcurrent=tcurrent+efftime
@@ -128,6 +133,30 @@ def integrator_tsunami(particles: Particles,
         the final time won't be exactly the one put in input. Take this in mind when using this  integrator.
         Notice also that the TSUNAMI integrator will rescale your system to the centre of mass frame of reference.
 
+    .. warning::
+        Considering the way the TSUNAMI python wrapper is implemented, the particle positions and velocities are
+        updated in place. So if you store the particle.pos or particle.vel inside your loop in a list, each time
+        the integrator is called all the elements in the list are updated. Therefore, you will end with a list of pos
+        and vel that are or equal to the positions and velocities updated in the last tsunami call.
+        To avoid this issue, save a copy of the arrays in the list. For example
+
+        >>> tstart=0
+        >>> tintermediate=[5,10,15]
+        >>> tcurrent=0
+        >>> pos_list=[]
+        >>> vel_list=[]
+        >>> for t in tintermediate:
+        >>>     tstep=t-tcurrent
+        >>>     if tstep<=: continue # continue means go to the next step (i.e. next t in the array)
+        >>>
+        >>>     particles, efftime,_,_,_=integrator_tsunami(particles,tstep)
+        >>>
+        >>>     # Save the particles positions and velocities
+        >>>     pos_list.append(particles.pos.copy())
+        >>>     vel_list.append(particles.vel.copy())
+        >>>
+        >>>     # Here we can save stuff, plot stuff, etc.
+        >>>     tcurrent=tcurrent+efftime
 
 
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`

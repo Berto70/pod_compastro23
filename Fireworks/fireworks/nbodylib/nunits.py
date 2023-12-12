@@ -16,6 +16,7 @@ class Nbody_units:
     """
     This class is used to handle transformation from and to Nbody Units.
     Internally it works considering the physical units in
+
         - mass: Msun
         - length: pc
         - velocity: km/s
