@@ -34,6 +34,7 @@ class Nbody_units:
     and to Nbody units to the standard physical units (pc, Msun, km/s, Myr) or to the
     physical units used in input.
     For example, assume we have
+
     >>> x = 3  # kpc
     >>> vx = 10 # km/s
     >>> m=5  # Msun
