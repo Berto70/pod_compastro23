@@ -99,7 +99,7 @@ for t in tintermediate:
 
 pos_i = np.array(pos_i)
 vel_i = np.array(vel_i)
-acc_i = np.array(acc_i)
+# acc_i = np.array(acc_i)
 mass_i = np.array(mass_i)
 Etot_i = np.array(Etot_i)
 tstep_i = np.array(tstep_i)
@@ -112,7 +112,7 @@ np.save(path + '/data/ass_3/Etot_i.npy', Etot_i)
 np.save(path + '/data/ass3/tstep_i.npy', tstep_i)
 
 ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tstep, N_end])
-np.savetxt('./fireworks_test/data/ass_3/ic_param.txt', ic_param)
+np.savetxt('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/ic_param.txt', ic_param)
 
 print('pos_i', pos_i.shape)
 print('\nvel_i', vel_i.shape)
