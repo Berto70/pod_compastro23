@@ -7,7 +7,7 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
 
-path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
+path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 
 # # Initialize two stars in a circular orbit
 # mass1 = 8.0
@@ -72,7 +72,7 @@ particles = Particles(position, vel, mass)
 ## TSUNAMI INTEGRATOR ##
 
 tstart=0
-tintermediate=[5,10,15,20,30,40,50,60,65]
+tintermediate=np.linspace(0+0.00001, 65, 100000)
 tcurrent=0
 
 pbar = tqdm(total=len(tintermediate))
@@ -90,7 +90,7 @@ for t in tintermediate:
     mass_i.append(particles.mass.copy())
     Etot_j, _, _ = particles.Etot()
     Etot_i.append(Etot_j.copy())
-    tstep_i.append(tstep.copy())
+    tstep_i.append(tstep)
 
     pbar.update(1)
 
@@ -109,10 +109,10 @@ np.save(path + '/data/ass_3/vel_i.npy', vel_i)
 np.save(path + '/data/ass_3/acc_i.npy', acc_i)
 np.save(path + '/data/ass_3/mass_i.npy', mass_i)
 np.save(path + '/data/ass_3/Etot_i.npy', Etot_i)
-np.save(path + '/data/ass3/tstep_i.npy', tstep_i)
+np.save(path + '/data/ass_3/tstep_i.npy', tstep_i)
 
-ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tstep, N_end])
-np.savetxt('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/ic_param.txt', ic_param)
+# ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tstep, N_end])
+# np.savetxt(path + '/data/ass_3/ic_param.txt', ic_param)
 
 print('pos_i', pos_i.shape)
 print('\nvel_i', vel_i.shape)
