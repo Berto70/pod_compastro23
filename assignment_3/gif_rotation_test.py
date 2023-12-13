@@ -18,7 +18,7 @@ extra_frames_end = pause_duration_end * frame_rate
 # Create an array of frame indices
 frames = np.concatenate([
     np.full(int(extra_frames), 0),  # initial frame (pause
-    np.arange(0, len(intr)-1, 100),  # original frames
+    np.arange(0, len(intr)-1, 50),  # original frames
     np.full(int(extra_frames_end), len(intr)-2)  # extra frames at the end
 ])
 
@@ -53,7 +53,7 @@ def update_pos(frame):
     ax.set_ylim(-0.5, 2)
     ax.set_zlim(-3, 6)
 
-    ax.view_init(30, frame)
+    ax.view_init(30, 30)
 
 print("Starting Position Animation")
 

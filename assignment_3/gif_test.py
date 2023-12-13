@@ -3,12 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 import fireworks.ic as fic
 from matplotlib import pyplot as plt, ticker as mticker, animation as animation
-from evolver import evolve
 
-from fireworks.particles import Particles
-import fireworks.nbodylib.dynamics as fdyn
-import fireworks.nbodylib.integrators as fint
-import fireworks.nbodylib.timesteps as fts
 
 path = '/home/bertinelli/pod_compastro23/Fireworks/fireworks_test'
 # path to data
