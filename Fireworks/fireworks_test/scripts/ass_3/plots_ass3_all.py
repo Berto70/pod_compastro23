@@ -6,7 +6,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 # LOAD DATA #####
 
-ic_param = np.genfromtxt('./fireworks_test/data/ass_3/ic_param_all.txt')
+ic_param = np.genfromtxt('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/ic_param_all.txt')
 mass_1 = ic_param[0]
 mass_2 = ic_param[1]
 rp = ic_param[2]
@@ -17,13 +17,13 @@ Tperiod = ic_param[6]
 N_end = ic_param[7]
 
 #downsample
-n = 1
-m = 1
+n = 100
+m = 10
 w = 1
 
-data_00001 = np.load('./fireworks_test/data/ass_3/dt_1e-05.npz', allow_pickle=True)
-data_0001 = np.load('./fireworks_test/data/ass_3/dt_0.0001.npz', allow_pickle=True)
-data_001 = np.load('./fireworks_test/data/ass_3/dt_0.001.npz', allow_pickle=True)
+data_00001 = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/dt_0.0001.npz', allow_pickle=True)
+data_0001 = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/dt_0.001.npz', allow_pickle=True)
+data_001 = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/dt_0.01.npz', allow_pickle=True)
 
 data_00001_base = data_00001['Euler_base'][::n]
 data_00001_mod = data_00001['Euler_modified'][::n]
@@ -46,7 +46,7 @@ data_001_rk2 = data_001['RK2-Heun'][::w]
 data_001_leap = data_001['Leapfrog'][::w]
 data_001_rk4 = data_001['RK4'][::w]
 
-with PdfPages('./fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_both.pdf' % (e, rp)) as pdf:
+with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_both.pdf' % (e, rp)) as pdf:
 
     # POSITION X-Y PLOTS
 

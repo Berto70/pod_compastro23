@@ -11,8 +11,8 @@ import fireworks.nbodylib.timesteps as fts
 # Initialize two stars in a circular orbit
 mass1 = 8.0
 mass2 = 2.0
-rp = 1.0
-e = 0.0 # Set eccentricity to 0 for a circular orbit
+rp = 0.9
+e = 0.7 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 
 Etot_0, _, _ = part.Etot()
@@ -28,7 +28,7 @@ ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
 np.savetxt('./Fireworks/fireworks_test/data/ass_3/ic_param_all.txt', ic_param)
 
 #define number of time steps per time increment
-time_increments = np.array([0.01, 0.001, 1])
+time_increments = np.array([0.0001, 0.001, 0.01])
 n_ts = np.floor(N_end*Tperiod/time_increments)
 
 integrator_dict = {'Euler_base': fint.integrator_template, 
