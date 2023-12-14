@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load data
-ic_param = np.genfromtxt('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/ic_param.txt')
+ic_param = np.genfromtxt('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/ic_param.txt')
 mass1 = ic_param[0]
 mass_2 = ic_param[1]
 rp = ic_param[2]
@@ -13,11 +13,11 @@ Tperiod = ic_param[6]
 # tstep = ic_param[7]
 N_end = ic_param[7]
 
-pos_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_i.npy', allow_pickle=True)
-vel_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/vel_i.npy', allow_pickle=True)
-acc_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/acc_i.npy', allow_pickle=True)
-mass_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/mass_i.npy', allow_pickle=True)
-Etot_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data/ass_3/Etot_i.npy', allow_pickle=True)
+pos_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_i.npy', allow_pickle=True)[::100]
+vel_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/vel_i.npy', allow_pickle=True)
+acc_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/acc_i.npy', allow_pickle=True)
+mass_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/mass_i.npy', allow_pickle=True)
+Etot_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/Etot_i.npy', allow_pickle=True)
 
 # print(Etot_i)
 # print(Etot_i.shape)
@@ -27,7 +27,7 @@ Etot_i = np.load('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/data
 
 fig, ax = plt.subplots(2, 1, figsize=(10, 20))
 # Plot position on x-y plane
-ax[0].scatter(pos_i[:, :, 0], pos_i[:, :, 1], label=['Body 1', 'Body 2', 'Body 3'], s=500)
+ax[0].plot(pos_i[:, :, 0], pos_i[:, :, 1], label=['Body 1', 'Body 2'])
 # ax[0].plot(pos_i[:, :, 2], pos_i[:, :, 3], label=['Body 1', 'Body 2', 'Body 3'], linewidth=0.0001)
 # ax[0].plot(pos_i[:, :, 4], pos_i[:, :, 5], label=['Body 1', 'Body 2', 'Body 3'], linewidth=0.0001)
 ax[0].set_xlabel('X')
@@ -41,7 +41,7 @@ ax[0].set_title('Position on X-Y Plane')
 # ax[1].set_ylabel('v_y')
 # ax[1].legend()
 # ax[1].set_title('Velocity on Y Plane')
-plt.savefig('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/pos_vel_plot.pdf')
+plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_vel_plot.pdf')
 
 # fig1, ax1 = plt.subplots(1, 1, figsize=(8,5))
 # # Plot position on x-y plane
@@ -60,7 +60,7 @@ ax2.set_xlabel('absolute time')
 ax2.set_ylabel('|(E-E0)/E0|')
 ax2.set_yscale('log')  # Set y-axis to be in log scale
 ax2.set_title('ΔE evolution')
-plt.savefig('/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/Etot.pdf')
+plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/Etot.pdf')
 
 # # Plot the precession of perihelion and aphelion
 # fig2, ax2 = plt.subplots(1, 1, figsize=(8, 5))
