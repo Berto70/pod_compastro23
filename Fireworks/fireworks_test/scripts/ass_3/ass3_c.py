@@ -111,8 +111,8 @@ np.save(path + '/data/ass_3/mass_i.npy', mass_i)
 np.save(path + '/data/ass_3/Etot_i.npy', Etot_i)
 # np.save(path + '/data/ass_3/tstep_i.npy', tstep_i)
 
-# # ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tstep, N_end])
-# # np.savetxt(path + '/data/ass_3/ic_param.txt', ic_param)
+ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
+np.savetxt(path + '/data/ass_3/ic_param.txt', ic_param)
 
 # print('pos_i', pos_i.shape)
 # print('\nvel_i', vel_i.shape)

@@ -41,7 +41,7 @@ ax[0].set_title('Position on X-Y Plane')
 # ax[1].set_ylabel('v_y')
 # ax[1].legend()
 # ax[1].set_title('Velocity on Y Plane')
-plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_vel_plot.pdf')
+plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/pos_vel_plot.pdf')
 
 # fig1, ax1 = plt.subplots(1, 1, figsize=(8,5))
 # # Plot position on x-y plane
@@ -60,7 +60,7 @@ ax2.set_xlabel('absolute time')
 ax2.set_ylabel('|(E-E0)/E0|')
 ax2.set_yscale('log')  # Set y-axis to be in log scale
 ax2.set_title('ΔE evolution')
-plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/Etot.pdf')
+plt.savefig('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/Etot.pdf')
 
 # # Plot the precession of perihelion and aphelion
 # fig2, ax2 = plt.subplots(1, 1, figsize=(8, 5))
