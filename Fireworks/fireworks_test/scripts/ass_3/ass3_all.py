@@ -12,7 +12,7 @@ import fireworks.nbodylib.timesteps as fts
 mass1 = 8.0
 mass2 = 2.0
 rp = 1.0
-e = 0.3 # Set eccentricity to 0 for a circular orbit
+e = 0.0 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 
 Etot_0, _, _ = part.Etot()
@@ -28,12 +28,12 @@ ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
 np.savetxt('./Fireworks/fireworks_test/data/ass_3/ic_param_all.txt', ic_param)
 
 #define number of time steps per time increment
-time_increments = np.array([0.00001, 0.0001, 0.001])
+time_increments = np.array([0.01, 0.001, 1])
 n_ts = np.floor(N_end*Tperiod/time_increments)
 
 integrator_dict = {'Euler_base': fint.integrator_template, 
                    'Euler_modified': fint.integrator_euler,
-                #    'Hermite': fint.integrator_hermite, 
+                   'Hermite': fint.integrator_hermite, 
                    'RK2-Heun': fint.integrator_heun, 
                    'Leapfrog': fint.integrator_leapfrog, 
                    'RK4': fint.integrator_rk4 
@@ -44,13 +44,16 @@ for dt in time_increments:
     file_name = './Fireworks/fireworks_test/data/ass_3/dt_'+str(dt)
     data = {}
     for integrator_name, integrator in integrator_dict.items():
+        tot_time = 0
+        N_ts_cum = 0
         if integrator_name == 'Hermite':
             array = np.zeros(shape=(N_ts, 5))
             part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
-            for t_i in tqdm(range(N_ts), desc=str(dt) + ' ' + integrator_name):
+            dt_copy = dt.copy()
+            for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                 part, _, acc, _, _ = integrator(part,
-                                                tstep=dt,
-                                                acceleration_estimator=fdyn.acceleration_direct_vectorized)
+                                                tstep=dt_copy,
+                                                acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
 
                 Etot_i, _, _ = part.Etot()
                 
@@ -58,7 +61,16 @@ for dt in time_increments:
                 array[t_i, 2:4]= part.pos[1, :2]
                 array[t_i, 4]  = Etot_i
 
-                dt = fts.euler_timestep(part, eta=0.001, acc = acc)
+
+                dt_copy = fts.euler_timestep(part, eta=0.001, acc = acc)
+
+                tot_time += dt_copy
+                N_ts_cum += 1
+
+                if tot_time >= N_end*Tperiod:
+                    break
+                elif N_ts_cum >= 10*N_ts:
+                    break
                 
             data[integrator_name] = array
         else: 
@@ -74,6 +86,11 @@ for dt in time_increments:
                 array[t_i, :2] = part.pos[0, :2]
                 array[t_i, 2:4]= part.pos[1, :2]
                 array[t_i, 4]  = Etot_i
+
+                if tot_time >= N_end*Tperiod:
+                    break
+                elif N_ts_cum >= 10*N_ts:
+                    break
                 
             data[integrator_name] = array
         
