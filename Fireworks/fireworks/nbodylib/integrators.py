@@ -141,11 +141,11 @@ def integrator_hermite(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
                         softening: float = 0.,
-                        return_jerk: bool = True,
-                        external_accelerations: Optional[List] = None):
+                        external_accelerations: Optional[List] = None,
+                        args: Optional[dict] = None):
     
 
-    acc, jerk, potential = acceleration_estimator(particles, softening, return_jerk=return_jerk)
+    acc, jerk, potential = acceleration_estimator(particles, softening, **args)
 
     # This integrator requires jerk
     if jerk is None: raise ValueError("Hermite integrator requires jerk")
@@ -160,13 +160,13 @@ def integrator_hermite(particles: Particles,
 
     # Preditor sub-step
     # 9 
-    vel_p = particles.vel + acc + (jerk * tstep**2)/2
+    vel_p = particles.vel + acc*tstep + (jerk * tstep**2)/2
 
     # 10
-    pos_p = particles.pos + particles.vel + (acc * tstep**2)/2 + (jerk*tstep**3)/6
+    pos_p = particles.pos + particles.vel*tstep + (acc * tstep**2)/2 + (jerk*tstep**3)/6
 
     # 11 # 12
-    acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None, return_jerk=True)
+    acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None, **args)
 
     #Check additional accelerations
     if external_accelerations is not None:        
