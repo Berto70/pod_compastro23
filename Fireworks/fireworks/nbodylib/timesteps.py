@@ -109,7 +109,7 @@ def adaptive_timestep(integrator: Callable,
     v_pred = np.sqrt(np.sum(particles_pred.vel*particles_pred.vel, axis=1))
     eps_v = np.absolute(v_int-v_pred)
 
-    ts = dt* np.min([ np.power(np.nanmin(epsilon/(eps_r + 1e-10)), 1/n_min), np.power(np.nanmin(epsilon/(eps_v + 1e-10)), 1/n_min)])#TO BE CHECKED
+    ts = dt* np.min([np.power(np.nanmin(epsilon/(eps_r)), 1/n_min), np.power(np.nanmin(epsilon/(eps_v)), 1/n_min)])#TO BE CHECKED
 
     if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
     if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
