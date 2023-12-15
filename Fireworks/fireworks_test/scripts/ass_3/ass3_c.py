@@ -11,6 +11,9 @@ np.random.seed(9725)
 
 path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
+## TSUNAMI TRUE/FALSE CONDITION ##
+tsunami_true = False
+
 ## TWO-BODY PROBLEM ##
 # Initialize two stars in a circular orbit
 mass1 = 8
@@ -40,10 +43,6 @@ mass = np.array([3,4,5])
 # Create instances of the particles
 particles = Particles(position, vel, mass)
 Etot_0, _, _ = particles.Etot()
-
-
-## TSUNAMI TRUE/FALSE CONDITION ##
-tsunami_true = False
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     pos_i = []
@@ -81,7 +80,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 else:     ## OTHER INTEGRATORS ##
 
     t = 0.
-    tstep = 1
+    tstep = 0.1
     N_end = 10
 
     pos_i = []
@@ -107,11 +106,11 @@ else:     ## OTHER INTEGRATORS ##
             Etot_j, _, _ = part.Etot()
             Etot_i.append(Etot_j)
 
-            tstep = fts.adaptive_timestep_jerk(jerk=jerk, eta=10e-4, acc=acc, tmin=0.0001, tmax=0.01)
+            # tstep = fts.adaptive_timestep_jerk(jerk=jerk, eta=10e-4, acc=acc, tmin=0.0001, tmax=0.01)
 
-            # tstep = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_rank=4, int_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
-            #                             predictor=fint.integrator_heun, pred_rank=2, pred_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
-            #                             epsilon=10e-9, tmax=0.01, tmin=0.0001)
+            tstep = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_rank=4, int_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+                                        predictor=fint.integrator_heun, pred_rank=2, pred_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+                                        epsilon=10e-9, tmax=0.1, tmin=0.000001)
         
             t += tstep
             pbar.update(1)
