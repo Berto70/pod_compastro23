@@ -7,12 +7,14 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
 
+np.random.seed(9725)
+
 path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 # Initialize two stars in a circular orbit
-mass1 = 1
-mass2 = 68
-rp = 10
+mass1 = 8
+mass2 = 2
+rp = 1.
 e = 0.0 # Set eccentricity to 0 for a circular orbit
 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
 # print(part.pos, part.vel, part.mass)
@@ -24,7 +26,7 @@ Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 # print("Binary Period Tperiod:", Tperiod)
 
 t = 0.
-tstep = 0.01
+tstep = 0.1
 N_end = 10
 
 pos_i = []
@@ -45,16 +47,18 @@ Etot_i = []
 # mass = np.array([3,4,5])
 
 # # Create instances of the particles
-# particles = Particles(position, vel, mass)
+# part = Particles(position, vel, mass)
+# Etot_0, _, _ = part.Etot()
 
 ## OTHER INTEGRATORS ##
 
-pbar = tqdm(total=N_end*Tperiod/tstep)
+total = N_end*Tperiod/tstep
+pbar = tqdm(total=total)
 
 while t < N_end*Tperiod:
     # t += tstep
     part, _, acc, jerk, _ = fint.integrator_rk4(part, tstep, 
-                                                         acceleration_estimator=fdyn.acceleration_direct_vectorized)
+                                                         acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': False})
     pos_i.append(part.pos)
     vel_i.append(part.vel)
     mass_i.append(part.mass)
@@ -63,11 +67,14 @@ while t < N_end*Tperiod:
     Etot_j, _, _ = part.Etot()
     Etot_i.append(Etot_j)
 
-    # Update the progress bar
-    pbar.update(1)
+    # tstep = fts.adaptive_timestep_jerk(particles=part, eta=10e-4, acc=acc, tmin=0.0001, tmax=0.01)
 
+    tstep = fts.adaptive_timestep(part, integrator=fint.integrator_rk4, int_rank=4, int_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+                                   predictor=fint.integrator_heun, pred_rank=2, pred_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+                                   epsilon=10e-9, tmax=0.01, tmin=0.0001)
+    
     t += tstep
-    # tstep = fts.euler_timestep(part, eta=0.0001, acc = acc)
+    pbar.update(1)
 
 # ## TSUNAMI INTEGRATOR ##
 
