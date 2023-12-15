@@ -65,7 +65,7 @@ def adaptive_timestep_jerk(acc: npt.NDArray[np.float64], jerk:npt.NDArray[np.flo
 
     return ts
 
-def adaptive_time_step(integrator: Callable,
+def adaptive_timestep(integrator: Callable,
                        int_args: Dict[str, float],
                        int_rank: int,
                        predictor: Callable,
