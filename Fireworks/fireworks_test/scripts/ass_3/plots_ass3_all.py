@@ -710,15 +710,15 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
 
     ax8[0].boxplot([derr_00001_base, derr_00001_mod, derr_00001_her, derr_00001_rk2, derr_00001_leap, derr_00001_rk4, derr_00001_tsu], 
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[0].set_title('h=0.00001')
+    ax8[0].set_title('h=0.00001 (Tsu=%.6f)'%tsu_tstep[0])
     
     ax8[1].boxplot([derr_0001_base, derr_0001_mod, derr_0001_her, derr_0001_rk2, derr_0001_leap, derr_0001_rk4, derr_0001_tsu],
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[1].set_title('h=0.0001')
+    ax8[1].set_title('h=0.0001 (Tsu=%.6f)'%tsu_tstep[1])
     
     ax8[2].boxplot([derr_001_base, derr_001_mod, derr_001_her, derr_001_rk2, derr_001_leap, derr_001_rk4, derr_001_tsu],
                   labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
-    ax8[2].set_title('h=0.001')
+    ax8[2].set_title('h=0.001 (Tsu=%.6f)'%tsu_tstep[2])
 
     fig8.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
