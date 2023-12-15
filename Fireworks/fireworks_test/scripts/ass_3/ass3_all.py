@@ -56,6 +56,9 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     tstart=0
     time_increments = np.array([0.0001, 0.001, 0.01])
 
+    ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
+    np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
+
     for dt in time_increments:
 
         nsteps = int(np.floor(tevol/dt))
@@ -65,7 +68,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
         data = {}
         array = np.zeros(shape=(nsteps, 6))
-        file_name = path + '/data/ass_3/dt_' + str(dt) + '_tusnami'
+        file_name = path + '/data/ass_3/data_tusnami'
 
         pbar = tqdm(total=len(tintermediate), desc=str(dt) + 'tsunami')
 
@@ -88,7 +91,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
             tcurrent += efftime
 
-    data['tsumani_'+str(dt)] = array
+    data[str(dt)] = array
     np.savez(file_name,**data)
 
 
