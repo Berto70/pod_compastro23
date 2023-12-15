@@ -140,11 +140,20 @@ class Particles:
 
         :return: total kinetic energy
         """
-        #TOU HAVE TO IMPLEMENT IT
-        # Use the class member, e.g. vel=self.vel, mass=self.mass
-        raise NotImplementedError("Ekin method still not implemented")
+        # #TOU HAVE TO IMPLEMENT IT
+        # # Use the class member, e.g. vel=self.vel, mass=self.mass
+        # raise NotImplementedError("Ekin method still not implemented")
 
-    def Epot(self,softening: float = 0.) -> float:
+        # Ekin = 0.5 * np.sum(self.mass[:, np.newaxis] * self.vel**2)
+
+        Ekin = 0.5 * np.sum(self.mass * (np.sum(self.vel**2, axis=1)))
+
+        # vel_squared = np.square(self.vel)
+        # Ekin = 0.5 * np.sum(self.mass * vel_squared) # this is prob more efficient for large arrays
+
+        return Ekin
+
+    def Epot(self, softening: float = 0.) -> float:
         """
         Estimate the total potential energy of the particles:
         Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)
@@ -153,9 +162,27 @@ class Particles:
         :param softening: Softening parameter
         :return: The total potential energy of the particles
         """
-        #TOU HAVE TO IMPLEMENT IT
-        # Use the class member, e.g. vel=self.vel, mass=self.mass
-        raise NotImplementedError("Ekin method still not implemented")
+        # #TOU HAVE TO IMPLEMENT IT
+        # # Use the class member, e.g. vel=self.vel, mass=self.mass
+        # raise NotImplementedError("Ekin method still not implemented")
+
+            
+        # rij = np.sqrt(np.sum((self.pos[:, np.newaxis] - self.pos) ** 2, axis=2))
+        # Epot = - np.sum(self.mass[:, np.newaxis] * self.mass / np.sqrt(rij ** 2 + softening ** 2))
+
+        # Calculate all pairwise distances between bodies
+        rij = np.linalg.norm(self.pos[:, np.newaxis, :] - self.pos, axis=2)
+        
+        # Exclude self-distances (diagonal elements) to avoid division by zero
+        np.fill_diagonal(rij, 1.0)
+        
+        # Calculate potential energy using vectorized operations
+        Epot_mat = - np.outer(self.mass, self.mass) / rij
+        
+        # Sum over all unique pairs
+        Epot = np.sum(np.triu(Epot_mat, k=1))
+        
+        return Epot
 
     def Etot(self,softening: float = 0.) -> tuple[float,float,float]:
         """
