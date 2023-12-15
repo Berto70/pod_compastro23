@@ -13,7 +13,7 @@ Tperiod = ic_param[6]
 # tstep = ic_param[7]
 N_end = ic_param[7]
 
-pos_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_i.npy', allow_pickle=True)[::100]
+pos_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/pos_i.npy', allow_pickle=True)
 vel_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/vel_i.npy', allow_pickle=True)
 acc_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/acc_i.npy', allow_pickle=True)
 mass_i = np.load('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/data/ass_3/mass_i.npy', allow_pickle=True)
