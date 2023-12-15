@@ -29,8 +29,8 @@ def adaptive_timestep_simple(particles: Particles, tmin: Optional[float] = None,
     ts = np.nanmin(particles.radius()/particles.vel_mod())
 
     # Check tmin, tmax
-    if tmin is not None: ts=np.max(ts,tmin)
-    if tmax is not None: ts=np.min(ts,tmax)
+    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
+    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
 
     return ts
 
