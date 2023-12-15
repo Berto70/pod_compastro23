@@ -46,46 +46,49 @@ else:
     mass = np.array([3,4,5])
 
     # Create instances of the particles
-    particles = Particles(position, vel, mass)
-    Etot_0, _, _ = particles.Etot()
+    part = Particles(position, vel, mass)
+    Etot_0, _, _ = part.Etot()
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
     tevol = 65
 
     tstart=0
-    dt = 0.0001
-    nsteps = int(np.floor(tevol/dt))
-    tintermediate=np.linspace(0+0.00001, tevol, nsteps)
+    time_increments = np.array([0.0001, 0.001, 0.01])
 
-    tcurrent=0
+    for dt in time_increments:
 
-    data = {}
-    array = np.zeros(shape=(nsteps, 6))
-    file_name = path + '/data/ass_3/dt_' + str(dt) + '_tusnami'
+        nsteps = int(np.floor(tevol/dt))
+        tintermediate=np.linspace(0+0.00001, tevol, nsteps)
 
-    pbar = tqdm(total=len(tintermediate))
+        tcurrent=0
 
-    for t_i in tintermediate:
+        data = {}
+        array = np.zeros(shape=(nsteps, 6))
+        file_name = path + '/data/ass_3/dt_' + str(dt) + '_tusnami'
 
-        tstep = t_i-tcurrent
-        if tstep<=0: continue
+        pbar = tqdm(total=len(tintermediate), desc=str(dt) + 'tsunami')
 
-        particles, efftime, _, _, _ = fint.integrator_tsunami(particles, tstep)
+        for t_i in tintermediate:
 
-        # Here we can save stuff, plot stuff, etc.
-        Etot_i, _, _ = part.Etot()
-                
-        array[t_i, :2] = part.pos[0, :2]
-        array[t_i, 2:4]= part.pos[1, :2]
-        array[t_i, 4]  = Etot_i
-        array[t_i, 5]  = t_i
+            tstep = t_i-tcurrent
+            if tstep<=0: continue
 
-        pbar.update(1)
+            part, efftime, _, _, _ = fint.integrator_tsunami(part, tstep)
 
-        tcurrent += efftime
+            # Here we can save stuff, plot stuff, etc.
+            Etot_i, _, _ = part.Etot()
+                    
+            array[t_i, :2] = part.pos[0, :2]
+            array[t_i, 2:4]= part.pos[1, :2]
+            array[t_i, 4]  = Etot_i
+            array[t_i, 5]  = t_i
 
-    data['tsumani'] = array
+            pbar.update(1)
+
+            tcurrent += efftime
+
+    data['tsumani_'+str(dt)] = array
     np.savez(file_name,**data)
 
 
