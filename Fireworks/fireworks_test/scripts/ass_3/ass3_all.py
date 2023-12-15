@@ -13,37 +13,41 @@ np.random.seed(9725)
 path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
+## TWO/NBODY TRUE/FALSE CONDITION ##
 tsunami_true = False
+two_body = True
 
-## TWO-BODY PROBLEM ##
-# Initialize two stars in a circular orbit
-mass1 = 8
-mass2 = 2
-rp = 1.
-e = 0.0 # Set eccentricity to 0 for a circular orbit
-part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
-# print(part.pos, part.vel, part.mass)
-Etot_0, _, _ = part.Etot()
+if two_body == True:
+    ## TWO-BODY PROBLEM ##
+    # Initialize two stars in a circular orbit
+    mass1 = 8
+    mass2 = 2
+    rp = 1.
+    e = 0.0 # Set eccentricity to 0 for a circular orbit
+    part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+    # print(part.pos, part.vel, part.mass)
+    Etot_0, _, _ = part.Etot()
 
-# Calculate the binary period Tperiod
-a = rp / (1 - e)  # Semi-major axis
-Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
+    # Calculate the binary period Tperiod
+    a = rp / (1 - e)  # Semi-major axis
+    Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 
-## THREE-BODY PROBLEM ##
+else:
+    ## THREE-BODY PROBLEM ##
 
-position = np.array([[0,0,0],
-                         [0.5,0.866,9],
-                         [1,0,0]])
+    position = np.array([[0,0,0],
+                            [0.5,0.866,9],
+                            [1,0,0]])
 
-vel = np.array([[0,0,0],
-                [0,0,0],
-                [0,0,0]])
+    vel = np.array([[0,0,0],
+                    [0,0,0],
+                    [0,0,0]])
 
-mass = np.array([3,4,5])
+    mass = np.array([3,4,5])
 
-# Create instances of the particles
-particles = Particles(position, vel, mass)
-Etot_0, _, _ = particles.Etot()
+    # Create instances of the particles
+    particles = Particles(position, vel, mass)
+    Etot_0, _, _ = particles.Etot()
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
@@ -87,15 +91,15 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
 else: ## OTHER INTEGRATORS ##
 
-    # config file
-    ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-    np.savetxt(path + '/data/ass_3/ic_param_all.txt', ic_param)
-
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
     time_increments = np.array([0.0001, 0.001, 0.01])
     n_ts = np.floor(N_end*Tperiod/time_increments)
+
+    # config file
+    ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
+    np.savetxt(path + '/data/ass_3/ic_param_all.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
                     'Euler_modified': fint.integrator_euler,

@@ -12,37 +12,41 @@ np.random.seed(9725)
 path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
+## TWO/NBODY TRUE/FALSE CONDITION ##
 tsunami_true = False
+two_body = True
 
-## TWO-BODY PROBLEM ##
-# Initialize two stars in a circular orbit
-mass1 = 8
-mass2 = 2
-rp = 1.
-e = 0.0 # Set eccentricity to 0 for a circular orbit
-part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
-# print(part.pos, part.vel, part.mass)
-Etot_0, _, _ = part.Etot()
+if two_body == True:
+    ## TWO-BODY PROBLEM ##
+    # Initialize two stars in a circular orbit
+    mass1 = 8
+    mass2 = 2
+    rp = 1.
+    e = 0.0 # Set eccentricity to 0 for a circular orbit
+    part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+    # print(part.pos, part.vel, part.mass)
+    Etot_0, _, _ = part.Etot()
 
-# Calculate the binary period Tperiod
-a = rp / (1 - e)  # Semi-major axis
-Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
+    # Calculate the binary period Tperiod
+    a = rp / (1 - e)  # Semi-major axis
+    Tperiod = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
 
-## THREE-BODY PROBLEM ##
+else:
+    ## THREE-BODY PROBLEM ##
 
-position = np.array([[0,0,0],
-                         [0.5,0.866,9],
-                         [1,0,0]])
+    position = np.array([[0,0,0],
+                            [0.5,0.866,9],
+                            [1,0,0]])
 
-vel = np.array([[0,0,0],
-                [0,0,0],
-                [0,0,0]])
+    vel = np.array([[0,0,0],
+                    [0,0,0],
+                    [0,0,0]])
 
-mass = np.array([3,4,5])
+    mass = np.array([3,4,5])
 
-# Create instances of the particles
-particles = Particles(position, vel, mass)
-Etot_0, _, _ = particles.Etot()
+    # Create instances of the particles
+    particles = Particles(position, vel, mass)
+    Etot_0, _, _ = particles.Etot()
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     pos_i = []
