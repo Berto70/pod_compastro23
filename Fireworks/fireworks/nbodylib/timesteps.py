@@ -34,14 +34,14 @@ def adaptive_timestep_simple(particles: Particles, tmin: Optional[float] = None,
 
     return ts
 
-def euler_timestep(particles: Particles, eta: float, acc = npt.NDArray[np.float64], tmin: Optional[float] = None, tmax: Optional[float] = None) -> float:
+def adaptive_timestep_vel(particles: Particles, eta: float, acc = npt.NDArray[np.float64], tmin: Optional[float] = None, tmax: Optional[float] = None) -> float:
 
     # acc_mod = np.sqrt(np.sum(acc*acc, axis=1))[:,np.newaxis]
 
     ts = eta*np.nanmin(np.linalg.norm(particles.vel_mod(), axis=1)/np.linalg.norm(acc, axis=1))
 
-    if tmin is not None: ts=np.max(ts,tmin)
-    if tmax is not None: ts=np.min(ts,tmax)
+    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
+    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
 
     return ts
 
@@ -60,8 +60,8 @@ def adaptive_timestep_jerk(acc: npt.NDArray[np.float64], jerk:npt.NDArray[np.flo
     ts = eta*np.nanmin(np.linalg.norm(acc, axis=1)/np.linalg.norm(jerk, axis=1))
 
     # Check tmin, tmax
-    if tmin is not None: ts=np.max(ts,tmin)
-    if tmax is not None: ts=np.min(ts,tmax)
+    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
+    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
 
     return ts
 
