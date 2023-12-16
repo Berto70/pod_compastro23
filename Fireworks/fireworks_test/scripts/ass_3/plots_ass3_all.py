@@ -133,9 +133,9 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax[2,0].plot(data_001_tsu[:, 0], data_001_tsu[:, 1], alpha=0.5, label='h=0.001')
     ax[2,0].plot(data_0001_tsu[:, 0], data_0001_tsu[:, 1], alpha=0.5, label='h=0.0001')
     ax[2,0].plot(data_00001_tsu[:, 0], data_00001_tsu[:, 1], alpha=0.8, label='h=0.00001')
-    ax[2,0].plot(data_001_tsu[:, 2], data_001_tsu[:, 3], alpha=0.5, linestyle='--')
-    ax[2,0].plot(data_0001_tsu[:, 2], data_0001_tsu[:, 3], alpha=0.5, linestyle='--')
-    ax[2,0].plot(data_00001_tsu[:, 2], data_00001_tsu[:, 3], alpha=0.8, linestyle='--')
+    # ax[2,0].plot(data_001_tsu[:, 2], data_001_tsu[:, 3], alpha=0.5, linestyle='--')
+    # ax[2,0].plot(data_0001_tsu[:, 2], data_0001_tsu[:, 3], alpha=0.5, linestyle='--')
+    # ax[2,0].plot(data_00001_tsu[:, 2], data_00001_tsu[:, 3], alpha=0.8, linestyle='--')
     ax[2,0].set_title('Tsunami')
     
     for i in range(3):
