@@ -26,10 +26,10 @@ n = 100
 m = 10
 w = 1
 
-data_00001 = np.load(path + '/data/ass_3/dt_0.0001.npz', allow_pickle=True)
-data_0001 = np.load(path + '/data/ass_3/dt_0.001.npz', allow_pickle=True)
-data_001 = np.load(path + '/data/ass_3/dt_0.01.npz', allow_pickle=True)
-data_tsu = np.load(path + '/data/ass_3/data_tsunami.npz', allow_pickle=True)
+data_00001 = np.load(path + '/data/ass_3/dt_1e-05.npz', allow_pickle=True)
+data_0001 = np.load(path + '/data/ass_3/dt_0.0001.npz', allow_pickle=True)
+data_001 = np.load(path + '/data/ass_3/dt_0.001.npz', allow_pickle=True)
+data_tsu = np.load(path + '/data/ass_3/data_tusnami_e0.00.npz', allow_pickle=True)
 
 data_00001_base = data_00001['Euler_base'][::n]
 data_00001_mod = data_00001['Euler_modified'][::n]
@@ -37,7 +37,7 @@ data_00001_her = data_00001['Hermite'][::n]
 data_00001_rk2 = data_00001['RK2-Heun'][::n]
 data_00001_leap = data_00001['Leapfrog'][::n]
 data_00001_rk4 = data_00001['RK4'][::n]
-data_00001_tsu = data_tsu['0.00001'][::n]
+data_00001_tsu = data_tsu['1e-05'][::100*n]
 
 data_0001_base = data_0001['Euler_base'][::m]
 data_0001_mod = data_0001['Euler_modified'][::m]
@@ -45,7 +45,7 @@ data_0001_her = data_0001['Hermite'][::m]
 data_0001_rk2 = data_0001['RK2-Heun'][::m]
 data_0001_leap = data_0001['Leapfrog'][::m]
 data_0001_rk4 = data_0001['RK4'][::m]
-data_0001_tsu = data_tsu['0.0001'][::m]
+data_0001_tsu = data_tsu['0.0001'][::10*m]
 
 data_001_base = data_001['Euler_base'][::w]
 data_001_mod = data_001['Euler_modified'][::w]
@@ -144,10 +144,10 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
             ax[i,j].set_ylabel('Y [N-Body units]')
             ax[i,j].set_prop_cycle(custom_cycler1)
             ax[i,j].legend()            
-            ax[i,j].set_xlim(np.min(data_00001_mod[:, 2])-0.05, np.max(data_00001_mod[:, 2])+0.05)
-            ax[i,j].set_ylim(np.min(data_00001_mod[:, 3])-0.05, np.max(data_00001_mod[:, 3])+0.05)
-            ax[0,0].set_xlim(np.min(data_00001_base[:, 2])-0.05, np.max(data_00001_base[:, 2])+0.05)
-            ax[0,0].set_ylim(np.min(data_00001_base[:, 3])-0.05, np.max(data_00001_base[:, 3])+0.05)
+            ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
+            ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
+            ax[0,0].set_xlim(np.min(data_00001_base[:, 0])-0.05, np.max(data_00001_base[:, 0])+0.05)
+            ax[0,0].set_ylim(np.min(data_00001_base[:, 1])-0.05, np.max(data_00001_base[:, 1])+0.05)
 
         # default ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
         #         ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
@@ -155,7 +155,8 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
         #         ax[0,0].set_ylim(np.min(data_001_base[:, 1])-0.05, np.max(data_001_base[:, 1])+0.05)
 
 
-    fig.delaxes(ax[2,1], ax[2,2])
+    fig.delaxes(ax[2,1])
+    fig.delaxes(ax[2,2])
 
 
     fig.suptitle('Position on X-Y Plane\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
@@ -264,7 +265,8 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax2[0,2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
     
-    fig2.delaxes(ax2[2,1], ax2[2,2])
+    fig2.delaxes(ax2[2,1])
+    fig2.delaxes(ax2[2,2])
 
     fig2.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
@@ -301,7 +303,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
                 alpha=0.8, label='Leapfrog')
     ax3[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0), 
                 alpha=0.8, label='RK4')   
-    ax[0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs((data_001_tsu[:, 4]-Etot_0)/Etot_0),
+    ax3[0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs((data_001_tsu[:, 4]-Etot_0)/Etot_0),
                 alpha=0.8, label='Tsunami') 
     ax3[0].set_title('h=0.001')
     ax3[0].legend(loc='lower right')
@@ -583,7 +585,8 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
                     marker='s', label='Avg Energy Error', color='seagreen', linestyle='-')
     ax6[2,0].set_title('Tsunami')
 
-    fig6.delaxes(ax2[2,1], ax2[2,2])
+    fig6.delaxes(ax6[2,1])
+    fig6.delaxes(ax6[2,2])
 
     fig6.suptitle('Energy Error vs. Time Step\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
                    fontsize=52, fontweight='600')
@@ -627,7 +630,9 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     derr_001_tsu = np.abs((data_001_tsu[:,4]-Etot_0)/Etot_0)
 
     timesteps = np.array([0.00001, 0.0001, 0.001])
-    tsu_tstep = np.array([data_00001_tsu[5][-1], data_0001_tsu[5][-1], data_001_tsu[5][-1]])
+    tsu_tstep = np.array([data_00001_tsu[5][-1] - data_00001_tsu[5][-2], 
+                          data_0001_tsu[5][-1] - data_0001_tsu[5][-2], 
+                          data_001_tsu[5][-1] - data_001_tsu[5][-2]])
 
     custom_cycler7 = (cycler(color=['tab:blue', 'tab:orange']))
     plt.rc('axes', prop_cycle=custom_cycler7)
@@ -663,7 +668,8 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
                         labels=tsu_tstep, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8), showfliers=False)
     ax7[2,0].set_title('Tsunami')
 
-    fig7.delaxes(ax2[2,1], ax2[2,2])
+    fig7.delaxes(ax7[2,1])
+    fig7.delaxes(ax7[2,2])
 
     fig7.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
                    fontsize=52, fontweight='600')
@@ -677,7 +683,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
             ax7[i,j].yaxis.grid(True, which='major', alpha=0.5)
             ax7[i,j].set_prop_cycle(custom_cycler7)
 
-    ax7[2,0].set_xticklabels(str(tsu_tstep))
+    ax7[2,0].set_xticklabels([str(t) for t in tsu_tstep])
        
     ax7[0,1].yaxis.set_minor_locator(locminy)
     ax7[0,1].yaxis.set_minor_formatter(mticker.NullFormatter())
