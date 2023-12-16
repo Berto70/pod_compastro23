@@ -10,7 +10,7 @@ import fireworks.nbodylib.timesteps as fts
 
 np.random.seed(9725)
 
-path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
+path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
@@ -52,7 +52,7 @@ else:
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     N_end = 10
     tevol = N_end*Tperiod
-    time_increments = np.array([0.001])
+    time_increments = np.array([0.00001, 0.0001, 0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
     np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
