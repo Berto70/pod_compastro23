@@ -10,7 +10,7 @@ import fireworks.nbodylib.timesteps as fts
 
 np.random.seed(9725)
 
-path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
+path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
@@ -51,13 +51,16 @@ else:
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
-    tevol = 65
+    tevol = 10*Tperiod
 
     tstart=0
-    time_increments = np.array([0.0001, 0.001, 0.01])
+    time_increments = np.array([0.00001, 0.0001, 0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
     np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
+    
+    data = {}
+    file_name = path + '/data/ass_3/data_tusnami_e%.2f'%(e)
 
     for dt in time_increments:
 
@@ -66,13 +69,11 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
         tcurrent=0
 
-        data = {}
         array = np.zeros(shape=(nsteps, 6))
-        file_name = path + '/data/ass_3/data_tusnami'
 
-        pbar = tqdm(total=len(tintermediate), desc=str(dt) + 'tsunami')
+        # pbar = tqdm(total=range(nsteps), desc=str(dt) + ' ' + 'tsunami')
 
-        for t_i in tintermediate:
+        for t_i in range(nsteps):
 
             tstep = t_i-tcurrent
             if tstep<=0: continue
@@ -87,11 +88,11 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
             array[t_i, 4]  = Etot_i
             array[t_i, 5]  = t_i
 
-            pbar.update(1)
+            # pbar.update(1)
 
             tcurrent += efftime
 
-    data[str(dt)] = array
+        data[str(dt)] = array
     np.savez(file_name,**data)
 
 
@@ -100,7 +101,7 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([0.0001, 0.001, 0.01])
+    time_increments = np.array([0.00001, 0.0001, 0.001])
     n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
@@ -138,7 +139,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
 
 
-                    dt_copy = fts.euler_timestep(part, eta=0.001, acc = acc)
+                    # dt_copy = fts.euler_timestep(part, eta=0.001, acc = acc)
 
                     tot_time += dt_copy
                     N_ts_cum += 1

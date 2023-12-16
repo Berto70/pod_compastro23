@@ -84,7 +84,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 else:     ## OTHER INTEGRATORS ##
 
     t = 0.
-    tstep = 0.1
+    tstep = 0.001
     N_end = 10
 
     pos_i = []
@@ -101,7 +101,8 @@ else:     ## OTHER INTEGRATORS ##
 
         # t += tstep
             part, _, acc, jerk, _ = fint.integrator_rk4(part, tstep, 
-                                                                acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                                acceleration_estimator=fdyn.acceleration_direct_vectorized, 
+                                                                args={'return_jerk': False})
             pos_i.append(part.pos)
             vel_i.append(part.vel)
             mass_i.append(part.mass)
@@ -112,9 +113,9 @@ else:     ## OTHER INTEGRATORS ##
 
             # tstep = fts.adaptive_timestep_jerk(jerk=jerk, eta=10e-4, acc=acc, tmin=0.0001, tmax=0.01)
 
-            tstep = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_rank=4, int_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
-                                        predictor=fint.integrator_heun, pred_rank=2, pred_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
-                                        epsilon=10e-9, tmax=0.1, tmin=0.000001)
+            # tstep = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_rank=4, int_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+            #                             predictor=fint.integrator_heun, pred_rank=2, pred_args={'particles': part, 'tstep': tstep, 'acceleration_estimator': fdyn.acceleration_direct_vectorized},
+            #                             epsilon=10e-9, tmax=0.1, tmin=0.000001)
         
             t += tstep
             pbar.update(1)
