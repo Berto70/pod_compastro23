@@ -206,3 +206,8 @@ Docker/tsunami-newspin/src/IO.cpp
 Docker/tsunami-newspin/src/keplerutils.cpp
 Docker/tsunami-newspin/src/kozailidov.cpp
 Docker/tsunami-newspin/src/stopcond.cpp
+Fireworks/fireworks_test/data/ass_3/ic_param_all.txt
+
+Fireworks/fireworks_test/data/ass_3/data_tusnami_e0.00.npz
+
+Fireworks/fireworks_test/data/ass_3/ic_param_tsu.txt
