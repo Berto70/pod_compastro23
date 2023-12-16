@@ -14,7 +14,7 @@ path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
-tsunami_true = False
+tsunami_true = True
 two_body = True
 
 if two_body == True:
@@ -23,7 +23,7 @@ if two_body == True:
     mass1 = 8
     mass2 = 2
     rp = 1.
-    e = 0.0 # Set eccentricity to 0 for a circular orbit
+    e = 0.8 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     # print(part.pos, part.vel, part.mass)
     Etot_0, _, _ = part.Etot()
@@ -50,11 +50,9 @@ else:
     Etot_0, _, _ = part.Etot()
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
-
-    tevol = 10*Tperiod
-
-    tstart=0
-    time_increments = np.array([0.00001, 0.0001, 0.001])
+    N_end = 10
+    tevol = N_end*Tperiod
+    time_increments = np.array([0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
     np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
@@ -62,20 +60,22 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     data = {}
     file_name = path + '/data/ass_3/data_tusnami_e%.2f'%(e)
 
-    for dt in time_increments:
 
-        nsteps = int(np.floor(tevol/dt))
-        tintermediate=np.linspace(0+0.00001, tevol, nsteps)
+    for dt in time_increments:
+        tstart = 0
+        N_ts = int(np.floor(tevol/dt))
+        # nsteps = int(np.floor(tevol/dt))
+        tintermediate=np.linspace(0+0.00001, tevol, N_ts)
 
         tcurrent=0
 
-        array = np.zeros(shape=(nsteps, 6))
+        array = np.zeros(shape=(N_ts, 6))
 
-        # pbar = tqdm(total=range(nsteps), desc=str(dt) + ' ' + 'tsunami')
+        # pbar = tqdm(total=len(tintermediate), desc=str(dt) + ' ' + 'tsunami')
+        part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+        for t_i, t in zip(range(N_ts), tintermediate):
 
-        for t_i in range(nsteps):
-
-            tstep = t_i-tcurrent
+            tstep = t-tcurrent
             if tstep<=0: continue
 
             part, efftime, _, _, _ = fint.integrator_tsunami(part, tstep)
@@ -102,7 +102,7 @@ else: ## OTHER INTEGRATORS ##
 
     #define number of time steps per time increment
     time_increments = np.array([0.00001, 0.0001, 0.001])
-    n_ts = np.floor(N_end*Tperiod/time_increments)
+    # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])

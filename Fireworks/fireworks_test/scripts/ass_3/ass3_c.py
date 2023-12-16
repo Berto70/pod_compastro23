@@ -9,11 +9,11 @@ import fireworks.nbodylib.timesteps as fts
 
 np.random.seed(9725)
 
-path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
+path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
-tsunami_true = False
+tsunami_true = True
 two_body = True
 
 if two_body == True:
@@ -57,7 +57,9 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     tstep_i = []
 
     tstart=0
-    tintermediate=np.linspace(0+0.00001, 65, 100000)
+    N_end = 10
+    dt = 0.001
+    tintermediate=np.linspace(0+0.00001, N_end*Tperiod, int(1/dt))
     tcurrent=0
 
     pbar = tqdm(total=len(tintermediate))
@@ -67,13 +69,13 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
         tstep = t-tcurrent
         if tstep<=0: continue
 
-        particles, efftime, _, _, _ = fint.integrator_tsunami(particles, tstep)
+        part, efftime, _, _, _ = fint.integrator_tsunami(part, tstep)
 
         # Here we can save stuff, plot stuff, etc.
-        pos_i.append(particles.pos.copy())
-        vel_i.append(particles.vel.copy())
-        mass_i.append(particles.mass.copy())
-        Etot_j, _, _ = particles.Etot()
+        pos_i.append(part.pos.copy())
+        vel_i.append(part.vel.copy())
+        mass_i.append(part.mass.copy())
+        Etot_j, _, _ = part.Etot()
         Etot_i.append(Etot_j.copy())
         tstep_i.append(tstep)
 
