@@ -72,8 +72,10 @@ def integrator_template(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -118,8 +120,10 @@ def integrator_euler(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -146,8 +150,10 @@ def integrator_hermite(particles: Particles,
                         external_accelerations: Optional[List] = None,
                         args: Optional[dict] = None):
     
-
-    acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # This integrator requires jerk
     if jerk is None: raise ValueError("Hermite integrator requires jerk")
@@ -168,7 +174,10 @@ def integrator_hermite(particles: Particles,
     pos_p = particles.pos + particles.vel*tstep + (acc * tstep**2)/2 + (jerk*tstep**3)/6
 
     # 11 # 12
-    acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None, **args)
+    if args is not None:
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None, **args)
+    else:
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None)
 
     #Check additional accelerations
     if external_accelerations is not None:        
@@ -224,8 +233,10 @@ def integrator_leapfrog(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -243,7 +254,11 @@ def integrator_leapfrog(particles: Particles,
 
     # removing half-step velocity
     particles.pos = particles.pos + particles.vel*tstep + 0.5*acc*(tstep**2)
-    acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening, **args)
+
+    if args is not None:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening, **args)
+    else:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
