@@ -25,6 +25,7 @@ if two_body == True:
     rp = 1.
     e = 0.8 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+    part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
     Etot_0, _, _ = part.Etot()
 
@@ -73,6 +74,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
         # pbar = tqdm(total=len(tintermediate), desc=str(dt) + ' ' + 'tsunami')
         part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+        part.pos = part.pos - part.com_pos()
         for t_i, t in zip(range(N_ts), tintermediate):
 
             tstep = t-tcurrent
@@ -126,6 +128,7 @@ else: ## OTHER INTEGRATORS ##
             if integrator_name == 'Hermite':
                 array = np.zeros(shape=(N_ts, 5))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+                part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, _, acc, _, _ = integrator(part,
@@ -153,6 +156,7 @@ else: ## OTHER INTEGRATORS ##
             else: 
                 array = np.zeros(shape=(N_ts, 5))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+                part.pos = part.pos - part.com_pos()
                 for t_i in tqdm(range(N_ts), desc=str(dt) + ' ' + integrator_name):
                     part, _, acc, _, _ = integrator(part,
                                                     tstep=dt,
