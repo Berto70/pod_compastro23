@@ -168,7 +168,6 @@ class Nbody_units:
         In case all the velocities are 0 Etot=Epot=-0.25.
 
         :param particles: that is an instance of the class :class:`~fireworks.particles.Particles`
-        :param M:  Set the physical input Mass scale in units of Msun
         :param L:  Set the physical input length scale in units of pc
         :param V:  Set the physical input velocity scale in units of km/s
         :param T:  Set the physical input time scale in units of Myr
