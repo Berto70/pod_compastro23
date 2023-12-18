@@ -50,7 +50,8 @@ def integrator_template(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
                         softening: float = 0.,
-                        external_accelerations: Optional[List] = None):
+                        external_accelerations: Optional[List] = None,
+                        args: Optional[dict] = None):
     """
     This is an example template of the function you have to implement for the N-body integrators.
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
@@ -71,8 +72,10 @@ def integrator_template(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -95,7 +98,8 @@ def integrator_euler(particles: Particles,
                      tstep: float,
                      acceleration_estimator: Union[Callable,List],
                      softening: float = 0.,
-                     external_accelerations: Optional[List] = None):
+                     external_accelerations: Optional[List] = None,
+                     args: Optional[dict] = None):
     """
     Simple implementation of a Modified Euler integrator for N-body simulations.
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
@@ -116,8 +120,10 @@ def integrator_euler(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -141,10 +147,13 @@ def integrator_hermite(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
                         softening: float = 0.,
-                        external_accelerations: Optional[List] = None):
+                        external_accelerations: Optional[List] = None,
+                        args: Optional[dict] = None):
     
-
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # This integrator requires jerk
     if jerk is None: raise ValueError("Hermite integrator requires jerk")
@@ -159,13 +168,16 @@ def integrator_hermite(particles: Particles,
 
     # Preditor sub-step
     # 9 
-    vel_p = particles.vel + acc + (jerk * tstep**2)/2
+    vel_p = particles.vel + acc*tstep + (jerk * tstep**2)/2
 
     # 10
-    pos_p = particles.pos + particles.vel + (acc * tstep**2)/2 + (jerk*tstep**3)/6
+    pos_p = particles.pos + particles.vel*tstep + (acc * tstep**2)/2 + (jerk*tstep**3)/6
 
     # 11 # 12
-    acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening)
+    if args is not None:
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=0.0, **args)
+    else:
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=0.0)
 
     #Check additional accelerations
     if external_accelerations is not None:        
@@ -199,7 +211,8 @@ def integrator_leapfrog(particles: Particles,
                         tstep: float,
                         acceleration_estimator: Union[Callable,List],
                         softening: float = 0.,
-                        external_accelerations: Optional[List] = None):
+                        external_accelerations: Optional[List] = None,
+                        args: Optional[dict] = None):
     """
     Simple implementation of a symplectic Leapfrog (Verlet) integrator for N-body simulations.
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
@@ -220,8 +233,10 @@ def integrator_leapfrog(particles: Particles,
         - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
 
     """
-
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -239,7 +254,11 @@ def integrator_leapfrog(particles: Particles,
 
     # removing half-step velocity
     particles.pos = particles.pos + particles.vel*tstep + 0.5*acc*(tstep**2)
-    acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening)
+
+    if args is not None:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening, **args)
+    else:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos, particles.vel, particles.mass), softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -258,10 +277,14 @@ def integrator_heun(particles: Particles,
                    tstep: float,
                    acceleration_estimator: Union[Callable,List],
                    softening: float = 0.,
-                   external_accelerations: Optional[List] = None):
+                   external_accelerations: Optional[List] = None,
+                   args: Optional[dict] = None):
+    
     # 2nd order RK, Ralston's method: minimizes the truncation error.
-
-    acc, jerk, potential = acceleration_estimator(particles, softening) 
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else: 
+        acc, jerk, potential = acceleration_estimator(particles, softening)
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -276,8 +299,11 @@ def integrator_heun(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
-    acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, particles.mass), softening)
-
+    if args is not None:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, particles.mass), softening, **args)
+    else:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (2/3)*k1r, particles.vel + (2/3)*k1v, particles.mass), softening)
+        
     #Check additional accelerations
     if external_accelerations is not None:
         for ext_acc_estimator in external_accelerations:
@@ -300,9 +326,15 @@ def integrator_rk4(particles: Particles,
                    tstep: float,
                    acceleration_estimator: Union[Callable,List],
                    softening: float = 0.,
-                   external_accelerations: Optional[List] = None):
+                   external_accelerations: Optional[List] = None,
+                   args: Optional[dict] = None):
 
-    acc, jerk, potential = acceleration_estimator(particles, softening)
+    
+    if args is not None:
+        acc, jerk, potential = acceleration_estimator(particles, softening, **args)
+    else:
+        acc, jerk, potential = acceleration_estimator(particles, softening)
+
 
     # Check additional accelerations
     if external_accelerations is not None:
@@ -317,7 +349,10 @@ def integrator_rk4(particles: Particles,
     k1r = particles.vel*tstep
     k1v = acc*tstep
 
-    acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, particles.mass), softening)
+    if args is not None:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, particles.mass), softening, **args)
+    else:
+        acc2, jerk2, pot2 = acceleration_estimator(Particles(particles.pos + (1/2)*k1r, particles.vel + (1/2)*k1v, particles.mass), softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -330,7 +365,10 @@ def integrator_rk4(particles: Particles,
     k2r = (particles.vel + 0.5*k1v)*tstep
     k2v = acc2*tstep
 
-    acc3, jerk3, pot3 = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, particles.mass), softening)
+    if args is not None:
+        acc3, jerk3, pot3 = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, particles.mass), softening, **args)
+    else:
+        acc3, jerk3, pot3 = acceleration_estimator(Particles(particles.pos + (1/2)*k2r, particles.vel + (1/2)*k2v, particles.mass), softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -343,7 +381,10 @@ def integrator_rk4(particles: Particles,
     k3r = (particles.vel + 0.5*k2v)*tstep
     k3v = acc3*tstep
 
-    acc4, jerk4, pot4 = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, particles.mass), softening)
+    if args is not None:
+        acc4, jerk4, pot4 = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, particles.mass), softening, **args)
+    else:
+        acc4, jerk4, pot4 = acceleration_estimator(Particles(particles.pos + k3r, particles.vel + k3v, particles.mass), softening)
 
     #Check additional accelerations
     if external_accelerations is not None:
@@ -364,7 +405,7 @@ def integrator_rk4(particles: Particles,
 
 def integrator_tsunami(particles: Particles,
                        tstep: float,
-                       acceleration_estimator: Optional[Callable]= None,
+                       acceleration_estimator: Optional[Callable] = None,
                        softening: float = 0.,
                        external_accelerations: Optional[List] = None):
     """
@@ -389,14 +430,14 @@ def integrator_tsunami(particles: Particles,
         In general the TSUNAMI integrator is much faster than any integrator with can implement
         in this module.
         However, Before to start the proper integration, this function needs to perform some preliminary
-        steps to initialise the TSUNAMI integrator. This can add a  overhead to the function call.
-        Therefore, do not use this integrator with too small timestep. Acutally, the best timstep is the
+        steps to initialise the TSUNAMI integrator. This can add a overhead to the function call.
+        Therefore, do not use this integrator with too small timestep. Actually, the best timestep is the
         one that bring the system directly to the final time. However, if you want to save intermediate steps
         you can split the integration time windows in N sub-parts, calling N times this function.
 
     .. warning::
         It is important to notice that given the nature of the integrator (based on chain regularisation)
-        the final time won't be exactly the one put in input. Take this in mind when using this  integrator.
+        the final time won't be exactly the one put in input. Take this in mind when using this integrator.
         Notice also that the TSUNAMI integrator will rescale your system to the centre of mass frame of reference.
 
 
@@ -409,7 +450,7 @@ def integrator_tsunami(particles: Particles,
     :return: A tuple with 5 elements:
 
         - The updated particles instance
-        - tstep, the effective timestep evolved in the simulation, it wont'be exaxtly the one in input
+        - tstep, the effective timestep evolved in the simulation, it wont'be exactly the one in input
         - acc, it is None
         - jerk, it is None
         - pot, it is None

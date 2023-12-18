@@ -7,7 +7,6 @@ import fireworks.ic as ic
 import fireworks.nbodylib.dynamics as fnd
 import fireworks.nbodylib.integrators as fni
 
-
 fig, axs = plt.subplots(nrows=3, ncols=3, figsize=(15, 15), layout='tight')
 
 # for func, integrator, color in zip((fni.integrator_tsunami, fni.integrator_leapfrog), ('TSUNAMI', 'leapfrog'), ('blue', 'red')): 
@@ -32,7 +31,7 @@ for func, integrator, color in zip((fni.integrator_tsunami,), ('TSUNAMI',), ('bl
         for t in tqdm(tintermediate):
             tstep=t-tcurrent
             if integrator=='TSUNAMI':    
-                # if tstep <=0: continue # continue means go to the next step (i.e. next t in the array)  
+                if tstep <=0: continue # continue means go to the next step (i.e. next t in the array)  
                 particles,_,_,_,_= func(particles,tstep)
             else:
                 particles,_,_,_,_ = func(particles, tstep, fnd.acceleration_direct_vectorized)
