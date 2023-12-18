@@ -111,3 +111,8 @@ sevn_output/
 
 #Versioning
 sevn_version.h
+
+#data
+*.npy
+*.npz
+ext_volume/pod_compastro23/assignment_3/tsunami_3body.npy
