@@ -36,7 +36,7 @@ else:
     ## THREE-BODY PROBLEM ##
 
     position = np.array([[0,0,0],
-                            [0.5,0.866,9],
+                            [0.5,0.866,0],
                             [1,0,0]])
 
     vel = np.array([[0,0,0],
