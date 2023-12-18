@@ -84,16 +84,16 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
             # Here we can save stuff, plot stuff, etc.
             Etot_i, _, _ = part.Etot()
-                    
-            array[t_i, :2] = part.pos[0, :2]
-            array[t_i, 2:4]= part.pos[1, :2]
-            array[t_i, 4]  = Etot_i
-            array[t_i, 5]  = t_i
+
+            array[t_i, :2] = part.pos[0, :2].copy()
+            array[t_i, 2:4]= part.pos[1, :2].copy()
+            array[t_i, 4]  = Etot_i.copy()
+            array[t_i, 5]  = t_i.copy()
 
             # pbar.update(1)
 
             tcurrent += efftime
-
+        array = array[array[:,5] != 0]
         data[str(dt)] = array
     np.savez(file_name,**data)
 
