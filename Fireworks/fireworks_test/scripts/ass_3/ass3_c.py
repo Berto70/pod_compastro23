@@ -14,7 +14,7 @@ path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
 tsunami_true = True
-two_body = True
+two_body = False
 
 if two_body == True:
     ## TWO-BODY PROBLEM ##
@@ -46,8 +46,8 @@ else:
     mass = np.array([3,4,5])
 
     # Create instances of the particles
-    particles = Particles(position, vel, mass)
-    Etot_0, _, _ = particles.Etot()
+    part = Particles(position, vel, mass)
+    Etot_0, _, _ = part.Etot()
 
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     pos_i = []
@@ -58,9 +58,9 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     tstep_i = []
 
     tstart=0
-    N_end = 10
+    N_end = 65
     dt = 0.001
-    tintermediate=np.linspace(0+0.00001, N_end*Tperiod, int(1/dt))
+    tintermediate=np.linspace(0+0.00001, N_end, int(N_end/dt))
     tcurrent=0
 
     pbar = tqdm(total=len(tintermediate))
