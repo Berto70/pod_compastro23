@@ -175,9 +175,9 @@ def integrator_hermite(particles: Particles,
 
     # 11 # 12
     if args is not None:
-        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None, **args)
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=0.0, **args)
     else:
-        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=None)
+        acc_p, jerk_p, _ = acceleration_estimator(Particles(pos_p, vel_p, particles.mass), softening=0.0)
 
     #Check additional accelerations
     if external_accelerations is not None:        
