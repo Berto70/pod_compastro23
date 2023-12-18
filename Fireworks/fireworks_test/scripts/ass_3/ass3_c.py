@@ -24,6 +24,7 @@ if two_body == True:
     rp = 1.
     e = 0.0 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+    part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
     Etot_0, _, _ = part.Etot()
 
