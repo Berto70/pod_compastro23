@@ -7,7 +7,7 @@ from matplotlib.colors import cnames
 from matplotlib import animation
 
 #pos = np.load("../positions.npy")
-pos = np.load("positions_random_z.npy")
+pos = np.load("positions_sin.npy")
 #pos = np.load("pos_i.npy")
 # Original pos.shape = (100000, 2, 3)
 # This script requires pos.shape = (2, 100000, 3)
@@ -31,9 +31,9 @@ pts = sum([ax.plot([], [], [], 'o', c=c)
            for c in colors], [])
 
 # prepare the axes limits
-ax.set_xlim((-25, 25))
-ax.set_ylim((-25, 25))
-ax.set_zlim((-25, 25))
+ax.set_xlim((-1.2, 1.2))
+ax.set_ylim((-1.2, 1.2))
+ax.set_zlim((-1.2, 1.2))
 
 # set point-of-view: specified by (altitude degrees, azimuth degrees)
 ax.view_init(30, 0)
@@ -73,4 +73,4 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 #anim.save('lorentz_attractor.mp4', fps=15, extra_args=['-vcodec', 'libx264'])
 
 #plt.show()
-anim.save('rotating_random.gif', fps=15)
+anim.save('rotating_sin.gif', fps=15)

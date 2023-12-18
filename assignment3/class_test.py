@@ -21,5 +21,4 @@ positions = np.load("positions.npy")
 
 af = AnimateFireworks(positions=positions,xlim=(-1,1),ylim=(-1,1),colors=['r','b'],labels=['1','2'],filename='ani_class_test.gif')
 
-
-af.debug()
+af.save()
