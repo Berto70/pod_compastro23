@@ -132,7 +132,7 @@ else: ## OTHER INTEGRATORS ##
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
-                    part, _, acc, _, _ = integrator(part,
+                    part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
 
@@ -144,7 +144,14 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 5]  = dt_copy
 
 
-                    # dt_copy = fts.
+                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_hermite, int_args={'particles': part,
+                    #                                                                                      'tstep': dt_copy,
+                    #                                                                                      'acceleration_estimator': fdyn.acceleration_direct_vectorized, 
+                    #                                                                                      'args': {'return_jerk': True}}, int_rank=2,
+                    #                                 predictor=fint.integrator_euler, pred_args={'particles': part,
+                    #                                                                                  'tstep': dt_copy,
+                    #                                                                                  'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=1,
+                    #                                 epsilon = 0.0001)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -159,9 +166,10 @@ else: ## OTHER INTEGRATORS ##
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
-                for t_i in tqdm(range(N_ts), desc=str(dt) + ' ' + integrator_name):
-                    part, _, acc, _, _ = integrator(part,
-                                                    tstep=dt,
+                dt_copy = dt.copy()
+                for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
+                    part, dt_copy, acc, _, _ = integrator(part,
+                                                    tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized)
 
                     Etot_i, _, _ = part.Etot()
@@ -169,7 +177,12 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, :2] = part.pos[0, :2]
                     array[t_i, 2:4]= part.pos[1, :2]
                     array[t_i, 4]  = Etot_i
-                    array[t_i, 5]  = dt
+                    array[t_i, 5]  = dt_copy
+
+                    # dt_copy = fts.adaptive_timestep_vel(particles=part, eta=0.0001, acc=acc)
+
+                    tot_time += dt_copy
+                    N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
                         break

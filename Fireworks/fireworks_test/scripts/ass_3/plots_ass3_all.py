@@ -950,4 +950,28 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
                     fontsize=52, fontweight='600')                    
     
     pdf.savefig(dpi=100)
+    plt.close()    
+
+    fig11, ax11 = plt.subplots(1, 3, figsize=(40, 17))
+
+    ax11[0].set_position([0.1, 0.1, 0.25, 0.7])  # Adjust these values as needed
+    ax11[1].set_position([0.4, 0.1, 0.25, 0.7])
+    ax11[2].set_position([0.7, 0.1, 0.25, 0.7])
+    
+    ax11[0].scatter(distance(data_00001_mod[:,0], data_00001_mod[:,1], data_00001_mod[:,2], data_00001_mod[:,3]), data_00001_mod[:,5],
+                    c=data_00001_mod[:,4])
+    ax11[0].set_title('h=0.00001')
+
+    ax11[1].scatter(distance(data_0001_mod[:,0], data_0001_mod[:,1], data_0001_mod[:,2], data_0001_mod[:,3]), data_0001_mod[:,5],
+                    c=data_0001_mod[:,4])
+    ax11[1].set_title('h=0.0001')
+
+    ax11[2].scatter(distance(data_001_tsu[:,0], data_001_tsu[:,1], data_001_tsu[:,2], data_001_tsu[:,3]), data_001_tsu[:,5],
+                    c=data_001_tsu[:,4])
+    ax11[2].set_title('h=0.001')
+
+    fig11.suptitle('dist vs tstep\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                    fontsize=52, fontweight='600')                    
+    
+    pdf.savefig(dpi=100)
     plt.close()             
