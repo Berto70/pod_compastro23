@@ -79,7 +79,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     custom_cycler1 = (cycler(color=['orange', 'seagreen', 'navy']))
     plt.rc('axes', prop_cycle=custom_cycler1)
 
-    fig, ax = plt.subplots(3, 3, figsize=(40, 27))
+    fig, ax = plt.subplots(3, 3, figsize=(60, 27))
     gs = GridSpec(3,3)
     # Plot position on x-y plane
     ax[0,0].plot(data_001_base[:, 0], data_001_base[:, 1], alpha=0.5, label='h=0.001')
@@ -177,7 +177,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
     locmajy = mticker.LogLocator(base=10, numticks=100)
 
-    fig2, ax2 = plt.subplots(3, 3, figsize=(40, 27))
+    fig2, ax2 = plt.subplots(3, 3, figsize=(60, 27))
     gs2 = GridSpec(3,3)
     # Plot position on x-y plane
     ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs((data_001_base[:, 4]-Etot_0)/Etot_0)
@@ -268,7 +268,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     fig2.delaxes(ax2[2,1])
     fig2.delaxes(ax2[2,2])
 
-    fig2.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+    fig2.suptitle('ΔE/E evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
 
     pdf.savefig(dpi=100)
@@ -343,7 +343,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[2].legend(loc='upper right')   
 
     for i in range(3):
-        ax3[i].set_xlabel('absolute time')
+        ax3[i].set_xlabel('Time [N-Body units]')
         ax3[i].set_ylabel('|(E-E0)/E0|')
         ax3[i].set_yscale('log')
         ax3[i].set_prop_cycle(custom_cycler3)
@@ -363,129 +363,140 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[2].yaxis.set_minor_formatter(mticker.NullFormatter())
     ax3[2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-    fig3.suptitle('ΔE evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+    fig3.suptitle('ΔE/E evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
     
     pdf.savefig(dpi=100)
     plt.close()
 
 # ##############################################################################################################
-#     # TOT ENERGY PLOTS (DIFF INT)
+    # TOT ENERGY PLOTS (DIFF INT)
 
-#     # plt.rcParams['font.size'] = '12'
-#     # plt.rcParams['lines.linewidth'] = '2'
+    # plt.rcParams['font.size'] = '12'
+    # plt.rcParams['lines.linewidth'] = '2'
 
-#     custom_cycler4 = (cycler(color=['orange', 'seagreen', 'navy']) + cycler(linestyle=['-', '--', '-.']))
-#     plt.rc('axes', prop_cycle=custom_cycler4)
+    custom_cycler4 = (cycler(color=['orange', 'seagreen', 'navy']) + cycler(linestyle=['-', '--', '-.']))
+    plt.rc('axes', prop_cycle=custom_cycler4)
 
-#     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
-#     locmajy = mticker.LogLocator(base=10, numticks=100)
+    locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
+    locmajy = mticker.LogLocator(base=10, numticks=100)
 
-#     fig4, ax4 = plt.subplots(2, 3, figsize=(40, 27))
-#     gs4 = GridSpec(2,3)
-#     # Plot position on x-y plane
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='h=0.00001')
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,0].set_title('Euler_base')
+    fig4, ax4 = plt.subplots(3, 3, figsize=(60, 27))
+    gs4 = GridSpec(3,3)
+    # Plot position on x-y plane
+    ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[0,0].set_title('Euler_base')
 
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='h=0.00001')
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,1].set_title('Euler_modiefied')
+    ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[0,1].set_title('Euler_modiefied')
 
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='h=0.00001')
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[0,2].set_title('RK2-Heun')
+    ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[0,2].set_title('RK2-Heun')
 
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='h=0.00001')
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[1,0].set_title('Leapfrog')
+    ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[1,0].set_title('Leapfrog')
 
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.00001')
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
-#     ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.001')
-#     ax4[1,1].set_title('RK4')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[1,1].set_title('RK4')
 
-#     for i in range(2):
-#         for j in range(3):
-#             ax4[i,j].set_xlabel('absolute time')
-#             ax4[i,j].set_ylabel('Etot')
-#             ax4[i,j].set_yscale('log')
-#             ax4[i,j].set_prop_cycle(custom_cycler4)
-#             ax4[i,j].legend()
+    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs(data_001_tsu[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_0001_tsu[:, 4].shape[0]), np.abs(data_0001_tsu[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_00001_tsu[:, 4].shape[0]), np.abs(data_00001_tsu[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[2,0].set_title('Tsunami')
 
-#     for i in range(2):
-#         for j in range(3):
-#             ax2[i,j].yaxis.set_minor_locator(locminy)
-#             ax2[i,j].yaxis.set_major_locator(locmajy)
-#             ax2[i,j].yaxis.set_minor_formatter(mticker.NullFormatter())
-#             ax2[i,j].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
+    for i in range(2):
+        for j in range(3):
+            ax4[i,j].set_xlabel('Time [N-Body units]')
+            ax4[i,j].set_ylabel('$\abs{E_{tot}}$ [N-body units]')
+            ax4[i,j].set_yscale('log')
+            ax4[i,j].set_prop_cycle(custom_cycler4)
+            ax4[i,j].legend()
 
-#     # ax2[0,1].yaxis.set_minor_locator(locminy)
-#     # ax2[0,1].yaxis.set_major_locator(locmajy)
-#     # ax2[0,1].yaxis.set_minor_formatter(mticker.NullFormatter())
-#     # ax2[0,1].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
+    for i in range(2):
+        for j in range(3):
+            ax2[i,j].yaxis.set_minor_locator(locminy)
+            ax2[i,j].yaxis.set_major_locator(locmajy)
+            ax2[i,j].yaxis.set_minor_formatter(mticker.NullFormatter())
+            ax2[i,j].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-#     # ax2[0,2].yaxis.set_minor_locator(locminy)
-#     # ax2[0,2].yaxis.set_major_locator(locmajy)
-#     # ax2[0,2].yaxis.set_minor_formatter(mticker.NullFormatter())
-#     # ax2[0,2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
+    # ax2[0,1].yaxis.set_minor_locator(locminy)
+    # ax2[0,1].yaxis.set_major_locator(locmajy)
+    # ax2[0,1].yaxis.set_minor_formatter(mticker.NullFormatter())
+    # ax2[0,1].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-#     # ax212 = plt.subplot(gs2[1, -1])
-#     # ax212.axis('off')  # Turn off the axes for the empty subplot
-#     fig4.delaxes(ax4[1,-1])
+    # ax2[0,2].yaxis.set_minor_locator(locminy)
+    # ax2[0,2].yaxis.set_major_locator(locmajy)
+    # ax2[0,2].yaxis.set_minor_formatter(mticker.NullFormatter())
+    # ax2[0,2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-#     fig4.suptitle('Etot evolution', fontsize=52, fontweight='600')
+    # ax212 = plt.subplot(gs2[1, -1])
+    # ax212.axis('off')  # Turn off the axes for the empty subplot
+    fig4.delaxes(ax4[2,1])
+    fig4.delaxes(ax4[2,2])
 
-#     # plt.savefig('./fireworks_test/plots/ass_3/Etot_all.pdf')
-#     pdf.savefig(dpi=100)
-#     plt.close()
+    fig4.suptitle('Total Energy Evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                   fontsize=52, fontweight='600')
+
+    # plt.savefig('./fireworks_test/plots/ass_3/Etot_all.pdf')
+    pdf.savefig(dpi=100)
+    plt.close()
 
 # ##############################################################################################################
-#     # TOT ENERGY PLOTS (DIFF TSTEP)
+    # TOT ENERGY PLOTS (DIFF TSTEP)
 
-#     custom_cycler5 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-.', ':', '-', '-']))
-#     plt.rc('axes', prop_cycle=custom_cycler5)
+    custom_cycler5 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-.', ':', '-', '-']))
+    plt.rc('axes', prop_cycle=custom_cycler5)
 
-#     fig5, ax5 = plt.subplots(1, 3, figsize=(40, 15))
-#     gs5 = GridSpec(1,3)
+    fig5, ax5 = plt.subplots(1, 3, figsize=(40, 15))
+    gs5 = GridSpec(1,3)
 
-#     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='Euler_base')
-#     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='Euler_modified')
-#     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
-#     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='Leapfrog')
-#     ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[2].set_title('h=0.00001')
-#     ax5[2].legend(loc='upper right')
+    ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='Euler_base')
+    ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='Euler_modified')
+    ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
+    ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='Leapfrog')
+    ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='RK4')
+    ax5[0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs(data_001_tsu[:, 4]), alpha=0.8, label='Tsunami')
+    ax5[0].set_title('h=0.001')
+    ax5[0].legend(loc='lower right')
 
-#     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='Euler_base')
-#     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='Euler_modified')
-#     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
-#     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='Leapfrog')
-#     ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[1].set_title('h=0.0001')
-#     ax5[1].legend(loc='upper right')
+    ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.abs(data_0001_base[:, 4]), alpha=0.8, label='Euler_base')
+    ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.abs(data_0001_mod[:, 4]), alpha=0.8, label='Euler_modified')
+    ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.abs(data_0001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
+    ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.abs(data_0001_leap[:, 4]), alpha=0.8, label='Leapfrog')
+    ax5[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='RK4')
+    ax5[1].plot(np.linspace(0, tevol_tsu, data_0001_tsu[:, 4].shape[0]), np.abs(data_0001_tsu[:, 4]), alpha=0.8, label='Tsunami')
+    ax5[1].set_title('h=0.0001')
+    ax5[1].legend(loc='upper right')
 
-#     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='Euler_base')
-#     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='Euler_modified')
-#     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.abs(data_001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
-#     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='Leapfrog')
-#     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='RK4')
-#     ax5[0].set_title('h=0.001')
-#     ax5[0].legend(loc='lower right')
+    ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='Euler_base')
+    ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.abs(data_00001_mod[:, 4]), alpha=0.8, label='Euler_modified')
+    ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.abs(data_00001_rk2[:, 4]), alpha=0.8, label='RK2-Heun')
+    ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.abs(data_00001_leap[:, 4]), alpha=0.8, label='Leapfrog')
+    ax5[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='RK4')
+    ax5[2].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs(data_001_tsu[:, 4]), alpha=0.8, label='Tsunami')
+    ax5[2].set_title('h=0.00001')
+    ax5[2].legend(loc='upper right')
 
-#     for i in range(3):
-#         ax5[i].set_xlabel('absolute time')
-#         ax5[i].set_ylabel('|(E-E0)/E0|')
-#         ax5[i].set_yscale('log')
-#         ax5[i].set_prop_cycle(custom_cycler5)
+    for i in range(3):
+        ax5[i].set_xlabel('Time [N-Body units]')
+        ax5[i].set_ylabel('$\abs{E_{tot}}$ [N-body units]')
+        ax5[i].set_yscale('log')
+        ax5[i].set_prop_cycle(custom_cycler5)
 
-#     fig5.suptitle('Etot evolution', fontsize=52, fontweight='600')
-#     pdf.savefig(dpi=100)
-#     plt.close()
+    fig5.suptitle('Total Energy Evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                   fontsize=52, fontweight='600')
+    pdf.savefig(dpi=100)
+    plt.close()
 
 ##############################################################################################################
     # ENERGY ERR VS TIMESTEP
@@ -747,129 +758,3 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     plt.close()
 
 ##############################################################################################################
-
-# # ENERGY ERR PLOTS (DIFF INT)
-
-#     custom_cycler9 = (cycler(color=['orange','lightgreen', 'navy']) + cycler(linestyle=['-', '--', '-.']))
-#     plt.rc('axes', prop_cycle=custom_cycler9)
-
-#     fig9, ax9 = plt.subplots(2, 3, figsize=(40, 27))
-#     gs9 = GridSpec(2,3)
-#     # Plot position on x-y plane
-#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.log10(np.abs((data_001_base[:, 4]-Etot_0)/Etot_0))
-#                   , alpha=0.8, label='h=0.001')
-#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_0001_base[:, 4].shape[0]), np.log10(np.abs((data_0001_base[:, 4]-Etot_0)/Etot_0))
-#                   , alpha=0.8, label='h=0.0001')
-#     ax9[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.log10(np.abs((data_00001_base[:, 4]-Etot_0)/Etot_0))
-#                   , alpha=0.8, label='h=0.00001')
-#     ax9[0,0].set_title('Euler_base')
-
-#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.log10(np.abs((data_001_mod[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.001')
-#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_0001_mod[:, 4].shape[0]), np.log10(np.abs((data_0001_mod[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.0001')
-#     ax9[0,1].plot(np.linspace(0, N_end*Tperiod, data_00001_mod[:, 4].shape[0]), np.log10(np.abs((data_00001_mod[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.00001')
-#     ax9[0,1].set_title('Euler_modified')
-
-#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk2[:, 4].shape[0]), np.log10(np.abs((data_001_rk2[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.001')
-#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk2[:, 4].shape[0]), np.log10(np.abs((data_0001_rk2[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.0001')
-#     ax9[0,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk2[:, 4].shape[0]), np.log10(np.abs((data_00001_rk2[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.00001')
-#     ax9[0,2].set_title('RK2-Heun')
-
-#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.log10(np.abs((data_001_leap[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.001')
-#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_0001_leap[:, 4].shape[0]), np.log10(np.abs((data_0001_leap[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.0001')
-#     ax9[1,0].plot(np.linspace(0, N_end*Tperiod, data_00001_leap[:, 4].shape[0]), np.log10(np.abs((data_00001_leap[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.00001')
-#     ax9[1,0].set_title('Leapfrog')
-
-#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.log10(np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.001')
-#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.log10(np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.0001')
-#     ax9[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.log10(np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0))
-#                     , alpha=0.8, label='h=0.00001')
-#     ax9[1,1].set_title('RK4')
-
-#     for i in range(2):
-#         for j in range(3):
-#             ax9[i,j].set_xlabel('absolute time')
-#             ax9[i,j].set_ylabel('$log_{10}|\Delta E/E0|$')
-#             #ax2[i,j].set_yscale('log')
-#             ax9[i,j].set_prop_cycle(custom_cycler9)
-#             ax9[i,j].legend()
-
-#     # ax212 = plt.subplot(gs2[1, -1])
-#     # ax212.axis('off')  # Turn off the axes for the empty subplot
-#     fig9.delaxes(ax9[1,-1])
-
-#     fig9.suptitle('ΔE evolution', fontsize=52, fontweight='600')
-
-#     pdf.savefig(dpi=100)
-#     plt.close()
-
-##############################################################################################################
-
-    # # same but w/o euler_base
-    # ints = np.array(['Euler_mod', 'RK2', 'Leap', 'RK4'])
-    # fig9, ax9 = plt.subplots(1, 3, figsize=(40, 15))
-    # gs9 = GridSpec(1,3)
-
-    # ax9[0].boxplot([derr_00001_mod, derr_00001_rk2, derr_00001_leap, derr_00001_rk4], 
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[0].set_title('h=0.00001')
-    
-    # ax9[1].boxplot([derr_0001_mod, derr_0001_rk2, derr_0001_leap, derr_0001_rk4],
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[1].set_title('h=0.0001')
-    
-    # ax9[2].boxplot([derr_001_mod, derr_001_rk2, derr_001_leap, derr_001_rk4],
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[2].set_title('h=0.001')
-
-    # fig9.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
-    
-    # for i in range(3):
-    #     # ax8[i,j].set_xticklabels(['0.0001', '0.001', '0.01'])
-    #     ax9[i].set_xlabel('Integrator')
-    #     ax9[i].set_ylabel('|(E-E0)/E0|')
-    #     ax9[i].set_yscale('log')
-    #     ax9[i].yaxis.grid(True, which='major', alpha=0.5)
-    #     ax9[i].set_prop_cycle(custom_cycler8)
-
-    # pdf.savefig(dpi=100)
-    # plt.close()
-
-    # ints = np.array(['RK2', 'Leap', 'RK4'])
-    # fig9, ax9 = plt.subplots(1, 3, figsize=(40, 15))
-    # gs9 = GridSpec(1,3)
-
-    # ax9[0].boxplot([derr_00001_rk2, derr_00001_leap, derr_00001_rk4], 
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[0].set_title('h=0.00001')
-    
-    # ax9[1].boxplot([derr_0001_rk2, derr_0001_leap, derr_0001_rk4],
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[1].set_title('h=0.0001')
-    
-    # ax9[2].boxplot([derr_001_rk2, derr_001_leap, derr_001_rk4],
-    #               labels=ints, notch=True, vert=True, patch_artist=True, boxprops=dict(alpha=0.8))
-    # ax9[2].set_title('h=0.001')
-
-    # fig9.suptitle('Relative Energy errors', fontsize=52, fontweight='600')
-    
-    # for i in range(3):
-    #     # ax8[i,j].set_xticklabels(['0.0001', '0.001', '0.01'])
-    #     ax9[i].set_xlabel('Integrator')
-    #     ax9[i].set_ylabel('|(E-E0)/E0|')
-    #     ax9[i].set_yscale('log')
-    #     ax9[i].yaxis.grid(True, which='major', alpha=0.5)
-    #     ax9[i].set_prop_cycle(custom_cycler8)
-
-    # pdf.savefig(dpi=100)
-    # plt.close()
