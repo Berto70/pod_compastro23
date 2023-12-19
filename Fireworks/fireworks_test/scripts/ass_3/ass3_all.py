@@ -126,7 +126,9 @@ else: ## OTHER INTEGRATORS ##
         for integrator_name, integrator in integrator_dict.items():
             tot_time = 0
             N_ts_cum = 0
+
             if integrator_name == 'Hermite':
+                
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
@@ -157,8 +159,10 @@ else: ## OTHER INTEGRATORS ##
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
+                        print('Exceeded total time')
                         break
                     elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
                         break
                     
                 data[integrator_name] = array
@@ -185,8 +189,10 @@ else: ## OTHER INTEGRATORS ##
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
+                        print('Exceeded time limit')
                         break
                     elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
                         break
                     
                 data[integrator_name] = array

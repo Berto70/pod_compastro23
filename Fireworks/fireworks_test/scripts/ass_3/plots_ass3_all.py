@@ -22,13 +22,13 @@ ic_param_tsu = np.genfromtxt(path + '/data/ass_3/ic_param_tsu.txt')
 tevol_tsu = ic_param_tsu[7]
 
 #downsample
-n = 100
-m = 10
+n = 1
+m = 1
 w = 1
 
-data_00001 = np.load(path + '/data/ass_3/dt_1e-05.npz', allow_pickle=True)
-data_0001 = np.load(path + '/data/ass_3/dt_0.0001.npz', allow_pickle=True)
-data_001 = np.load(path + '/data/ass_3/dt_0.001.npz', allow_pickle=True)
+data_00001 = np.load(path + '/data/ass_3/dt_1e-05_tstep.npz', allow_pickle=True)
+data_0001 = np.load(path + '/data/ass_3/dt_0.0001_tstep.npz', allow_pickle=True)
+data_001 = np.load(path + '/data/ass_3/dt_0.001_tstep.npz', allow_pickle=True)
 data_tsu = np.load(path + '/data/ass_3/data_tusnami_e0.00.npz', allow_pickle=True)
 
 data_00001_base = data_00001['Euler_base'][::n]
@@ -56,7 +56,7 @@ data_001_rk4 = data_001['RK4'][::w]
 data_001_tsu = data_tsu['0.001'][::w]
 
 
-with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_both.pdf' % (e, rp)) as pdf:
+with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_tstep.pdf' % (e, rp)) as pdf:
 
     # POSITION X-Y PLOTS
 

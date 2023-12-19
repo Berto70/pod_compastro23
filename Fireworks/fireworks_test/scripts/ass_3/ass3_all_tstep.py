@@ -146,24 +146,28 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 5]  = dt_copy
 
 
-                    dt_copy = fts.adaptive_timestep(integrator=fint.integrator_hermite, int_args={'particles': part,
-                                                                                                         'tstep': dt_copy,
-                                                                                                         'acceleration_estimator': fdyn.acceleration_direct_vectorized, 
-                                                                                                         'args': {'return_jerk': True}}, int_rank=2,
-                                                    predictor=fint.integrator_euler, pred_args={'particles': part,
-                                                                                                     'tstep': dt_copy,
-                                                                                                     'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=1,
-                                                    epsilon = 0.0001)
+                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_hermite, int_args={'particles': part,
+                    #                                                                                      'tstep': dt_copy,
+                    #                                                                                      'acceleration_estimator': fdyn.acceleration_direct_vectorized, 
+                    #                                                                                      'args': {'return_jerk': True}}, int_rank=2,
+                    #                                 predictor=fint.integrator_euler, pred_args={'particles': part,
+                    #                                                                                  'tstep': dt_copy,
+                    #                                                                                  'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=1,
+                    #                                 epsilon = 1e-06)
+
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=1e-06)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
+                        print('Exceeded time limit')
                         break
                     elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
                         break
                     
-                data[integrator_name] = a
+                data[integrator_name] = array
             
             elif integrator_name == 'RK4':
 
@@ -174,7 +178,7 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -187,20 +191,22 @@ else: ## OTHER INTEGRATORS ##
                     dt_copy = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_args={'particles': part,
                                                                                                 'tstep': dt_copy,
                                                                                                 'acceleration_estimator': fdyn.acceleration_direct_vectorized}, int_rank=4,
-                                                    predictor=fint.integrator_heu, pred_args={'particles': part,
+                                                    predictor=fint.integrator_heun, pred_args={'particles': part,
                                                                                                 'tstep': dt_copy,
                                                                                                 'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
-                                                    epsilon = 0.0001)
+                                                    epsilon = 1e-06)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
+                        print('Exceeded time limit')
                         break
                     elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
                         break
                     
-                data[integrator_name] = a
+                data[integrator_name] = array
 
             else:
                 array = np.zeros(shape=(N_ts, 6))
@@ -219,16 +225,18 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_vel(particles = part, eta = 0.0001, acc = acc)
+                    dt_copy = fts.adaptive_timestep_vel(particles = part, eta = 1e-06, acc = acc)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
+                        print('Exceeded time limit')
                         break
                     elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
                         break
                     
-                data[integrator_name] = a
+                data[integrator_name] = array
             
         np.savez(file_name,**data)
