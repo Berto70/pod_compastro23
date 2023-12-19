@@ -37,7 +37,7 @@ data_00001_her = data_00001['Hermite'][::n]
 data_00001_rk2 = data_00001['RK2-Heun'][::n]
 data_00001_leap = data_00001['Leapfrog'][::n]
 data_00001_rk4 = data_00001['RK4'][::n]
-data_00001_tsu = data_tsu['1e-05'][::100*n]
+data_00001_tsu = data_tsu['1e-05'][::n]
 
 data_0001_base = data_0001['Euler_base'][::m]
 data_0001_mod = data_0001['Euler_modified'][::m]
@@ -45,7 +45,7 @@ data_0001_her = data_0001['Hermite'][::m]
 data_0001_rk2 = data_0001['RK2-Heun'][::m]
 data_0001_leap = data_0001['Leapfrog'][::m]
 data_0001_rk4 = data_0001['RK4'][::m]
-data_0001_tsu = data_tsu['0.0001'][::10*m]
+data_0001_tsu = data_tsu['0.0001'][::m]
 
 data_001_base = data_001['Euler_base'][::w]
 data_001_mod = data_001['Euler_modified'][::w]
@@ -79,7 +79,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     custom_cycler1 = (cycler(color=['orange', 'seagreen', 'navy']))
     plt.rc('axes', prop_cycle=custom_cycler1)
 
-    fig, ax = plt.subplots(3, 3, figsize=(60, 27))
+    fig, ax = plt.subplots(3, 3, figsize=(40, 40))
     gs = GridSpec(3,3)
     # Plot position on x-y plane
     ax[0,0].plot(data_001_base[:, 0], data_001_base[:, 1], alpha=0.5, label='h=0.001')
@@ -133,9 +133,9 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax[2,0].plot(data_001_tsu[:, 0], data_001_tsu[:, 1], alpha=0.5, label='h=0.001')
     ax[2,0].plot(data_0001_tsu[:, 0], data_0001_tsu[:, 1], alpha=0.5, label='h=0.0001')
     ax[2,0].plot(data_00001_tsu[:, 0], data_00001_tsu[:, 1], alpha=0.8, label='h=0.00001')
-    # ax[2,0].plot(data_001_tsu[:, 2], data_001_tsu[:, 3], alpha=0.5, linestyle='--')
-    # ax[2,0].plot(data_0001_tsu[:, 2], data_0001_tsu[:, 3], alpha=0.5, linestyle='--')
-    # ax[2,0].plot(data_00001_tsu[:, 2], data_00001_tsu[:, 3], alpha=0.8, linestyle='--')
+    ax[2,0].plot(data_001_tsu[:, 2], data_001_tsu[:, 3], alpha=0.5, linestyle='--')
+    ax[2,0].plot(data_0001_tsu[:, 2], data_0001_tsu[:, 3], alpha=0.5, linestyle='--')
+    ax[2,0].plot(data_00001_tsu[:, 2], data_00001_tsu[:, 3], alpha=0.8, linestyle='--')
     ax[2,0].set_title('Tsunami')
     
     for i in range(3):
@@ -144,10 +144,10 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
             ax[i,j].set_ylabel('Y [N-Body units]')
             ax[i,j].set_prop_cycle(custom_cycler1)
             ax[i,j].legend()            
-            ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
-            ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
-            ax[0,0].set_xlim(np.min(data_00001_base[:, 0])-0.05, np.max(data_00001_base[:, 0])+0.05)
-            ax[0,0].set_ylim(np.min(data_00001_base[:, 1])-0.05, np.max(data_00001_base[:, 1])+0.05)
+            ax[i,j].set_xlim(np.min(data_00001_mod[:, 2])-0.1, np.max(data_00001_mod[:, 2])+0.1)
+            ax[i,j].set_ylim(np.min(data_00001_mod[:, 3])-0.1, np.max(data_00001_mod[:, 3])+0.1)
+            ax[0,0].set_xlim(np.min(data_001_base[:, 2])-0.15, np.max(data_001_base[:, 2])+0.15)
+            ax[0,0].set_ylim(np.min(data_001_base[:, 3])-0.15, np.max(data_001_base[:, 3])+0.15)
 
         # default ax[i,j].set_xlim(np.min(data_00001_mod[:, 0])-0.05, np.max(data_00001_mod[:, 0])+0.05)
         #         ax[i,j].set_ylim(np.min(data_00001_mod[:, 1])-0.05, np.max(data_00001_mod[:, 1])+0.05)
@@ -177,7 +177,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
     locmajy = mticker.LogLocator(base=10, numticks=100)
 
-    fig2, ax2 = plt.subplots(3, 3, figsize=(60, 27))
+    fig2, ax2 = plt.subplots(3, 3, figsize=(40, 40))
     gs2 = GridSpec(3,3)
     # Plot position on x-y plane
     ax2[0,0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs((data_001_base[:, 4]-Etot_0)/Etot_0)
@@ -234,11 +234,11 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax2[1,2].set_title('RK4')
 
     ax2[2,0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs((data_001_tsu[:, 4]-Etot_0)/Etot_0)
-                    , alpha=0.8, label='h=0.001')
+                    , alpha=1, label='h=0.001', zorder=100)
     ax2[2,0].plot(np.linspace(0, tevol_tsu, data_0001_tsu[:, 4].shape[0]), np.abs((data_0001_tsu[:, 4]-Etot_0)/Etot_0)
                     , alpha=0.8, label='h=0.0001')
     ax2[2,0].plot(np.linspace(0, tevol_tsu, data_00001_tsu[:, 4].shape[0]), np.abs((data_00001_tsu[:, 4]-Etot_0)/Etot_0)
-                    , alpha=0.8, label='h=0.00001')
+                    , alpha=0.8, label='h=0.00001', zorder=-100)
     ax2[2,0].set_title('Tsunami')
 
     for j in range(3):
@@ -268,7 +268,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     fig2.delaxes(ax2[2,1])
     fig2.delaxes(ax2[2,2])
 
-    fig2.suptitle('ΔE/E evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+    fig2.suptitle('|ΔE/E| Evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
 
     pdf.savefig(dpi=100)
@@ -304,7 +304,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[0].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs((data_001_rk4[:, 4]-Etot_0)/Etot_0), 
                 alpha=0.8, label='RK4')   
     ax3[0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs((data_001_tsu[:, 4]-Etot_0)/Etot_0),
-                alpha=0.8, label='Tsunami') 
+                alpha=0.8, label='Tsunami', zorder=-100) 
     ax3[0].set_title('h=0.001')
     ax3[0].legend(loc='lower right')
 
@@ -321,7 +321,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs((data_0001_rk4[:, 4]-Etot_0)/Etot_0), 
                 alpha=0.8, label='RK4') 
     ax3[1].plot(np.linspace(0, tevol_tsu, data_0001_tsu[:, 4].shape[0]), np.abs((data_0001_tsu[:, 4]-Etot_0)/Etot_0),
-                alpha=0.8, label='Tsunami')   
+                alpha=0.8, label='Tsunami', zorder=-100)   
     ax3[1].set_title('h=0.0001')
     ax3[1].legend(loc='upper right')
 
@@ -338,7 +338,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs((data_00001_rk4[:, 4]-Etot_0)/Etot_0),
                  alpha=0.8, label='RK4')
     ax3[2].plot(np.linspace(0, tevol_tsu, data_00001_tsu[:, 4].shape[0]), np.abs((data_00001_tsu[:, 4]-Etot_0)/Etot_0),
-                 alpha=0.8, label='Tsunami')    
+                 alpha=0.8, label='Tsunami', zorder=-100)    
     ax3[2].set_title('h=0.00001')
     ax3[2].legend(loc='upper right')   
 
@@ -363,7 +363,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax3[2].yaxis.set_minor_formatter(mticker.NullFormatter())
     ax3[2].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
-    fig3.suptitle('ΔE/E evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+    fig3.suptitle('|ΔE/E| Evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
                   fontsize=52, fontweight='600')
     
     pdf.savefig(dpi=100)
@@ -381,7 +381,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
     locmajy = mticker.LogLocator(base=10, numticks=100)
 
-    fig4, ax4 = plt.subplots(3, 3, figsize=(60, 27))
+    fig4, ax4 = plt.subplots(3, 3, figsize=(40, 40))
     gs4 = GridSpec(3,3)
     # Plot position on x-y plane
     ax4[0,0].plot(np.linspace(0, N_end*Tperiod, data_00001_base[:, 4].shape[0]), np.abs(data_00001_base[:, 4]), alpha=0.8, label='h=0.00001')
@@ -404,25 +404,30 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax4[1,0].plot(np.linspace(0, N_end*Tperiod, data_001_leap[:, 4].shape[0]), np.abs(data_001_leap[:, 4]), alpha=0.8, label='h=0.001')
     ax4[1,0].set_title('Leapfrog')
 
-    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.00001')
-    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
-    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.001')
-    ax4[1,1].set_title('RK4')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_00001_her[:, 4].shape[0]), np.abs(data_00001_her[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_0001_her[:, 4].shape[0]), np.abs(data_0001_her[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[1,1].plot(np.linspace(0, N_end*Tperiod, data_001_her[:, 4].shape[0]), np.abs(data_001_her[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[1,1].set_title('Hermite')
 
-    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs(data_001_tsu[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[1,2].plot(np.linspace(0, N_end*Tperiod, data_00001_rk4[:, 4].shape[0]), np.abs(data_00001_rk4[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[1,2].plot(np.linspace(0, N_end*Tperiod, data_0001_rk4[:, 4].shape[0]), np.abs(data_0001_rk4[:, 4]), alpha=0.8, label='h=0.0001')
+    ax4[1,2].plot(np.linspace(0, N_end*Tperiod, data_001_rk4[:, 4].shape[0]), np.abs(data_001_rk4[:, 4]), alpha=0.8, label='h=0.001')
+    ax4[1,2].set_title('RK4')
+
+    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_001_tsu[:, 4].shape[0]), np.abs(data_001_tsu[:, 4]), alpha=1, label='h=0.001', zorder=100)
     ax4[2,0].plot(np.linspace(0, tevol_tsu, data_0001_tsu[:, 4].shape[0]), np.abs(data_0001_tsu[:, 4]), alpha=0.8, label='h=0.0001')
-    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_00001_tsu[:, 4].shape[0]), np.abs(data_00001_tsu[:, 4]), alpha=0.8, label='h=0.00001')
+    ax4[2,0].plot(np.linspace(0, tevol_tsu, data_00001_tsu[:, 4].shape[0]), np.abs(data_00001_tsu[:, 4]), alpha=0.8, label='h=0.00001', zorder=-100)
     ax4[2,0].set_title('Tsunami')
 
-    for i in range(2):
+    for i in range(3):
         for j in range(3):
             ax4[i,j].set_xlabel('Time [N-Body units]')
-            ax4[i,j].set_ylabel('$\abs{E_{tot}}$ [N-body units]')
+            ax4[i,j].set_ylabel('|Etot| [N-body units]')
             ax4[i,j].set_yscale('log')
             ax4[i,j].set_prop_cycle(custom_cycler4)
             ax4[i,j].legend()
 
-    for i in range(2):
+    for i in range(3):
         for j in range(3):
             ax2[i,j].yaxis.set_minor_locator(locminy)
             ax2[i,j].yaxis.set_major_locator(locmajy)
@@ -454,11 +459,18 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
 # ##############################################################################################################
     # TOT ENERGY PLOTS (DIFF TSTEP)
 
+    locminy = mticker.LogLocator(base=10, subs=np.arange(2, 10) * .1, numticks=200) # subs=(0.2,0.4,0.6,0.8)
+    locmajy = mticker.LogLocator(base=10, numticks=100)
+
     custom_cycler5 = (cycler(color=['firebrick','lightgreen', 'purple', 'orange', 'navy']) + cycler(linestyle=['--', '-.', ':', '-', '-']))
     plt.rc('axes', prop_cycle=custom_cycler5)
 
-    fig5, ax5 = plt.subplots(1, 3, figsize=(40, 15))
+    fig5, ax5 = plt.subplots(1, 3, figsize=(40, 17))
     gs5 = GridSpec(1,3)
+
+    ax5[0].set_position([0.1, 0.1, 0.25, 0.7])  # Adjust these values as needed
+    ax5[1].set_position([0.4, 0.1, 0.25, 0.7])
+    ax5[2].set_position([0.7, 0.1, 0.25, 0.7])
 
     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_base[:, 4].shape[0]), np.abs(data_001_base[:, 4]), alpha=0.8, label='Euler_base')
     ax5[0].plot(np.linspace(0, N_end*Tperiod, data_001_mod[:, 4].shape[0]), np.abs(data_001_mod[:, 4]), alpha=0.8, label='Euler_modified')
@@ -489,9 +501,15 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
 
     for i in range(3):
         ax5[i].set_xlabel('Time [N-Body units]')
-        ax5[i].set_ylabel('$\abs{E_{tot}}$ [N-body units]')
+        ax5[i].set_ylabel('|Etot| [N-body units]')
         ax5[i].set_yscale('log')
         ax5[i].set_prop_cycle(custom_cycler5)
+
+    # for i in range(3):
+    #     ax5[i].yaxis.set_minor_locator(locminy)
+    #     ax5[i].yaxis.set_major_locator(locmajy)
+    #     ax5[i].yaxis.set_minor_formatter(mticker.NullFormatter())
+    #     ax5[i].yaxis.set_major_formatter(mticker.LogFormatterSciNotation())
 
     fig5.suptitle('Total Energy Evolution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
                    fontsize=52, fontweight='600')
@@ -551,7 +569,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     tsu_tstep = np.array([data_00001_tsu[5][-1], data_0001_tsu[5][-1], data_001_tsu[5][-1]])
 
     plt.rcParams['lines.markersize'] = '10'
-    fig6, ax6 = plt.subplots(3, 3, figsize=(40, 27))
+    fig6, ax6 = plt.subplots(3, 3, figsize=(40, 40))
     gs6 = GridSpec(3,3)
 
     ax6[0,0].loglog(timesteps, [max_00001_base, max_0001_base, max_001_base], 
@@ -606,7 +624,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     for i in range(3):
         for j in range(3):
             ax6[i,j].set_xlabel('Time Step')
-            ax6[i,j].set_ylabel('Energy error')
+            ax6[i,j].set_ylabel('Energy Error')
             ax6[i,j].legend(loc='best')
             ax6[i,j].grid(True, which='both', alpha=0.3)
 
@@ -641,14 +659,14 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     derr_001_tsu = np.abs((data_001_tsu[:,4]-Etot_0)/Etot_0)
 
     timesteps = np.array([0.00001, 0.0001, 0.001])
-    tsu_tstep = np.array([data_00001_tsu[5][-1] - data_00001_tsu[5][-2], 
-                          data_0001_tsu[5][-1] - data_0001_tsu[5][-2], 
-                          data_001_tsu[5][-1] - data_001_tsu[5][-2]])
+    tsu_tstep = np.array([round(data_00001_tsu[5][-1], 6), 
+                          round(data_0001_tsu[5][-1], 5), 
+                          round(data_001_tsu[5][-1],4)])
 
     custom_cycler7 = (cycler(color=['tab:blue', 'tab:orange']))
     plt.rc('axes', prop_cycle=custom_cycler7)
 
-    fig7, ax7 = plt.subplots(3, 3, figsize=(40, 27))
+    fig7, ax7 = plt.subplots(3, 3, figsize=(40, 40))
     gs7 = GridSpec(3,3)
 
     ax7[0,0].boxplot([derr_00001_base, derr_0001_base, derr_001_base], 
@@ -682,7 +700,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     fig7.delaxes(ax7[2,1])
     fig7.delaxes(ax7[2,2])
 
-    fig7.suptitle('Relative Energy errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+    fig7.suptitle('Relative Energy Errors\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
                    fontsize=52, fontweight='600')
 
     for i in range(3):
@@ -758,3 +776,33 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     plt.close()
 
 ##############################################################################################################
+    # TIMESTEP DISTRIBUTION
+
+    custom_cycler9 = (cycler(color=['orange', 'seagreen', 'navy']))
+    plt.rc('axes', prop_cycle=custom_cycler9)
+
+    fig9, ax9 = plt.subplots(3, 3, figsize=(40, 40))
+    gs9 = GridSpec(3,3)
+    # Plot position on x-y plane
+    
+    ax9[2,0].hist(data_00001_tsu[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[2,1].hist(data_0001_tsu[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
+    ax9[2,2].hist(data_001_tsu[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
+    
+    for i in range(3):
+        for j in range(3):
+            ax9[i,j].set_xlabel('Time Step')
+            ax9[i,j].set_prop_cycle(custom_cycler9)
+            # ax9[i,j].yaxis.set_major_formatter(mticker.PercentFormatter(decimals=0, symbol=None, xmax=1.))
+            ax9[i,j].legend()            
+
+
+    # fig9.delaxes(ax9[2,1])
+    # fig9.delaxes(ax9[2,2])
+
+
+    fig9.suptitle('Adaptive Timesteps Distribution\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod), 
+                 fontsize=52, fontweight='600')
+
+    pdf.savefig(dpi = 100)
+    plt.close()
