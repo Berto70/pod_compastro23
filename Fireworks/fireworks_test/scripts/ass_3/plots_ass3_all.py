@@ -786,17 +786,17 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     gs9 = GridSpec(3,3)
     # Plot position on x-y plane
 
-    ax9[0,0].hist(data_00001_base[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[0,0].hist(data_00001_base[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[0,1].hist(data_0001_base[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[0,2].hist(data_001_base[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[0,1].set_title('Euler_base')
 
-    ax9[1,0].hist(data_00001_mod[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[1,0].hist(data_00001_mod[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[1,1].hist(data_0001_mod[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[1,2].hist(data_001_mod[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[1,1].set_title('Euler_modified')
 
-    ax9[2,0].hist(data_00001_her[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[2,0].hist(data_00001_her[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[2,1].hist(data_0001_her[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[2,2].hist(data_001_her[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[2,1].set_title('Hermite')
@@ -824,17 +824,17 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     gs9 = GridSpec(3,3)
     # Plot position on x-y plane
 
-    ax9[0,0].hist(data_00001_rk2[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[0,0].hist(data_00001_rk2[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[0,1].hist(data_0001_rk2[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[0,2].hist(data_001_rk2[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[0,1].set_title('RK2-Heun')
 
-    ax9[1,0].hist(data_00001_leap[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[1,0].hist(data_00001_leap[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[1,1].hist(data_0001_leap[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[1,2].hist(data_001_leap[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[1,1].set_title('Leapfrog')
 
-    ax9[2,0].hist(data_00001_rk4[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[2,0].hist(data_00001_rk4[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[2,1].hist(data_0001_rk4[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[2,2].hist(data_001_rk4[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[2,1].set_title('RK4')
@@ -858,7 +858,7 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax9[1].set_position([0.4, 0.1, 0.25, 0.7])
     ax9[2].set_position([0.7, 0.1, 0.25, 0.7])
     
-    ax9[0].hist(data_00001_tsu[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5, cumulative=True)
+    ax9[0].hist(data_00001_tsu[:, 5], density=True, alpha=0.8, label='h=0.00001', histtype='step', linewidth=5)
     ax9[1].hist(data_0001_tsu[:, 5], density=True, alpha=0.8, label='h=0.0001', histtype='step', linewidth=5)
     ax9[2].hist(data_001_tsu[:, 5], density=True, alpha=0.8, label='h=0.001', histtype='step', linewidth=5)
     ax9[1].set_title('Tsunami')
@@ -934,16 +934,16 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     ax11[1].set_position([0.4, 0.1, 0.25, 0.7])
     ax11[2].set_position([0.7, 0.1, 0.25, 0.7])
     
-    ax11[0].scatter(distance(data_00001_base[:,0], data_00001_base[:,1], data_00001_base[:,2], data_00001_base[:,3]), data_00001_base[:,5],
-                    c=data_00001_base[:,4])
+    ax11[0].scatter(distance(data_00001_tsu[:,0], data_00001_tsu[:,1], data_00001_tsu[:,2], data_00001_tsu[:,3]), data_00001_tsu[:,5],
+                    c=data_00001_tsu[:,4])
     ax11[0].set_title('h=0.00001')
 
-    ax11[1].scatter(distance(data_0001_base[:,0], data_0001_base[:,1], data_0001_base[:,2], data_0001_base[:,3]), data_0001_base[:,5],
-                    c=data_0001_base[:,4])
+    ax11[1].scatter(distance(data_0001_tsu[:,0], data_0001_tsu[:,1], data_0001_tsu[:,2], data_0001_tsu[:,3]), data_0001_tsu[:,5],
+                    c=data_0001_tsu[:,4])
     ax11[1].set_title('h=0.0001')
 
-    ax11[2].scatter(distance(data_001_base[:,0], data_001_base[:,1], data_001_base[:,2], data_001_base[:,3]), data_001_base[:,5],
-                    c=data_001_base[:,4])
+    ax11[2].scatter(distance(data_001_tsu[:,0], data_001_tsu[:,1], data_001_tsu[:,2], data_001_tsu[:,3]), data_001_tsu[:,5],
+                    c=data_001_tsu[:,4])
     ax11[2].set_title('h=0.001')
 
     fig11.suptitle('dist vs tstep\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),

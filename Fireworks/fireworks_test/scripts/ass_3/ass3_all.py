@@ -127,7 +127,7 @@ else: ## OTHER INTEGRATORS ##
             tot_time = 0
             N_ts_cum = 0
             if integrator_name == 'Hermite':
-                array = np.zeros(shape=(N_ts, 5))
+                array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
@@ -141,9 +141,10 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, :2] = part.pos[0, :2]
                     array[t_i, 2:4]= part.pos[1, :2]
                     array[t_i, 4]  = Etot_i
+                    array[t_i, 5]  = dt_copy
 
 
-                    # dt_copy = fts.euler_timestep(part, eta=0.001, acc = acc)
+                    # dt_copy = fts.
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -155,7 +156,7 @@ else: ## OTHER INTEGRATORS ##
                     
                 data[integrator_name] = array
             else: 
-                array = np.zeros(shape=(N_ts, 5))
+                array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 for t_i in tqdm(range(N_ts), desc=str(dt) + ' ' + integrator_name):
@@ -168,6 +169,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, :2] = part.pos[0, :2]
                     array[t_i, 2:4]= part.pos[1, :2]
                     array[t_i, 4]  = Etot_i
+                    array[t_i, 5]  = dt
 
                     if tot_time >= N_end*Tperiod:
                         break
