@@ -10,11 +10,11 @@ import fireworks.nbodylib.timesteps as fts
 
 np.random.seed(9725)
 
-path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
+path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
-tsunami_true = True
+tsunami_true = False
 two_body = True
 
 if two_body == True:
