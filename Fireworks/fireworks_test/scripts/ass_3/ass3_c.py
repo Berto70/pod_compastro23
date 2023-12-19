@@ -60,7 +60,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     tstart=0
     N_end = 65
     dt = 0.001
-    tintermediate=np.linspace(0+0.00001, N_end, int(N_end/dt))
+    tintermediate=[5, 10, 15, 20, 30, 65] #np.linspace(0+0.00001, N_end, int(N_end/dt))
     tcurrent=0
 
     pbar = tqdm(total=len(tintermediate))
@@ -130,7 +130,7 @@ else:     ## OTHER INTEGRATORS ##
 
 ## SAVE DATA ##
 
-ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
+# ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
 
 pos_i = np.array(pos_i)
 vel_i = np.array(vel_i)
@@ -141,7 +141,7 @@ if tsunami_true == True:
     tstep_i = np.array(tstep_i)
 
 
-np.savetxt(path + '/data/ass_3/ic_param.txt', ic_param)
+# np.savetxt(path + '/data/ass_3/ic_param.txt', ic_param)
 
 np.save(path + '/data/ass_3/pos_i.npy', pos_i)
 np.save(path + '/data/ass_3/vel_i.npy', vel_i)

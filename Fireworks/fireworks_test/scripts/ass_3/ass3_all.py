@@ -10,7 +10,7 @@ import fireworks.nbodylib.timesteps as fts
 
 np.random.seed(9725)
 
-path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
+path = "/ca23/ext_volume/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
@@ -23,7 +23,7 @@ if two_body == True:
     mass1 = 8
     mass2 = 2
     rp = 1.
-    e = 0.8 # Set eccentricity to 0 for a circular orbit
+    e = 0.0 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -88,11 +88,12 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
             array[t_i, :2] = part.pos[0, :2].copy()
             array[t_i, 2:4]= part.pos[1, :2].copy()
             array[t_i, 4]  = Etot_i.copy()
-            array[t_i, 5]  = t_i.copy()
+            array[t_i, 5]  = efftime
 
             # pbar.update(1)
 
             tcurrent += efftime
+
         array = array[array[:,5] != 0]
         data[str(dt)] = array
     np.savez(file_name,**data)
