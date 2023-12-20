@@ -56,7 +56,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     time_increments = np.array([0.00001, 0.0001, 0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
-    np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_tsu'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
     
     data = {}
     file_name = path + '/data/ass_3/data_tusnami_e_'+str(e)+'_rp_'+str(rp)
@@ -109,7 +109,7 @@ else: ## OTHER INTEGRATORS ##
 
     # config file
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-    np.savetxt(path + '/data/ass_3/ic_param_all.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/iic_param_all'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
                     'Euler_modified': fint.integrator_euler,
