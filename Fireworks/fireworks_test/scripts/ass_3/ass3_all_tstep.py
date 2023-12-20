@@ -145,17 +145,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-
-                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_hermite, int_args={'particles': part,
-                    #                                                                                      'tstep': dt_copy,
-                    #                                                                                      'acceleration_estimator': fdyn.acceleration_direct_vectorized, 
-                    #                                                                                      'args': {'return_jerk': True}}, int_rank=2,
-                    #                                 predictor=fint.integrator_euler, pred_args={'particles': part,
-                    #                                                                                  'tstep': dt_copy,
-                    #                                                                                  'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=1,
-                    #                                 epsilon = 1e-06)
-
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=1e-06)
+                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -188,13 +178,15 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 5]  = dt_copy
 
 
-                    dt_copy = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_args={'particles': part,
-                                                                                                'tstep': dt_copy,
-                                                                                                'acceleration_estimator': fdyn.acceleration_direct_vectorized}, int_rank=4,
-                                                    predictor=fint.integrator_heun, pred_args={'particles': part,
-                                                                                                'tstep': dt_copy,
-                                                                                                'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
-                                                    epsilon = 1e-06)
+                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_args={'particles': part,
+                    #                                                                             'tstep': dt_copy,
+                    #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, int_rank=4,
+                    #                                 predictor=fint.integrator_heun, pred_args={'particles': part,
+                    #                                                                             'tstep': dt_copy,
+                    #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
+                    #                                 epsilon = 1e-06)
+
+                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -225,7 +217,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_vel(particles = part, eta = 1e-06, acc = acc)
+                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
