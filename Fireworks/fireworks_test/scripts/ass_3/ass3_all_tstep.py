@@ -14,7 +14,7 @@ path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
-tsunami_true = False
+tsunami_true = True
 two_body = True
 
 if two_body == True:
@@ -59,7 +59,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
     
     data = {}
-    file_name = path + '/data/ass_3/data_tusnami_e%.2f'%(e)
+    file_name = path + '/data/ass_3/data_tusnami_e_'+str(e)+'_rp_'+str(rp)
 
 
     for dt in time_increments:
