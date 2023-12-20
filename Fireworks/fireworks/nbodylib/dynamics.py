@@ -94,7 +94,7 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
 
     if not pyfalcon_load: return ImportError("Pyfalcon is not available")
 
-    acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
+    acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening,kernel=0)
     jerk = None
 
     return acc, jerk, pot
