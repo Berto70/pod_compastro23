@@ -112,7 +112,7 @@ def adaptive_timestep(integrator: Callable,
 
 
     ts = dt* np.min([np.power(np.nanmin(epsilon/(eps_r+0.000001)), 1/n_min), np.power(np.nanmin(epsilon/(eps_v+0.000001)), 1/n_min)])
-    # ts = dt* np.power(np.min(np.nanmin(epsilon/(eps_r+0.000001)), np.nanmin(epsilon/(eps_v+0.000001))) , 1/n_min)
+    # ts = dt* np.power(np.min([np.nanmin(epsilon/(eps_r+0.000001)), np.nanmin(epsilon/(eps_v+0.000001))]) , 1/n_min)
 
 
     if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
