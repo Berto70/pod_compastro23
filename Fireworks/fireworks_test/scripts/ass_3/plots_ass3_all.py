@@ -22,13 +22,13 @@ ic_param_tsu = np.genfromtxt(path + '/data/ass_3/ic_param_tsu.txt')
 tevol_tsu = ic_param_tsu[7]
 
 #downsample
-n = 1
+n = 2
 m = 1
 w = 1
 
-data_00001 = np.load(path + '/data/ass_3/dt_1e-05_tstep.npz', allow_pickle=True)
-data_0001 = np.load(path + '/data/ass_3/dt_0.0001_tstep.npz', allow_pickle=True)
-data_001 = np.load(path + '/data/ass_3/dt_0.001_tstep.npz', allow_pickle=True)
+data_00001 = np.load(path + '/data/ass_3/dt_1e-05_e_0.0_rp_0.1.npz', allow_pickle=True)
+data_0001 = np.load(path + '/data/ass_3/dt_0.0001_e_0.0_rp_0.1.npz', allow_pickle=True)
+data_001 = np.load(path + '/data/ass_3/dt_0.001_e_0.0_rp_0.1.npz', allow_pickle=True)
 data_tsu = np.load(path + '/data/ass_3/data_tusnami_e0.00.npz', allow_pickle=True)
 
 data_00001_base = data_00001['Euler_base'][::n]
@@ -56,7 +56,7 @@ data_001_rk4 = data_001['RK4'][::w]
 data_001_tsu = data_tsu['0.001'][::w]
 
 
-with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_tstep.pdf' % (e, rp)) as pdf:
+with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_A.pdf' % (e, rp)) as pdf:
 
     # POSITION X-Y PLOTS
 
@@ -515,6 +515,29 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
                    fontsize=52, fontweight='600')
     pdf.savefig(dpi=100)
     plt.close()
+
+##############################################################################################################
+##############################################################################################################
+
+with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_B.pdf' % (e, rp)) as pdf:
+
+    # POSITION X-Y PLOTS
+
+    plt.rcParams['font.size'] = '16'
+    plt.rcParams['lines.linewidth'] = '4'
+    plt.rcParams['axes.titlesize'] = '28'
+    plt.rcParams['axes.titlepad'] = '17'
+    plt.rcParams['axes.labelsize'] = '24'
+    plt.rcParams['legend.fontsize'] = '20'
+    plt.rcParams['axes.labelpad'] = '12'
+    plt.rcParams['axes.titleweight'] = '600'
+    plt.rcParams['axes.labelweight'] = '500'
+    plt.rcParams['xtick.labelsize'] = '20'
+    plt.rcParams['ytick.labelsize'] = '20'
+    plt.rcParams['xtick.major.size'] = '10'
+    plt.rcParams['ytick.major.size'] = '10'
+    plt.rcParams['ytick.minor.size'] = '4'
+    plt.rcParams['figure.dpi'] = '10'
 
 ##############################################################################################################
     # ENERGY ERR VS TIMESTEP
