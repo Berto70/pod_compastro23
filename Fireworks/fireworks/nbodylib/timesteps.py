@@ -92,8 +92,8 @@ def adaptive_timestep(integrator: Callable,
     :return: Estimated timestep.
     '''    
 
-    n_min = int_rank - pred_rank
-
+    n_min = int_rank #- pred_rank
+    
     particles_int, dt, _, _, _ = integrator(**int_args)
     particles_pred, _, _, _, _ = predictor(**pred_args)
 
@@ -101,15 +101,19 @@ def adaptive_timestep(integrator: Callable,
     gc.collect()
 
 
-    r_int = np.sqrt(np.sum(particles_int.pos*particles_int.pos, axis=1))
-    r_pred = np.sqrt(np.sum(particles_pred.pos*particles_pred.pos, axis=1))
-    eps_r = np.absolute(r_int-r_pred)
+    # r_int = np.sqrt(np.sum(particles_int.pos*particles_int.pos, axis=1))
+    # r_pred = np.sqrt(np.sum(particles_pred.pos*particles_pred.pos, axis=1))
+    
+    eps_r = np.linalg.norm(particles_int.pos - particles_pred.pos, axis=1)
 
-    v_int = np.sqrt(np.sum(particles_int.vel*particles_int.vel, axis=1))
-    v_pred = np.sqrt(np.sum(particles_pred.vel*particles_pred.vel, axis=1))
-    eps_v = np.absolute(v_int-v_pred)
+    # v_int = np.sqrt(np.sum(particles_int.vel*particles_int.vel, axis=1))
+    # v_pred = np.sqrt(np.sum(particles_pred.vel*particles_pred.vel, axis=1))
+    eps_v = np.linalg.norm(particles_int.vel - particles_pred.vel, axis=1)
 
-    ts = dt* np.min([np.power(np.nanmin(epsilon/(eps_r+0.000001)), 1/n_min), np.power(np.nanmin(epsilon/(eps_v+0.000001)), 1/n_min)])
+
+    # ts = dt* np.min([np.power(np.nanmin(epsilon/(eps_r+0.000001)), 1/n_min), np.power(np.nanmin(epsilon/(eps_v+0.000001)), 1/n_min)])
+    ts = dt* np.power(np.min(np.nanmin(epsilon/(eps_r+0.000001)), np.nanmin(epsilon/(eps_v+0.000001))) , 1/n_min)
+
 
     if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
     if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
