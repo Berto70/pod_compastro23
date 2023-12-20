@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -22,8 +23,8 @@ if two_body == True:
     # Initialize two stars in a circular orbit
     mass1 = 8
     mass2 = 2
-    rp = 1.
-    e = 0.0 # Set eccentricity to 0 for a circular orbit
+    rp = 0.1
+    e = 0.99 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -104,7 +105,7 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([0.00001, 0.0001, 0.001])
+    time_increments = np.array([0.0001, 0.001, 0.01])
     # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
@@ -121,7 +122,7 @@ else: ## OTHER INTEGRATORS ##
 
     for dt in time_increments:
         N_ts = int(np.floor(N_end*Tperiod/dt))
-        file_name = path + '/data/ass_3/dt_'+str(dt)
+        file_name = path + '/data/ass_3/dt_'+str(dt)+'_e_'+str(e)+'_rp_'+str(rp)
         data = {}
         for integrator_name, integrator in integrator_dict.items():
             tot_time = 0
@@ -144,16 +145,6 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 2:4]= part.pos[1, :2]
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
-
-
-                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_hermite, int_args={'particles': part,
-                    #                                                                                      'tstep': dt_copy,
-                    #                                                                                      'acceleration_estimator': fdyn.acceleration_direct_vectorized, 
-                    #                                                                                      'args': {'return_jerk': True}}, int_rank=2,
-                    #                                 predictor=fint.integrator_euler, pred_args={'particles': part,
-                    #                                                                                  'tstep': dt_copy,
-                    #                                                                                  'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=1,
-                    #                                 epsilon = 0.0001)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -182,8 +173,6 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 2:4]= part.pos[1, :2]
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
-
-                    # dt_copy = fts.adaptive_timestep_vel(particles=part, eta=0.0001, acc=acc)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
