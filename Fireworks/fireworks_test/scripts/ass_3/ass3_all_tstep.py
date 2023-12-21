@@ -112,7 +112,7 @@ else: ## OTHER INTEGRATORS ##
     np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
-                    'Euler_modified': fint.integrator_euler,
+                    # 'Euler_modified': fint.integrator_euler,
                     'Hermite': fint.integrator_hermite, 
                     'RK2-Heun': fint.integrator_heun, 
                     'Leapfrog': fint.integrator_leapfrog, 
@@ -136,7 +136,7 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
                                                     softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
@@ -170,7 +170,7 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
                                                     softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
@@ -212,7 +212,7 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
                                                     softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
