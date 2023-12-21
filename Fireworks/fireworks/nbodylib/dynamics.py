@@ -78,7 +78,7 @@ def acceleration_estimate_template(particles: Particles, softening: float =0.) \
 
 
 
-def acceleration_direct(particles: Particles, softening: float =0., softening_type: str = 'Plummer', ) \
+def acceleration_direct(particles: Particles, softening: float =0., softening_type: str = None, ) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     
   
@@ -186,7 +186,7 @@ def acceleration_direct(particles: Particles, softening: float =0., softening_ty
             # position of particle i and j
             mass_1 = mass[i]
             mass_2 = mass[j]
-            if softening==0.: #if this condition is met, the others are not considered
+            if softening=None.: #if this condition is met, the others are not considered
                 acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
             elif softening_type=='Plummer': 
                  acc_ij = acc_2body_Plummer_softening(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2, softening=softening)
@@ -202,7 +202,7 @@ def acceleration_direct(particles: Particles, softening: float =0., softening_ty
     return (acc,jerk,pot)
 
 
-def acceleration_direct_vectorized(particles: Particles, softening: float =0., softening_type: str = 'Plummer', return_jerk= False) \
+def acceleration_direct_vectorized(particles: Particles, softening: float =0., softening_type: str = None, return_jerk= False) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
     This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
@@ -241,7 +241,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
     r[r==0]=1
     
     dpos = np.concatenate((dx, dy, dz)).reshape((3,N_particles,N_particles)) 
-    if softening==0.: #if this condition is met, the others are not considered
+    if softening=None.: #if this condition is met, the others are not considered
         acc = - (dpos/r**3 @ particles.mass).T
         jerk= None
         if return_jerk == True:
