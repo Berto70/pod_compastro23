@@ -23,7 +23,7 @@ if two_body == True:
     mass1 = 8
     mass2 = 2
     rp = 1.
-    e = 0.0 # Set eccentricity to 0 for a circular orbit
+    e = 0.99 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -104,7 +104,7 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([0.00001, 0.0001, 0.001])
+    time_increments = np.array([0.0001, 0.001, 0.01])
     # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
@@ -112,8 +112,8 @@ else: ## OTHER INTEGRATORS ##
     np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
-                    'Euler_modified': fint.integrator_euler,
-                    'Hermite': fint.integrator_hermite, 
+                    # 'Euler_modified': fint.integrator_euler,
+                    # 'Hermite': fint.integrator_hermite, 
                     'RK2-Heun': fint.integrator_heun, 
                     'Leapfrog': fint.integrator_leapfrog, 
                     'RK4': fint.integrator_rk4 
@@ -136,7 +136,8 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -145,7 +146,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -169,7 +170,8 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -187,7 +189,7 @@ else: ## OTHER INTEGRATORS ##
                     #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
                     #                                 epsilon = 1e-06)
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -210,7 +212,8 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 'softening_type': 'Dehnen'}, 
+                                                    softening=0.001)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -219,7 +222,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
