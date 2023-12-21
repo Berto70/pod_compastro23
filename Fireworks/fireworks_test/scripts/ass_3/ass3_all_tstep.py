@@ -112,7 +112,7 @@ else: ## OTHER INTEGRATORS ##
     np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
-                    # 'Euler_modified': fint.integrator_euler,
+                    'Euler_modified': fint.integrator_euler,
                     'Hermite': fint.integrator_hermite, 
                     'RK2-Heun': fint.integrator_heun, 
                     'Leapfrog': fint.integrator_leapfrog, 
@@ -126,6 +126,8 @@ else: ## OTHER INTEGRATORS ##
         for integrator_name, integrator in integrator_dict.items():
             tot_time = 0
             N_ts_cum = 0
+
+            pbar1 = tqdm(total=N_end*Tperiod)
 
             if integrator_name == 'Hermite':
 
@@ -149,6 +151,8 @@ else: ## OTHER INTEGRATORS ##
                     dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
+                    pbar1.update(dt_copy)
+
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
@@ -192,6 +196,8 @@ else: ## OTHER INTEGRATORS ##
                     dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
+                    pbar1.update(dt_copy)
+
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
@@ -225,6 +231,8 @@ else: ## OTHER INTEGRATORS ##
                     dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
 
                     tot_time += dt_copy
+                    pbar1.update(dt_copy)
+                    
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
