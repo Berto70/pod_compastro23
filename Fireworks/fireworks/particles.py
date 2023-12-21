@@ -133,6 +133,57 @@ class Particles:
 
         return np.sum(self.mass*self.vel.T,axis=1)/np.sum(self.mass)
 
+    # def Ekin(self) -> float:
+    #     """
+    #     Estimate the total potential energy of the particles:
+    #     Ekin=0.5 sum_i mi vi*vi
+
+    #     :return: total kinetic energy
+    #     """
+    #     # #TOU HAVE TO IMPLEMENT IT
+    #     # # Use the class member, e.g. vel=self.vel, mass=self.mass
+    #     # raise NotImplementedError("Ekin method still not implemented")
+
+    #     # Ekin = 0.5 * np.sum(self.mass[:, np.newaxis] * self.vel**2)
+
+    #     Ekin = 0.5 * np.sum(self.mass * (np.sum(self.vel**2, axis=1)))
+
+    #     # vel_squared = np.square(self.vel)
+    #     # Ekin = 0.5 * np.sum(self.mass * vel_squared) # this is prob more efficient for large arrays
+
+    #     return Ekin
+
+    # def Epot(self, softening: float = 0.) -> float:
+    #     """
+    #     Estimate the total potential energy of the particles:
+    #     Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)
+    #     where eps is the softening parameter
+
+    #     :param softening: Softening parameter
+    #     :return: The total potential energy of the particles
+    #     """
+    #     # #TOU HAVE TO IMPLEMENT IT
+    #     # # Use the class member, e.g. vel=self.vel, mass=self.mass
+    #     # raise NotImplementedError("Ekin method still not implemented")
+
+            
+    #     # rij = np.sqrt(np.sum((self.pos[:, np.newaxis] - self.pos) ** 2, axis=2))
+    #     # Epot = - np.sum(self.mass[:, np.newaxis] * self.mass / np.sqrt(rij ** 2 + softening ** 2))
+
+    #     # Calculate all pairwise distances between bodies
+    #     rij = np.linalg.norm(self.pos[:, np.newaxis, :] - self.pos, axis=2)
+        
+    #     # Exclude self-distances (diagonal elements) to avoid division by zero
+    #     np.fill_diagonal(rij, 1.0)
+        
+    #     # Calculate potential energy using vectorized operations
+    #     Epot_mat = - np.outer(self.mass, self.mass) / rij
+        
+    #     # Sum over all unique pairs
+    #     Epot = np.sum(np.triu(Epot_mat, k=1))
+        
+    #     return Epot
+
     def Ekin(self) -> float:
         """
         Estimate the total potential energy of the particles:
@@ -140,20 +191,17 @@ class Particles:
 
         :return: total kinetic energy
         """
-        # #TOU HAVE TO IMPLEMENT IT
-        # # Use the class member, e.g. vel=self.vel, mass=self.mass
-        # raise NotImplementedError("Ekin method still not implemented")
+        mass = self.mass
+        mod_vel = np.sqrt(np.sum(self.vel**2, axis=1))
 
-        # Ekin = 0.5 * np.sum(self.mass[:, np.newaxis] * self.vel**2)
-
-        Ekin = 0.5 * np.sum(self.mass * (np.sum(self.vel**2, axis=1)))
-
-        # vel_squared = np.square(self.vel)
-        # Ekin = 0.5 * np.sum(self.mass * vel_squared) # this is prob more efficient for large arrays
+        Ekin = 0.5*np.sum(mass * mod_vel*mod_vel)
 
         return Ekin
+        #TOU HAVE TO IMPLEMENT IT
+        # Use the class member, e.g. vel=self.vel, mass=self.mass
+        # raise NotImplementedError("Ekin method still not implemented")
 
-    def Epot(self, softening: float = 0.) -> float:
+    def Epot(self,softening: float = 0.) -> float:
         """
         Estimate the total potential energy of the particles:
         Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)
@@ -162,27 +210,26 @@ class Particles:
         :param softening: Softening parameter
         :return: The total potential energy of the particles
         """
-        # #TOU HAVE TO IMPLEMENT IT
-        # # Use the class member, e.g. vel=self.vel, mass=self.mass
+
+        N_particles =  len(self.pos)
+        pos_x = self.pos[:, 0] - self.pos[:, 0].reshape(N_particles, 1)  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+        pos_y = self.pos[:, 1] - self.pos[:, 1].reshape(N_particles, 1) 
+        pos_z = self.pos[:, 2] - self.pos[:, 2].reshape(N_particles, 1)
+
+        r_ij = np.sqrt(pos_x**2 + pos_y**2 + pos_z**2)
+
+        mass_ij = self.mass * self.mass.reshape((N_particles, 1))
+        mass_ij[r_ij==0]=0.0    #in this way the m_i*m_i component are removed
+        r_ij[r_ij==0]=1.0       #in thi way we remove the division by zero for the r_ii component 
+        
+        Epot = -0.5*np.sum(mass_ij/(np.abs(r_ij) + softening*softening))
+
+        return Epot
+        
+        #TOU HAVE TO IMPLEMENT IT
+        # Use the class member, e.g. vel=self.vel, mass=self.mass
         # raise NotImplementedError("Ekin method still not implemented")
 
-            
-        # rij = np.sqrt(np.sum((self.pos[:, np.newaxis] - self.pos) ** 2, axis=2))
-        # Epot = - np.sum(self.mass[:, np.newaxis] * self.mass / np.sqrt(rij ** 2 + softening ** 2))
-
-        # Calculate all pairwise distances between bodies
-        rij = np.linalg.norm(self.pos[:, np.newaxis, :] - self.pos, axis=2)
-        
-        # Exclude self-distances (diagonal elements) to avoid division by zero
-        np.fill_diagonal(rij, 1.0)
-        
-        # Calculate potential energy using vectorized operations
-        Epot_mat = - np.outer(self.mass, self.mass) / rij
-        
-        # Sum over all unique pairs
-        Epot = np.sum(np.triu(Epot_mat, k=1))
-        
-        return Epot
 
     def Etot(self,softening: float = 0.) -> tuple[float,float,float]:
         """
