@@ -216,7 +216,7 @@ class Particles:
         pos_y = self.pos[:, 1] - self.pos[:, 1].reshape(N_particles, 1) 
         pos_z = self.pos[:, 2] - self.pos[:, 2].reshape(N_particles, 1)
 
-        r_ij = np.sqrt(pos_x**2 + pos_y**2 + pos_z**2)
+        r_ij = np.sqrt((pos_x**2 + pos_y**2 + pos_z**2).astype(float))
 
         mass_ij = self.mass * self.mass.reshape((N_particles, 1))
         mass_ij[r_ij==0]=0.0    #in this way the m_i*m_i component are removed
