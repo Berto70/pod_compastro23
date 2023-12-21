@@ -25,8 +25,8 @@ if two_body == True:
     # Initialize two stars in a circular orbit
     mass1 = 8
     mass2 = 2
-    rp = 1.
-    e = 0.99 # Set eccentricity to 0 for a circular orbit
+    rp = 0.1
+    e = 0.0 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -107,7 +107,7 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([1])
+    time_increments = np.array([0.00001, 0.0001, 0.001])
     # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
@@ -143,7 +143,7 @@ else: ## OTHER INTEGRATORS ##
                                                     tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
                                                                                                                       'softening_type': 'Plummer',}, 
-                                                    softening=10e-04)
+                                                    softening=10e-05)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -152,7 +152,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
 
                     tot_time += dt_copy
                     pbar1.update(dt_copy)
@@ -180,7 +180,7 @@ else: ## OTHER INTEGRATORS ##
                                                     tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
                                                                                                                       'softening_type': 'Plummer',}, 
-                                                    softening=10e-04)
+                                                    softening=10e-05)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -198,7 +198,7 @@ else: ## OTHER INTEGRATORS ##
                     #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
                     #                                 epsilon = 1e-06)
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
 
                     tot_time += dt_copy
                     pbar1.update(dt_copy)
@@ -225,7 +225,7 @@ else: ## OTHER INTEGRATORS ##
                                                     tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
                                                                                                                       'softening_type': 'Plummer',}, 
-                                                    softening=10e-04)
+                                                    softening=10e-05)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -234,7 +234,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmax=dt*10, tmin=dt*0.1)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
 
                     tot_time += dt_copy
                     pbar1.update(dt_copy)

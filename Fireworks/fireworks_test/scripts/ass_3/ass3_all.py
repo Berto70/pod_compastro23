@@ -138,7 +138,8 @@ else: ## OTHER INTEGRATORS ##
                 # for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True,
+                                                                                                                      'softening_type': 'Plummer'})
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -167,7 +168,8 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, _, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized)
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={
+                                                                                                                      'softening_type': 'Plummer'})
 
                     Etot_i, _, _ = part.Etot()
                     
