@@ -218,3 +218,7 @@ Fireworks/fireworks_test/data/ass_3/dt_0.0001_e_0.0_rp_0.1.npz
 Fireworks/fireworks_test/data/ass_3/*.npz
 Fireworks/fireworks_test/data/ass_3/ic_param_all*
 Fireworks/fireworks_test/data/ass_3/ic_param_tstep*
+Fireworks/fireworks_test/plots/ass_3/*_A*.pdf
+Fireworks/fireworks_test/plots/ass_3/*_B*.pdf
+Fireworks/fireworks_test/plots/ass_3/*_C*.pdf
+Fireworks/fireworks_test/data/ass_3/ic_param_*.txt
