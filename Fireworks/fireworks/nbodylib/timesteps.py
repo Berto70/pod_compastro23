@@ -29,8 +29,8 @@ def adaptive_timestep_simple(particles: Particles, tmin: Optional[float] = None,
     ts = np.nanmin(particles.radius()/particles.vel_mod())
 
     # Check tmin, tmax
-    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=object)])
-    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=object)])
+    if tmin is not None: ts = max(ts, tmin)
+    if tmax is not None: ts = min(ts, tmax)
 
     return ts
 
@@ -40,8 +40,8 @@ def adaptive_timestep_vel(particles: Particles, eta: float, acc = npt.NDArray[np
 
     ts = eta*np.nanmin(np.linalg.norm(particles.vel_mod(), axis=1)/np.linalg.norm(acc, axis=1))
 
-    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=np.float64)])
-    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=np.float64)])
+    if tmin is not None: ts = max(ts, tmin)
+    if tmax is not None: ts = min(ts, tmax)
 
     return ts
 
@@ -60,8 +60,8 @@ def adaptive_timestep_jerk(acc: npt.NDArray[np.float64], jerk:npt.NDArray[np.flo
     ts = eta*np.nanmin(np.linalg.norm(acc, axis=1)/np.linalg.norm(jerk, axis=1))
 
     # Check tmin, tmax
-    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=object)])
-    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=object)])
+    if tmin is not None: ts = max(ts, tmin)
+    if tmax is not None: ts = min(ts, tmax)
 
     return ts
 
@@ -115,7 +115,7 @@ def adaptive_timestep(integrator: Callable,
     # ts = dt* np.power(np.min([np.nanmin(epsilon/(eps_r+0.000001)), np.nanmin(epsilon/(eps_v+0.000001))]) , 1/n_min)
 
 
-    if tmin is not None: ts=np.max([ts, np.array([tmin], dtype=object)])
-    if tmax is not None: ts=np.max([ts, np.array([tmax], dtype=object)])
+    if tmin is not None: ts = max(ts, tmin)
+    if tmax is not None: ts = min(ts, tmax)
 
     return ts
