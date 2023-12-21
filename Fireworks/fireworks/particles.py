@@ -71,14 +71,14 @@ class Particles:
         :param mass: A Nx1 numpy array containing the mass of the N particles
         """
 
-        self.pos = np.array(np.atleast_2d(position), dtype=float)
+        self.pos = np.array(np.atleast_2d(position), dtype=np.float32)
         if self.pos.shape[1] != 3: print(f"Input position should contain a Nx3 array, current shape is {self.pos.shape}")
 
-        self.vel = np.array(np.atleast_2d(velocity), dtype=float)
+        self.vel = np.array(np.atleast_2d(velocity), dtype=np.float32)
         if self.vel.shape[1] != 3: print(f"Input velocity should contain a Nx3 array, current shape is {self.pos.shape}")
         if len(self.vel) != len(self.pos): print(f"Position and velocity in input have not the same number of elemnts")
 
-        self.mass = np.array(np.atleast_1d(mass), dtype=float)
+        self.mass = np.array(np.atleast_1d(mass), dtype=np.float32)
         if len(self.mass) != len(self.pos): print(f"Position and mass in input have not the same number of elemnts")
 
         self.ID=np.arange(len(self.mass), dtype=int)
