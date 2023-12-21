@@ -192,7 +192,7 @@ class Particles:
         :return: total kinetic energy
         """
         mass = self.mass
-        mod_vel = np.sqrt(np.sum(self.vel**2, axis=1))
+        mod_vel = np.sqrt(np.sum(self.vel**2, axis=1).astype(float))
 
         Ekin = 0.5*np.sum(mass * mod_vel*mod_vel)
 
