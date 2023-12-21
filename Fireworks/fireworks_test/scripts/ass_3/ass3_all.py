@@ -24,7 +24,7 @@ if two_body == True:
     mass1 = 8
     mass2 = 2
     rp = 0.1
-    e = 0.99 # Set eccentricity to 0 for a circular orbit
+    e = 0.9 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -110,7 +110,7 @@ else: ## OTHER INTEGRATORS ##
 
     # config file
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-    np.savetxt(path + '/data/ass_3/ic_param_all.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_all'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
                     'Euler_modified': fint.integrator_euler,
@@ -134,7 +134,8 @@ else: ## OTHER INTEGRATORS ##
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
-                for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
+                for t_i in range(N_ts):
+                # for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
                                                     acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
@@ -162,6 +163,7 @@ else: ## OTHER INTEGRATORS ##
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
+                # for t_i in range(N_ts):
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, _, _ = integrator(part,
                                                     tstep=dt_copy,

@@ -14,7 +14,7 @@ path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 ## TSUNAMI TRUE/FALSE CONDITION ##
 ## TWO/NBODY TRUE/FALSE CONDITION ##
-tsunami_true = True
+tsunami_true = False
 two_body = True
 
 if two_body == True:
@@ -109,7 +109,7 @@ else: ## OTHER INTEGRATORS ##
 
     # config file
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-    np.savetxt(path + '/data/ass_3/iic_param_all'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
                     'Euler_modified': fint.integrator_euler,
@@ -121,7 +121,7 @@ else: ## OTHER INTEGRATORS ##
 
     for dt in time_increments:
         N_ts = int(np.floor(N_end*Tperiod/dt))
-        file_name = path + '/data/ass_3/dt_'+str(dt)+'_tstep'
+        file_name = path + '/data/ass_3/tstep_'+str(dt)+'_e_'+str(e)+'_rp_'+str(rp)
         data = {}
         for integrator_name, integrator in integrator_dict.items():
             tot_time = 0
@@ -145,7 +145,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -156,7 +156,8 @@ else: ## OTHER INTEGRATORS ##
                     elif N_ts_cum >= 10*N_ts:
                         print('Exceeded number of time steps')
                         break
-                    
+
+                array = array[array[:,5] != 0]
                 data[integrator_name] = array
             
             elif integrator_name == 'RK4':
@@ -168,7 +169,7 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized)
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True})
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -186,7 +187,7 @@ else: ## OTHER INTEGRATORS ##
                     #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
                     #                                 epsilon = 1e-06)
 
-                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -198,6 +199,7 @@ else: ## OTHER INTEGRATORS ##
                         print('Exceeded number of time steps')
                         break
                     
+                array = array[array[:,5] != 0]
                 data[integrator_name] = array
 
             else:
@@ -217,7 +219,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
-                    # dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.015)
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.01, tmin=0.00001, tmax=0.0001)
 
                     tot_time += dt_copy
                     N_ts_cum += 1
@@ -229,6 +231,7 @@ else: ## OTHER INTEGRATORS ##
                         print('Exceeded number of time steps')
                         break
                     
+                array = array[array[:,5] != 0]
                 data[integrator_name] = array
             
         np.savez(file_name,**data)
