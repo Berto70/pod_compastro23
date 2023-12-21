@@ -112,8 +112,8 @@ else: ## OTHER INTEGRATORS ##
     np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
-                    # 'Euler_modified': fint.integrator_euler,
-                    # 'Hermite': fint.integrator_hermite, 
+                    'Euler_modified': fint.integrator_euler,
+                    'Hermite': fint.integrator_hermite, 
                     'RK2-Heun': fint.integrator_heun, 
                     'Leapfrog': fint.integrator_leapfrog, 
                     'RK4': fint.integrator_rk4 
