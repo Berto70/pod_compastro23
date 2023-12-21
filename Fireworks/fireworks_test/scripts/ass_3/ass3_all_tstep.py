@@ -8,6 +8,9 @@ import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
 
+import warnings
+warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+
 np.random.seed(9725)
 
 path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
@@ -104,7 +107,7 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([0.0001, 0.001, 0.01])
+    time_increments = np.array([1])
     # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
@@ -127,7 +130,7 @@ else: ## OTHER INTEGRATORS ##
             tot_time = 0
             N_ts_cum = 0
 
-            pbar1 = tqdm(total=N_end*Tperiod)
+            pbar1 = tqdm(total=N_end*Tperiod, desc='#Orbits %')
 
             if integrator_name == 'Hermite':
 
@@ -138,8 +141,9 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
-                                                    softening=0.001)
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-04)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -174,8 +178,9 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
-                                                    softening=0.001)
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-04)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -218,8 +223,9 @@ else: ## OTHER INTEGRATORS ##
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True}, 
-                                                    softening=0.001)
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-04)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -241,7 +247,8 @@ else: ## OTHER INTEGRATORS ##
                     elif N_ts_cum >= 10*N_ts:
                         print('Exceeded number of time steps')
                         break
-                    
+
+                                        
                 array = array[array[:,5] != 0]
                 data[integrator_name] = array
             
