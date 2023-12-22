@@ -90,7 +90,7 @@ def acceleration_direct(particles: Particles, softening: float =0., softening_ty
 
     :param particles: An instance of the class Particles.
     :param softening: Softening parameter for gravitational calculations. If softening == 0, specifying the softening_type dosen't change anything. 
-    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'Plummer'. 
+    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'None'. 
     :return: A tuple with 3 elements:
 
         - acc, Nx3 numpy array storing the acceleration for each particle.
@@ -225,7 +225,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
 
     :param particles: An instance of the class Particles
     :param softening: Softening parameter
-    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'Plummer'. 
+    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'None'. 
     :return: A tuple with 3 elements:
 
         - acc, Nx3 numpy array storing the acceleration for each particle
