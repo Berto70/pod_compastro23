@@ -222,3 +222,5 @@ Fireworks/fireworks_test/plots/ass_3/*_A*.pdf
 Fireworks/fireworks_test/plots/ass_3/*_B*.pdf
 Fireworks/fireworks_test/plots/ass_3/*_C*.pdf
 Fireworks/fireworks_test/data/ass_3/ic_param_*.txt
+Fireworks/fireworks_test/plots/ass_3/*_maxavg.pdf
+Fireworks/fireworks_test/plots/ass_3/*_hist.pdf
