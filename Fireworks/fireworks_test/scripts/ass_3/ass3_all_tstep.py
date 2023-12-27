@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -8,6 +7,9 @@ from fireworks.particles import Particles
 import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
 import fireworks.nbodylib.timesteps as fts
+
+import warnings
+warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
 np.random.seed(9725)
 
@@ -24,7 +26,7 @@ if two_body == True:
     mass1 = 8
     mass2 = 2
     rp = 0.1
-    e = 0.9 # Set eccentricity to 0 for a circular orbit
+    e = 0.0 # Set eccentricity to 0 for a circular orbit
     part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
     part.pos = part.pos - part.com_pos()
     # print(part.pos, part.vel, part.mass)
@@ -38,7 +40,7 @@ else:
     ## THREE-BODY PROBLEM ##
 
     position = np.array([[0,0,0],
-                            [0.5,0.866,9],
+                            [0.5,0.866,0],
                             [1,0,0]])
 
     vel = np.array([[0,0,0],
@@ -57,10 +59,10 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     time_increments = np.array([0.00001, 0.0001, 0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
-    np.savetxt(path + '/data/ass_3/ic_param_tsu.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_tsu'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
     
     data = {}
-    file_name = path + '/data/ass_3/data_tusnami_e%.2f'%(e)
+    file_name = path + '/data/ass_3/data_tusnami_e_'+str(e)+'_rp_'+str(rp)
 
 
     for dt in time_increments:
@@ -105,12 +107,12 @@ else: ## OTHER INTEGRATORS ##
     N_end = 10 # -> N_end*Tperiod
 
     #define number of time steps per time increment
-    time_increments = np.array([0.0001, 0.001, 0.01])
+    time_increments = np.array([0.00001, 0.0001, 0.001])
     # n_ts = np.floor(N_end*Tperiod/time_increments)
 
     # config file
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, N_end])
-    np.savetxt(path + '/data/ass_3/ic_param_all'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_tstep'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
 
     integrator_dict = {'Euler_base': fint.integrator_template, 
                     'Euler_modified': fint.integrator_euler,
@@ -122,24 +124,26 @@ else: ## OTHER INTEGRATORS ##
 
     for dt in time_increments:
         N_ts = int(np.floor(N_end*Tperiod/dt))
-        file_name = path + '/data/ass_3/dt_'+str(dt)+'_e_'+str(e)+'_rp_'+str(rp)
+        file_name = path + '/data/ass_3/tstep_'+str(dt)+'_e_'+str(e)+'_rp_'+str(rp)
         data = {}
         for integrator_name, integrator in integrator_dict.items():
             tot_time = 0
             N_ts_cum = 0
 
+            pbar1 = tqdm(total=N_end*Tperiod, desc='#Orbits %')
+
             if integrator_name == 'Hermite':
-                
+
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
-                for t_i in range(N_ts):
-                # for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
+                for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
                     part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True,
-                                                                                                                      'softening_type': 'Plummer'})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-05)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -148,28 +152,35 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
+
                     tot_time += dt_copy
+                    pbar1.update(dt_copy)
+
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
-                        print('Exceeded total time')
+                        print('Exceeded time limit')
                         break
                     elif N_ts_cum >= 10*N_ts:
                         print('Exceeded number of time steps')
                         break
-                    
+
+                array = array[array[:,5] != 0]
                 data[integrator_name] = array
-            else: 
+            
+            elif integrator_name == 'RK4':
+
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
                 dt_copy = dt.copy()
-                # for t_i in range(N_ts):
                 for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
-                    part, dt_copy, acc, _, _ = integrator(part,
+                    part, dt_copy, acc, jerk, _ = integrator(part,
                                                     tstep=dt_copy,
-                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={
-                                                                                                                      'softening_type': 'Plummer'})
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-05)
 
                     Etot_i, _, _ = part.Etot()
                     
@@ -178,7 +189,20 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
+
+                    # dt_copy = fts.adaptive_timestep(integrator=fint.integrator_rk4, int_args={'particles': part,
+                    #                                                                             'tstep': dt_copy,
+                    #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, int_rank=4,
+                    #                                 predictor=fint.integrator_heun, pred_args={'particles': part,
+                    #                                                                             'tstep': dt_copy,
+                    #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
+                    #                                 epsilon = 1e-06)
+
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
+
                     tot_time += dt_copy
+                    pbar1.update(dt_copy)
+
                     N_ts_cum += 1
 
                     if tot_time >= N_end*Tperiod:
@@ -188,7 +212,44 @@ else: ## OTHER INTEGRATORS ##
                         print('Exceeded number of time steps')
                         break
                     
+                array = array[array[:,5] != 0]
+                data[integrator_name] = array
+
+            else:
+                array = np.zeros(shape=(N_ts, 6))
+                part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
+                part.pos = part.pos - part.com_pos()
+                dt_copy = dt.copy()
+                for t_i in tqdm(range(N_ts), desc=str(dt_copy) + ' ' + integrator_name):
+                    part, dt_copy, acc, jerk, _ = integrator(part,
+                                                    tstep=dt_copy,
+                                                    acceleration_estimator=fdyn.acceleration_direct_vectorized, args={'return_jerk': True, 
+                                                                                                                      'softening_type': 'Plummer',}, 
+                                                    softening=10e-05)
+
+                    Etot_i, _, _ = part.Etot()
+                    
+                    array[t_i, :2] = part.pos[0, :2]
+                    array[t_i, 2:4]= part.pos[1, :2]
+                    array[t_i, 4]  = Etot_i
+                    array[t_i, 5]  = dt_copy
+
+                    dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
+
+                    tot_time += dt_copy
+                    pbar1.update(dt_copy)
+                    
+                    N_ts_cum += 1
+
+                    if tot_time >= N_end*Tperiod:
+                        print('Exceeded time limit')
+                        break
+                    elif N_ts_cum >= 10*N_ts:
+                        print('Exceeded number of time steps')
+                        break
+
+                                        
+                array = array[array[:,5] != 0]
                 data[integrator_name] = array
             
         np.savez(file_name,**data)
-            
