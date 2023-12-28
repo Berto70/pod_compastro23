@@ -224,3 +224,8 @@ Fireworks/fireworks_test/plots/ass_3/*_C*.pdf
 Fireworks/fireworks_test/data/ass_3/ic_param_*.txt
 Fireworks/fireworks_test/plots/ass_3/*_maxavg.pdf
 Fireworks/fireworks_test/plots/ass_3/*_hist.pdf
+
+*.rst
+Fireworks/docs/*
+*.ipynb_checkpoints
+assignment_2/*
