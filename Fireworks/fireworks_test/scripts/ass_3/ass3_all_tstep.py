@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+
 import fireworks.ic as fic
-import matplotlib.pyplot as plt
 from fireworks.particles import Particles
 import fireworks.nbodylib.dynamics as fdyn
 import fireworks.nbodylib.integrators as fint
@@ -20,17 +22,20 @@ path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 tsunami_true = False
 two_body = True
 
+## INITIAL CONDITIONS
+
 if two_body == True:
     ## TWO-BODY PROBLEM ##
-    # Initialize two stars in a circular orbit
+    # Initialize two body system
+
     mass1 = 8
     mass2 = 2
     rp = 0.1
-    e = 0.0 # Set eccentricity to 0 for a circular orbit
-    part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
-    part.pos = part.pos - part.com_pos()
+    e = 0.0 # 0.0 for circular orbit
+    part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e) # particles initialization
+    part.pos = part.pos - part.com_pos() # correcting iniziatial position by C.O.M
     # print(part.pos, part.vel, part.mass)
-    Etot_0, _, _ = part.Etot()
+    Etot_0, _, _ = part.Etot() # total energy of the system
 
     # Calculate the binary period Tperiod
     a = rp / (1 - e)  # Semi-major axis
@@ -39,9 +44,9 @@ if two_body == True:
 else:
     ## THREE-BODY PROBLEM ##
 
-    position = np.array([[0,0,0],
-                            [0.5,0.866,0],
-                            [1,0,0]])
+    position = np.array([[1,3,0],
+                         [-2,-1,0],
+                         [1,-1,0]])
 
     vel = np.array([[0,0,0],
                     [0,0,0],
@@ -53,15 +58,17 @@ else:
     part = Particles(position, vel, mass)
     Etot_0, _, _ = part.Etot()
 
+## INTEGRATION
+
 if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
     N_end = 10
     tevol = N_end*Tperiod
     time_increments = np.array([0.00001, 0.0001, 0.001])
 
     ic_param = np.array([mass1, mass2, rp, e, a, Etot_0, Tperiod, tevol])
-    np.savetxt(path + '/data/ass_3/ic_param_tsu'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param)
+    np.savetxt(path + '/data/ass_3/ic_param_tsu'+'_e_'+str(e)+'_rp_'+str(rp)+'.txt', ic_param) # saving initial conditions
     
-    data = {}
+    data = {} # empty dict for data storage
     file_name = path + '/data/ass_3/data_tusnami_e_'+str(e)+'_rp_'+str(rp)
 
 
@@ -76,8 +83,8 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
         array = np.zeros(shape=(N_ts, 6))
 
         # pbar = tqdm(total=len(tintermediate), desc=str(dt) + ' ' + 'tsunami')
-        part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
-        part.pos = part.pos - part.com_pos()
+        part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e) # re-init of Particles
+        part.pos = part.pos - part.com_pos() # correcting iniziatial position by C.O.M
         for t_i, t in zip(range(N_ts), tintermediate):
 
             tstep = t-tcurrent
@@ -97,7 +104,7 @@ if tsunami_true == True: ## TSUNAMI INTEGRATOR ##
 
             tcurrent += efftime
 
-        array = array[array[:,5] != 0]
+        array = array[array[:,5] != 0] # discard entries = 0
         data[str(dt)] = array
     np.savez(file_name,**data)
 
@@ -127,12 +134,12 @@ else: ## OTHER INTEGRATORS ##
         file_name = path + '/data/ass_3/tstep_'+str(dt)+'_e_'+str(e)+'_rp_'+str(rp)
         data = {}
         for integrator_name, integrator in integrator_dict.items():
-            tot_time = 0
+            tot_time = 0 # init flags count to 0
             N_ts_cum = 0
 
             pbar1 = tqdm(total=N_end*Tperiod, desc='#Orbits %')
 
-            if integrator_name == 'Hermite':
+            if integrator_name == 'Hermite': # alone cause it requires always the jerk 
 
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
@@ -152,6 +159,7 @@ else: ## OTHER INTEGRATORS ##
                     array[t_i, 4]  = Etot_i
                     array[t_i, 5]  = dt_copy
 
+                    # adaptive tstep calculation
                     dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
 
                     tot_time += dt_copy
@@ -159,6 +167,7 @@ else: ## OTHER INTEGRATORS ##
 
                     N_ts_cum += 1
 
+                    # break flags
                     if tot_time >= N_end*Tperiod:
                         print('Exceeded time limit')
                         break
@@ -169,7 +178,7 @@ else: ## OTHER INTEGRATORS ##
                 array = array[array[:,5] != 0]
                 data[integrator_name] = array
             
-            elif integrator_name == 'RK4':
+            elif integrator_name == 'RK4': # alone cause can be used `fts.adaptive_timestep`. rn it's broken
 
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
@@ -198,6 +207,7 @@ else: ## OTHER INTEGRATORS ##
                     #                                                                             'acceleration_estimator': fdyn.acceleration_direct_vectorized}, pred_rank=2,
                     #                                 epsilon = 1e-06)
 
+                    # adaptive tstep calculation
                     dt_copy = fts.adaptive_timestep_jerk(acc=acc, jerk=jerk, eta=0.02, tmax=dt*100, tmin=dt*0.01)
 
                     tot_time += dt_copy
@@ -215,7 +225,7 @@ else: ## OTHER INTEGRATORS ##
                 array = array[array[:,5] != 0]
                 data[integrator_name] = array
 
-            else:
+            else: # other integrators in which alternative (still basic) adpative tstep can be used
                 array = np.zeros(shape=(N_ts, 6))
                 part = fic.ic_two_body(mass1=mass1, mass2=mass2, rp=rp, e=e)
                 part.pos = part.pos - part.com_pos()
