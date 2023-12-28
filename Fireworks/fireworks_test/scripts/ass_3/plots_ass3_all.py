@@ -8,7 +8,7 @@ path = "/home/bertinelli/pod_compastro23/Fireworks/fireworks_test"
 
 # LOAD DATA #####
 
-ic_param = np.genfromtxt(path + '/data/ass_3/ic_param_tstep_e_0.9_rp_0.1.txt')
+ic_param = np.genfromtxt(path + '/data/ass_3/ic_param_tstep_e_0.99_rp_0.1.txt')
 mass_1 = ic_param[0]
 mass_2 = ic_param[1]
 rp = ic_param[2]
@@ -18,18 +18,18 @@ Etot_0 = ic_param[5]
 Tperiod = ic_param[6]
 N_end = ic_param[7]
 
-ic_param_tsu = np.genfromtxt(path + '/data/ass_3/ic_param_tsu_e_0.9_rp_0.1.txt')
+ic_param_tsu = np.genfromtxt(path + '/data/ass_3/ic_param_tsu_e_0.99_rp_0.1.txt')
 tevol_tsu = ic_param_tsu[7]
 
 #downsample
-n = 1
-m = 1
+n = 100
+m = 10
 w = 1
 
-data_00001 = np.load(path + '/data/ass_3/tstep_0.0001_e_0.9_rp_0.1.npz', allow_pickle=True)
-data_0001 = np.load(path + '/data/ass_3/tstep_0.001_e_0.9_rp_0.1.npz', allow_pickle=True)
-data_001 = np.load(path + '/data/ass_3/tstep_0.01_e_0.9_rp_0.1.npz', allow_pickle=True)
-data_tsu = np.load(path + '/data/ass_3/data_tusnami_e_0.9_rp_0.1.npz', allow_pickle=True)
+data_00001 = np.load(path + '/data/ass_3/tstep_0.0001_e_0.99_rp_0.1.npz', allow_pickle=True)
+data_0001 = np.load(path + '/data/ass_3/tstep_0.001_e_0.99_rp_0.1.npz', allow_pickle=True)
+data_001 = np.load(path + '/data/ass_3/tstep_0.01_e_0.99_rp_0.1.npz', allow_pickle=True)
+data_tsu = np.load(path + '/data/ass_3/data_tusnami_e_0.99_rp_0.1.npz', allow_pickle=True)
 
 data_00001_base = data_00001['Euler_base'][::n]
 data_00001_mod = data_00001['Euler_modified'][::n]
@@ -37,7 +37,7 @@ data_00001_her = data_00001['Hermite'][::n]
 data_00001_rk2 = data_00001['RK2-Heun'][::n]
 data_00001_leap = data_00001['Leapfrog'][::n]
 data_00001_rk4 = data_00001['RK4'][::n]
-data_00001_tsu = data_tsu['1e-05'][::n]
+data_00001_tsu = data_tsu['0.0001'][::n]
 
 data_0001_base = data_0001['Euler_base'][::m]
 data_0001_mod = data_0001['Euler_modified'][::m]
@@ -45,7 +45,7 @@ data_0001_her = data_0001['Hermite'][::m]
 data_0001_rk2 = data_0001['RK2-Heun'][::m]
 data_0001_leap = data_0001['Leapfrog'][::m]
 data_0001_rk4 = data_0001['RK4'][::m]
-data_0001_tsu = data_tsu['0.0001'][::m]
+data_0001_tsu = data_tsu['0.001'][::m]
 
 data_001_base = data_001['Euler_base'][::w]
 data_001_mod = data_001['Euler_modified'][::w]
@@ -53,7 +53,7 @@ data_001_her = data_001['Hermite'][::w]
 data_001_rk2 = data_001['RK2-Heun'][::w]
 data_001_leap = data_001['Leapfrog'][::w]
 data_001_rk4 = data_001['RK4'][::w]
-data_001_tsu = data_tsu['0.001'][::w]
+data_001_tsu = data_tsu['0.01'][::w]
 
 
 # with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/ass_3/ass_3_plots_e%.1f_rp%.2f_A.pdf' % (e, rp)) as pdf:
@@ -1146,200 +1146,91 @@ with PdfPages('/home/bertinelli/pod_compastro23/Fireworks/fireworks_test/plots/a
     plt.rcParams['ytick.minor.size'] = '4'
     plt.rcParams['figure.dpi'] = '10'
 
+
+    ## TSTEP VS ENERGY ERROR    
+    #Page1
+
     fig12, ax12 = plt.subplots(3, 3, figsize=(40,40))
-    n_bins=26
 
-    x=data_00001_base[:,5]
-    y=np.abs((data_00001_base[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    ax12[0,0].plot(data_001_base[:,5], np.abs((data_001_base[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[0,1].plot(data_0001_base[:,5], np.abs((data_0001_base[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[0,1].set_title('Euler_base')
+    ax12[0,2].plot(data_00001_base[:,5], np.abs((data_00001_base[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    ax12[0,0].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[0,0].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[0,0].legend(loc='lower right')
-    ax12[0,0].set_xticklabels(x_plot[::5])
-    ax12[0,0].set_title('Euler_base (h=0.0001)')
+    ax12[1,0].plot(data_001_mod[:,5], np.abs((data_001_mod[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[1,1].plot(data_0001_mod[:,5], np.abs((data_0001_mod[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[1,1].set_title('Euler_modified')
+    ax12[1,2].plot(data_00001_mod[:,5], np.abs((data_00001_mod[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    x=data_0001_base[:,5]
-    y=np.abs((data_0001_base[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    ax12[2,0].plot(data_001_her[:,5], np.abs((data_001_her[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[2,1].plot(data_0001_her[:,5], np.abs((data_0001_her[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[2,1].set_title('Hermite')
+    ax12[2,2].plot(data_00001_her[:,5], np.abs((data_00001_her[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    ax12[0,1].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[0,1].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[0,1].legend(loc='lower right')
-    ax12[0,1].set_xticklabels(x_plot[::5])
-    ax12[0,1].set_title('Euler_base (h=0.001)')
+    for j in range(3):
+        for i in range(3):
+            ax12[i,j].set_xlabel('Time Step [N-Body units]')
+            ax12[i,j].set_ylabel('|(E-E0)/E0|')
+            ax12[i,j].set_yscale('log')
+            ax12[i,j].ticklabel_format(axis='x', style='sci', scilimits=(0,0))
+            ax12[i,j].legend()
 
-    x=data_001_base[:,5]
-    y=np.abs((data_001_base[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    fig12.suptitle('tstep vs |ΔE/E|\n(M1=%.1f, M2=%.1f, e=%.2f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
+                    fontsize=52, fontweight='600')
 
-    ax12[0,2].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[0,2].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[0,2].legend(loc='lower right')
-    ax12[0,2].set_xticklabels(x_plot[::5])
-    ax12[0,2].set_title('Euler_base (h=0.01)')
+    pdf.savefig(dpi=100)
+    plt.close()
 
-    x=data_00001_mod[:,5]
-    y=np.abs((data_00001_mod[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    #Page2
 
-    ax12[1,0].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[1,0].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[1,0].legend(loc='lower right')
-    ax12[1,0].set_xticklabels(x_plot[::5])
-    ax12[1,0].set_title('Euler_mod (h=0.0001)')
+    fig12, ax12 = plt.subplots(3, 3, figsize=(40,40))
 
-    x=data_0001_mod[:,5]
-    y=np.abs((data_0001_mod[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    ax12[0,0].plot(data_001_rk2[:,5], np.abs((data_001_rk2[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[0,1].plot(data_0001_rk2[:,5], np.abs((data_0001_rk2[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[0,1].set_title('RK2-Heun')
+    ax12[0,2].plot(data_00001_rk2[:,5], np.abs((data_00001_rk2[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    ax12[1,1].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[1,1].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[1,1].legend(loc='lower right')
-    ax12[1,1].set_xticklabels(x_plot[::5])
-    ax12[1,1].set_title('Euler_mod (h=0.001)')
+    ax12[1,0].plot(data_001_leap[:,5], np.abs((data_001_leap[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[1,1].plot(data_0001_leap[:,5], np.abs((data_0001_leap[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[1,1].set_title('Leapfrog')
+    ax12[1,2].plot(data_00001_leap[:,5], np.abs((data_00001_leap[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    x=data_001_mod[:,5]
-    y=np.abs((data_001_mod[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    ax12[2,0].plot(data_001_rk4[:,5], np.abs((data_001_rk4[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[2,1].plot(data_0001_rk4[:,5], np.abs((data_0001_rk4[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[2,1].set_title('RK4')
+    ax12[2,2].plot(data_00001_rk4[:,5], np.abs((data_00001_rk4[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    ax12[1,2].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[1,2].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[1,2].legend(loc='lower right')
-    ax12[1,2].set_xticklabels(x_plot[::5])
-    ax12[1,2].set_title('Euler_mod (h=0.01)')
+    for j in range(3):
+        for i in range(3):
+            ax12[i,j].set_xlabel('Time Step [N-Body units]')
+            ax12[i,j].set_ylabel('|(E-E0)/E0|')
+            ax12[i,j].set_yscale('log')
+            ax12[i,j].ticklabel_format(axis='x', style='sci', scilimits=(0,0))
+            ax12[i,j].legend()
 
-    x=data_00001_her[:,5]
-    y=np.abs((data_00001_her[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    pdf.savefig(dpi=100)
+    plt.close()
 
-    ax12[2,0].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[2,0].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[2,0].legend(loc='lower right')
-    ax12[2,0].set_xticklabels(x_plot[::5])
-    ax12[2,0].set_title('Hermite (h=0.0001)')
+    #Page3
 
-    x=data_0001_her[:,5]
-    y=np.abs((data_0001_her[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    fig12, ax12 = plt.subplots(1, 3, figsize=(40,17))
 
-    ax12[2,1].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[2,1].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[2,1].legend(loc='lower right')
-    ax12[2,1].set_xticklabels(x_plot[::5])
-    ax12[2,1].set_title('Hermite (h=0.001)')
+    ax12[0].set_position([0.1, 0.1, 0.25, 0.7])  # Adjust these values as needed
+    ax12[1].set_position([0.4, 0.1, 0.25, 0.7])
+    ax12[2].set_position([0.7, 0.1, 0.25, 0.7])
 
-    x=data_001_her[:,5]
-    y=np.abs((data_001_her[:,4]-Etot_0)/Etot_0)
-    sort = np.argsort(x)
-    x = x[sort]
-    y = y[sort]
-    bin_edge = np.histogram_bin_edges(x, bins=n_bins)
-    mean_list=[]
-    max_list=[]
-    x_plot = []
-    for i in range(n_bins):
-        x_plot.append(round(bin_edge[i] + (bin_edge[i+1] - bin_edge[i])/2, 4)) 
-        mean_list.append(np.mean(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))
-        max_list.append(np.max(y [(x>bin_edge[i]) & (x<bin_edge[i+1]) ]))       
+    ax12[0].plot(data_001_tsu[:,5], np.abs((data_001_tsu[:,4]-Etot_0)/Etot_0), label='h=0.01')
+    ax12[1].plot(data_0001_tsu[:,5], np.abs((data_0001_tsu[:,4]-Etot_0)/Etot_0), label='h.001')
+    ax12[1].set_title('Tsunami')
+    ax12[2].plot(data_00001_tsu[:,5], np.abs((data_00001_tsu[:,4]-Etot_0)/Etot_0), label='h=0.0001')
 
-    ax12[2,2].bar(x=np.arange(n_bins), height=mean_list, alpha=0.8, label='Avg err') 
-    ax12[2,2].bar(x=np.arange(n_bins), height=max_list, zorder=-100, label='Max err')
-    ax12[2,2].legend(loc='lower right')
-    ax12[2,2].set_xticklabels(x_plot[::5])
-    ax12[2,2].set_title('Hermite (h=0.01)')
 
     for i in range(3):
-        for j in range(3):
-
-            ax12[i,j].set_xticks(np.arange(n_bins)[::5])
-            ax12[i,j].set_xlabel('Time Step')
-            ax12[i,j].set_ylabel('Energy Error')
-
-
-
-    fig12.suptitle('Energy Error vs Time Step\n(M1=%.1f, M2=%.1f, e=%.1f, rp=%.2f, T=%.2f)'%(mass_1, mass_2, e, rp, Tperiod),
-                    fontsize=52, fontweight='600')
+        ax12[i].set_xlabel('Time Step [N-Body units]')
+        ax12[i].set_ylabel('|(E-E0)/E0|')
+        ax12[i].set_yscale('log')
+        ax12[i].ticklabel_format(axis='x', style='sci', scilimits=(0,0))
+        ax12[i].legend()
 
     pdf.savefig(dpi=100)
     plt.close()
