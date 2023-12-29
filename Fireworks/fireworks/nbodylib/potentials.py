@@ -18,7 +18,7 @@ Then this method can be used inside the fireworks integrators (:mod:`fireworks.n
 
 Example
 
->>> from fireworks.potentials import Example_Potential
+>>> from fireworks.nbodylib.potentials import Example_Potential
 >>> pot = Example_Potential(par1=1,par2=2) # Instantiate the potential
 >>> accfunc = pot.acceleration # This method can be used with the fireworks integrators
 
@@ -70,7 +70,19 @@ class Potential_Base:
         return self._acceleration(particles)
 
     def evaluate(self,R,z=0, softening=0):
+        """
+        Evaluate the acceleration at given point in cylindrical coordinates
 
+        :param R: radial cylindrical coordinate
+        :param z: height above the plane
+        :param softening: Softening parameter
+        :return: A tuple with 3 elements:
+
+            - acc, Nx3 numpy array storing the acceleration for each particle
+            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None
+            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
+
+        """
         R=np.atleast_1d(R)
         z=np.atleast_1d(z)
 
