@@ -177,7 +177,7 @@ class Particles:
         np.fill_diagonal(rij, 1.0)
         
         # Calculate potential energy using vectorized operations
-        Epot_mat = - np.outer(self.mass, self.mass) / rij
+        Epot_mat = - np.outer(self.mass, self.mass) / np.power((rij**2 + softening**2), 3/2)
         
         # Sum over all unique pairs
         Epot = np.sum(np.triu(Epot_mat, k=1))
