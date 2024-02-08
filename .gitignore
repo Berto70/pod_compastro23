@@ -229,3 +229,4 @@ Fireworks/fireworks_test/plots/ass_3/*_hist.pdf
 Fireworks/docs/*
 *.ipynb_checkpoints
 assignment_2/*
+*.rst

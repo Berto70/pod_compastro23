@@ -1,0 +1,6 @@
+sphinx-argparse
+sphinx-rtd-theme
+sphinxcontrib-napoleon
+numpy
+scipy
+typing_extensions

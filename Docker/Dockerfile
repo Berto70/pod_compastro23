@@ -12,9 +12,8 @@ ARG SOFTWAREDIR=$DIRPATH/software
 #1 layer: install g++, git, cmake
 RUN  apt update && apt -y dist-upgrade \
 && apt update \
-&& apt install -y   \
+&& apt install -y \
 g++ \
-make \
 cmake \
 git \
 wget \
@@ -24,7 +23,6 @@ nano \
 emacs \
 unzip \
 libgsl-dev
-
 
 #RUN groupadd --gid $USER_GID $USERNAME \
 #    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME -p $USERNAME \
@@ -37,7 +35,8 @@ RUN case "${TARGETPLATFORM}" in \
          "linux/arm64")  export MINICONDAS=Miniconda3-py310_23.5.2-0-Linux-aarch64.sh  ;; \
     esac; \
      cd /root \
-     && wget    https://repo.anaconda.com/miniconda/${MINICONDAS} --no-check-certificate \
+     && wget \
+     https://repo.anaconda.com/miniconda/${MINICONDAS} \
      &&  bash ${MINICONDAS}  -b \
      && rm -f ${MINICONDAS}
 
@@ -67,7 +66,7 @@ RUN  cd $SOFTWAREDIR && git clone https://gitlab.com/sevncodes/sevn.git \
 
 
 #7 Install SEVNpy
-RUN cd $SOFTWAREDIR/sevn/SEVNpy && pip install .
+RUN cd $SOFTWAREDIR/sevn/SEVNpy && pip install . && rm -rf build && rm -rf SEVNpy.egg-info
 
 #8 PyFalcon
 RUN  cd $SOFTWAREDIR && git clone https://gitlab.com/iogiul/pyfalcon.git \
@@ -98,22 +97,10 @@ RUN cd $SOFTWAREDIR && git clone https://gitlab.com/iogiul/galpynamics \
 RUN cd $SOFTWAREDIR && git clone https://github.com/giulianoiorio/OpOpGadget.git \
     && cd OpOpGadget && pip install .
 
-#16 Install sphynx for documentation \
-RUN  pip install  sphinx sphinx-rtd-theme
-
-#17 Install pytest \
-RUN  pip install  pytest
-
-#18 Install twine \
-RUN  pip install  twine
 
 #Final: Setup easy jupyter access
 RUN mkdir -p $HOME/.jupyter/ \
     && echo "c.NotebookApp.token=''" >> $HOME/.jupyter/jupyter_notebook_config.py;
-
-#Clean to reduce
-RUN apt-get clean && pip cache purge
-
 
 CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
 
