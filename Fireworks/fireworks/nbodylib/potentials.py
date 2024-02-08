@@ -18,7 +18,7 @@ Then this method can be used inside the fireworks integrators (:mod:`fireworks.n
 
 Example
 
->>> from fireworks.potentials import Example_Potential
+>>> from fireworks.nbodylib.potentials import Example_Potential
 >>> pot = Example_Potential(par1=1,par2=2) # Instantiate the potential
 >>> accfunc = pot.acceleration # This method can be used with the fireworks integrators
 
@@ -70,7 +70,19 @@ class Potential_Base:
         return self._acceleration(particles)
 
     def evaluate(self,R,z=0, softening=0):
+        """
+        Evaluate the acceleration at given point in cylindrical coordinates
 
+        :param R: radial cylindrical coordinate
+        :param z: height above the plane
+        :param softening: Softening parameter
+        :return: A tuple with 3 elements:
+
+            - acc, Nx3 numpy array storing the acceleration for each particle
+            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None
+            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None
+
+        """
         R=np.atleast_1d(R)
         z=np.atleast_1d(z)
 
@@ -219,3 +231,146 @@ class Point_Mass(Potential_Base):
         acc = -self.Mass/reff2 * (particles.pos/r) # p.pos/r means x/r, y/r, z/r, these are the three components of the acceleration
 
         return acc, None, None # not include jerk and potential atm
+
+class MyamotoNagai(Potential_Base):
+
+    def __init__(self,Mass: float, a: float, b: float):
+
+        self.Mass = Mass
+        self.a = a
+        self.b = b
+
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        a=self.a
+        b=self.b
+        z2=particles.pos[:,2]**2
+
+        Dz = (a+ np.sqrt(z2 + b*b))
+        D = np.sum(particles.pos[:,:2]**2,axis=1) + Dz*Dz
+        K = self.Mass/D**1.5
+        acc = np.ones_like(particles.pos)
+        acc[:,0] = -K*particles.pos[:,0]
+        acc[:,1] = -K*particles.pos[:,1]
+        kz = np.sqrt(b*b+z2)
+        acc[:,2] = -K*particles.pos[:,2]*(a+kz)/kz
+
+        pot = -self.Mass/np.sqrt(D)[:,np.newaxis]
+
+        return  acc, None, pot
+
+
+class Plummer(Potential_Base):
+
+    def __init__(self,Mass: float, a: float):
+
+        self.Mass = Mass
+        self.a = a
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+        reff = np.sqrt(r*r + self.a*self.a)
+        acc = -self.Mass/(reff*reff*reff) * particles.pos
+        pot = -self.Mass/reff
+
+        return acc,None,pot
+
+class Hernquist(Potential_Base):
+
+    def __init__(self,Mass: float, a: float):
+
+        self.Mass = Mass
+        self.a = a
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+        reff = r+self.a
+        acc = -self.Mass / (reff * reff) * (particles.pos/r)
+        pot = -self.Mass/reff
+
+        return acc,None,pot
+
+class Jaffe(Potential_Base):
+
+    def __init__(self,Mass: float, a: float):
+
+        self.Mass = Mass
+        self.a = a
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+        reff = r+self.a
+        acc = -self.Mass / (reff * r*r) * particles.pos
+        pot = -self.Mass*np.log(1+self.a/r)/self.a
+
+        return acc,None,pot
+
+class LogHalo(Potential_Base):
+
+    def __init__(self, vflat: float, a: float):
+
+        self.vflat = vflat
+        self.a = a
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+        vflat2 = self.vflat*self.vflat
+        reff2 = r*r+self.a*self.a
+        acc = -vflat2 / (np.sqrt(reff2)) * (particles.pos/r)
+        pot = vflat2 *np.log(reff2)
+
+        return acc,None,pot
+
+class TruncatedPlaw(Potential_Base):
+
+    def __init__(self, Mass: float, gamma: float, rt: float, a: float):
+
+        self.Mass = Mass
+        self.gamma = gamma
+        self.rt = rt
+        self.a = a
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+
+        x = r/self.rt
+        Kgamma = scisp.gammainc(0.5*(3-self.gamma),x*x)
+
+        acc = -self.Mass*Kgamma/(r*r*r) * particles.pos
+
+
+        return acc,None,None
+
+class NFW(Potential_Base):
+
+    def __init__(self, Mvir: float, a: float, c: float):
+
+        self.Mvir = Mvir
+        self.a = a
+        self.c = c
+        self.dc = np.log(1+c) - c/(1+c)
+
+    def _acceleration(self, particles: Particles, softening: float = 0.) \
+            -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
+
+        r  = particles.radius()
+
+        NUM = (self.a+r)*np.log(1+r/self.a) - r
+        DEN = r*r*r*(self.a+r)*self.dc
+
+        acc = -self.Mvir*NUM/DEN * particles.pos
+        pot = -self.Mvir*np.log(1+r/self.a)/(r*self.dc)
+
+        return acc,None,pot
