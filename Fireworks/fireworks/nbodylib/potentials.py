@@ -67,7 +67,7 @@ class Potential_Base:
 
         """
 
-        return self._acceleration(particles)
+        return self._acceleration(particles, softening)
 
     def evaluate(self,R,z=0, softening=0):
         """
@@ -230,7 +230,7 @@ class Point_Mass(Potential_Base):
         reff2 = r*r + softening*softening
         acc = -self.Mass/reff2 * (particles.pos/r) # p.pos/r means x/r, y/r, z/r, these are the three components of the acceleration
 
-        return acc, None, None # not include jerk and potential atm
+        return acc, None, None  # not include jerk and potential atm
 
 class MyamotoNagai(Potential_Base):
 

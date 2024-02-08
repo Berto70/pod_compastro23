@@ -113,3 +113,6 @@ sevn_output/
 sevn_version.h
 Fireworks/fireworks/.ipynb_checkpoints/particles-checkpoint.py
 Fireworks/fireworks/.ipynb_checkpoints/version-checkpoint.py
+Fireworks/fireworks/nbodylib/.ipynb_checkpoints/potentials-checkpoint.py
+Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
+Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
