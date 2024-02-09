@@ -8,7 +8,7 @@
 # Iphyton checkpoints
 */.ipynb_checkpoints/*-checkpoint.ipynb
 */.ipynb_checkpoints/*-checkpoint.py
-
+.ipynb_checkpoints
 # Docker folder
 
 
