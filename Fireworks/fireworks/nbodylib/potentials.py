@@ -203,13 +203,14 @@ class Point_Mass(Potential_Base):
 
     """
 
-    def __init__(self, Mass: float):
+    def __init__(self, Mass: float, softening: float):
         """
         Initialise the potential setting the mass of the point
 
         :param Mass: Mass of the point [nbody units]
         """
         self.Mass = Mass
+        self.softening = softening
 
     def _acceleration(self, particles: Particles, softening: float = 0.) \
             -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
@@ -227,7 +228,7 @@ class Point_Mass(Potential_Base):
         """
 
         r  = particles.radius()
-        reff2 = r*r + softening*softening
+        reff2 = r*r + self.softening*self.softening
         acc = -self.Mass/reff2 * (particles.pos/r) # p.pos/r means x/r, y/r, z/r, these are the three components of the acceleration
 
         return acc, None, None  # not include jerk and potential atm
