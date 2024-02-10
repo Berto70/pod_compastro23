@@ -202,11 +202,8 @@ def acceleration_direct(particles: Particles, softening: float =0., softening_ty
     return (acc,jerk,pot)
 
 
-<<<<<<< HEAD
-def acceleration_direct_vectorized(particles: Particles, softening: float =0., return_jerk= True) \
-=======
+
 def acceleration_direct_vectorized(particles: Particles, softening: float =0., softening_type: str = None, return_jerk= False) \
->>>>>>> origin/main
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
     This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
@@ -245,20 +242,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
     r[r==0]=1
     
     dpos = np.concatenate((dx, dy, dz)).reshape((3,N_particles,N_particles)) 
-<<<<<<< HEAD
-    acc = - (dpos/r**3 @ particles.mass).T 
 
-    jerk= None
-    if return_jerk == True:
-        dvx = particles.vel[:, 0].reshape(N_particles, 1) - particles.vel[:, 0]  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
-        dvy = particles.vel[:, 1].reshape(N_particles, 1) - particles.vel[:, 1]
-        dvz = particles.vel[:, 2].reshape(N_particles, 1) - particles.vel[:, 2] 
-    
-        dvel = np.concatenate((dvx, dvy, dvz)).reshape((3,N_particles,N_particles))
-          
-        jerk = -((dvel/r**3 - 3*(np.sum((dpos*dvel), axis=0))*dpos/r**5) @ particles.mass).T                
-        
-=======
     if softening_type==None: #if this condition is met, the others are not considered
         acc = - (dpos/r**3 @ particles.mass).T
         jerk= None
@@ -298,8 +282,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
     elif softening_type not in ('Plummer', 'Dehnen'):
         raise Exception("The softening must me either Plummer (default) or Dehnen")
 
-     
->>>>>>> origin/main
+
     pot = None
 
     return acc, jerk, pot
@@ -325,70 +308,3 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
     jerk = None
 
     return acc, jerk, pot
-
-<<<<<<< HEAD
-"""""
-
-Di seguito la funzione di Diego. Non la usiamo nel pacchetto finale ma mi dispiace cancellarla.
-
-
-def acceleration_direct_vectorised(particles: Particles, softening: float =0.) \
-        -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
-    
-    
-    jerk = None
-    pot = None
-
-    pos  = particles.pos
-    mass = particles.mass
-    N    = len(particles)
-
-    # Forcing x,y,z arrays to be 2-d --> x.shape = (N,1): this is important for broadcasting.
-    x = pos[:,0].reshape(N,1)
-    y = pos[:,1].reshape(N,1)
-    z = pos[:,2].reshape(N,1)
-
-    # Coordinate-wise distance for every particle.
-    # dx[0,:] will be an array related to particle i = 0 where each position j is the diffrence x_0 - x_j
-    # For example dx[0,3] is the difference of the x coordinate of particle 0 with particle 3, i.e. (x_0 - x_3)
-    dx = x - x.T 
-    dy = y - y.T
-    dz = z - z.T
-    
-    # differentials is a data-cube of shape 3xNxN containing all coordinate-distances.
-    # It contains the results of r_i - r_j (see equation at p.13 in "Lecture3 - Forces" slides)
-    differentials = np.array([dx,dy,dz])
-    
-    # To compute |r_i - r_j|**3 it is necessary to take the norm "channel/coordinate wise", 
-    # i.e. computed on the first axis (from left) of differentials array. 
-    # For example, differentials[:,0,1] = [x_0 - x_1, y_0-y_1, z_0-z_1] 
-
-    distance = np.linalg.norm(differentials,axis=0)
-
-    # distance[i,j] is the distance of particle i from particle j.
-    # It is a NxN matrix.
-    
-    # Now acceleration for every particle can be computed.
-    # Sum is run over rows; the result will be a NxNx1 matrix,
-    # where the first axis (axis 0) represents the coordinates (x,y,z) and the second axis (axis 1) is the particle.
-    # acceleration_matrix[:,0,1] = [a_x,a_y,a_z] of particle 0 .
-   
-    # Since diagonal of distance matrix is obviously zero (distance of every particle from itself),
-    # add .00001 to it, in order to avoid division by 0.
-    # To do this properly Softening techniques should be used.
-    np.fill_diagonal(distance,np.array([.00001 for _ in np.diag(distance)]))
-
-    # Add one dimension to distance. Important for broadcasting with differentials.
-    distance = np.expand_dims(distance,axis=0)
-
-    # Summing over rows, i.e. "collapse columns to each other": axis=2 ! (not 1) 
-    acceleration_matrix = - np.sum(mass * differentials / (distance)**3, axis=2)
-    
-    return (acceleration_matrix.T,jerk,pot)
-
-
-"""
-
-
-=======
->>>>>>> origin/main
