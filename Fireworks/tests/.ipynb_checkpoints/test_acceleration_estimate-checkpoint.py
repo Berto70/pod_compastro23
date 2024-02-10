@@ -7,15 +7,11 @@ from fireworks.particles import Particles
 
 def test_acceleration_2body():
     """
-    Simple two body case of two bodies along the x axis (at x=0 and x=1) of mass 1 at a distance 1,
+    Simple two body case of two bodies alond the x axis (at x=0 and x=1) of mass 1 at a distance 1,
     therfore the acceleration on the first body is  +1 and on the secondy body -1.
 
     """
-<<<<<<< HEAD
-    facc_list = [fdyn.acceleration_pyfalcon,fdyn.acceleration_direct,fdyn.acceleration_direct_vectorised]
-=======
     facc_list = [fdyn.acceleration_direct, fdyn.acceleration_direct_vectorized, fdyn.acceleration_pyfalcon,]
->>>>>>> origin/main
 
     pos = np.array([[0.,0.,0.],[1.,0.,0.]])
     vel = np.zeros_like(pos)
@@ -27,6 +23,7 @@ def test_acceleration_2body():
 
     for facc in facc_list:
         acc,_,_=facc(part)
+
         dx = np.abs(acc-true_acc)
 
         assert np.all(dx<=1e-11)
@@ -41,15 +38,10 @@ def test_acceleartion_row():
     """
 
 
-<<<<<<< HEAD
-    facc_list = [fdyn.acceleration_pyfalcon,fdyn.acceleration_direct,fdyn.acceleration_direct_vectorised]
-   
-=======
     facc_list = [fdyn.acceleration_direct, fdyn.acceleration_direct_vectorized, fdyn.acceleration_pyfalcon,]
 
->>>>>>> origin/main
     x = np.array(np.arange(11),dtype=float)
-    y = np.zeros_like(x) 
+    y = np.zeros_like(x)
     z = np.zeros_like(x)
 
     pos = np.vstack([x,y,z]).T
@@ -61,12 +53,11 @@ def test_acceleartion_row():
     acc_true_0 = len(mass)-1
 
     for facc in facc_list:
-        
         acc,_,_=facc(part)
         dx = acc[0,0]-acc_true_0
 
         assert pytest.approx(dx, 1e-10) == 0.
-        # pytest approx is used to introduce a tollerance in the comparison  (in this case 1e-10)
+        # pytest approx is used to introduc a tollerance in the comparison  (in this case 1e-10)
 
 def test_acceleration_2body_jerk():
     """

@@ -78,7 +78,7 @@ def acceleration_estimate_template(particles: Particles, softening: float =0.) \
 
 
 
-def acceleration_direct(particles: Particles, softening: float =0.) \
+def acceleration_direct(particles: Particles, softening: float =0., softening_type: str = None, ) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     
   
@@ -89,24 +89,14 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
     otherwise, the specified 'softening' parameter is utilized.
 
     :param particles: An instance of the class Particles.
-    :param softening: Softening parameter for gravitational calculations.
+    :param softening: Softening parameter for gravitational calculations. If softening == 0, specifying the softening_type dosen't change anything. 
+    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'None'. 
     :return: A tuple with 3 elements:
 
         - acc, Nx3 numpy array storing the acceleration for each particle.
         - jerk, Nx3 numpy array storing the time derivative of the acceleration (can be None).
         - pot, Nx1 numpy array storing the potential at each particle position (can be None).
     """
-  
-    jerk = None
-    pot = None
-
-    pos  = particles.pos
-    mass = particles.mass
-    N    = len(particles) 
-
-    # acc[i,:] ax,ay,az of particle i 
-    acc  = np.zeros([N,3])
-
     # Using direct force estimate applcation2 - see slides Lecture 3 p.16
     def acc_2body(position_1,position_2,mass_2):
         
@@ -126,38 +116,97 @@ def acceleration_direct(particles: Particles, softening: float =0.) \
 
         # Cartesian component of the i,j force
         acceleration = np.zeros(3)
-        acceleration[0] = mass_2 * dx / r**3
-        acceleration[1] = mass_2 * dy / r**3
-        acceleration[2] = mass_2 * dz / r**3
+        acceleration[0] = -mass_2 * dx / r**3
+        acceleration[1] = -mass_2 * dy / r**3
+        acceleration[2] = -mass_2 * dz / r**3
 
         return acceleration
-    
-    def direct_acc_no_softening(mass=mass): 
-            
-            for i in range(N-1):
-                for j in range(i+1,N):
-                    # Compute relative acceleration given
-                    # position of particle i and j
-                    mass_1 = mass[i]
-                    mass_2 = mass[j]
-                    acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
+        
+    def acc_2body_Plummer_softening(position_1,position_2,mass_2, softening):
+        
+        """
+        Implements definition of acceleration for two bodies i,j with Plummer softening 
+        
+        This is used in the following for loop
+        """
+        # Cartesian component of the i,j particles distance
+        dx = position_1[0] - position_2[0]
+        dy = position_1[1] - position_2[1]
+        dz = position_1[2] - position_2[2]
+        
 
-                    # Update array with accelerations
-                    acc[i,:] += acc_ij
-                    acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
-            
-            
+        # Distance module
+        r = np.sqrt(dx**2 + dy**2 + dz**2)
 
-    if softening == 0.:
-        # If no softening compute acceleration values
-        direct_acc_no_softening()
+        # Cartesian component of the i,j force
+        acceleration = np.zeros(3)
+        acceleration[0] = -mass_2 * dx / (r**2 + softening**2)**(3/2)
+        acceleration[1] = -mass_2 * dy / (r**2 + softening**2)**(3/2)
+        acceleration[2] = -mass_2 * dz / (r**2 + softening**2)**(3/2)
 
-    else: print("Softening not implemented yet.")
+        return acceleration
+        
+    def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening):
+        
+        """
+        Implements definition of acceleration for two bodies i,j with Dehnen softening
+        
+        This is used in the following for loop
+        """
+        # Cartesian component of the i,j particles distance
+        dx = position_1[0] - position_2[0]
+        dy = position_1[1] - position_2[1]
+        dz = position_1[2] - position_2[2]
+        
 
+        # Distance module
+        r = np.sqrt(dx**2 + dy**2 + dz**2)
+
+        # Cartesian component of the i,j force
+        acceleration = np.zeros(3)
+        acceleration[0] = -mass_2 * (5*softening**2 + 2*r**2) * dx / (2*(r**2 + softening**2)**(5/2))
+        acceleration[1] = -mass_2 * (5*softening**2 + 2*r**2) * dy / (2*(r**2 + softening**2)**(5/2))
+        acceleration[2] = -mass_2 * (5*softening**2 + 2*r**2) * dz / (2*(r**2 + softening**2)**(5/2))
+
+        return acceleration
+        
+    jerk = None
+    pot = None
+
+    pos  = particles.pos
+    mass = particles.mass
+    N    = len(particles) 
+
+    # acc[i,:] ax,ay,az of particle i 
+    acc  = np.zeros([N,3])
+
+    for i in range(N-1):
+        for j in range(i+1,N):
+            # Compute relative acceleration given
+            # position of particle i and j
+            mass_1 = mass[i]
+            mass_2 = mass[j]
+            if softening_type==None: #if this condition is met, the others are not considered
+                acc_ij = acc_2body(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2)
+            elif softening_type=='Plummer': 
+                 acc_ij = acc_2body_Plummer_softening(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2, softening=softening)
+            elif softening_type=='Dehnen': 
+                 acc_ij = acc_2body_Dehnen_softening(position_1=pos[i,:],position_2=pos[j,:],mass_2=mass_2, softening=softening)
+            elif softening_type not in ('Plummer', 'Dehnen'):
+                 raise Exception("The softening must me either Plummer (default) or Dehnen")
+                
+            # Update array with accelerations
+            acc[i,:] += acc_ij
+            acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
+        
     return (acc,jerk,pot)
 
 
+<<<<<<< HEAD
 def acceleration_direct_vectorized(particles: Particles, softening: float =0., return_jerk= True) \
+=======
+def acceleration_direct_vectorized(particles: Particles, softening: float =0., softening_type: str = None, return_jerk= False) \
+>>>>>>> origin/main
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
     This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
@@ -180,6 +229,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., r
 
     :param particles: An instance of the class Particles
     :param softening: Softening parameter
+    :param softening_type: The type of softening to use. Possible choice are 'Plummer' and 'Dehnen'. Default is 'None'. 
     :return: A tuple with 3 elements:
 
         - acc, Nx3 numpy array storing the acceleration for each particle
@@ -195,6 +245,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., r
     r[r==0]=1
     
     dpos = np.concatenate((dx, dy, dz)).reshape((3,N_particles,N_particles)) 
+<<<<<<< HEAD
     acc = - (dpos/r**3 @ particles.mass).T 
 
     jerk= None
@@ -207,6 +258,48 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., r
           
         jerk = -((dvel/r**3 - 3*(np.sum((dpos*dvel), axis=0))*dpos/r**5) @ particles.mass).T                
         
+=======
+    if softening_type==None: #if this condition is met, the others are not considered
+        acc = - (dpos/r**3 @ particles.mass).T
+        jerk= None
+        if return_jerk == True:
+            dvx = particles.vel[:, 0].reshape(N_particles, 1) - particles.vel[:, 0]  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+            dvy = particles.vel[:, 1].reshape(N_particles, 1) - particles.vel[:, 1]
+            dvz = particles.vel[:, 2].reshape(N_particles, 1) - particles.vel[:, 2] 
+        
+            dvel = np.concatenate((dvx, dvy, dvz)).reshape((3,N_particles,N_particles))
+              
+            jerk = -((dvel/r**3 - 3*(np.sum((dpos*dvel), axis=0))*dpos/r**5) @ particles.mass).T                
+
+    elif softening_type=='Plummer': 
+        acc = - (dpos/(r**2 + softening**2)**(3/2) @ particles.mass).T
+        jerk= None
+        if return_jerk == True:
+            dvx = particles.vel[:, 0].reshape(N_particles, 1) - particles.vel[:, 0]  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+            dvy = particles.vel[:, 1].reshape(N_particles, 1) - particles.vel[:, 1]
+            dvz = particles.vel[:, 2].reshape(N_particles, 1) - particles.vel[:, 2] 
+        
+            dvel = np.concatenate((dvx, dvy, dvz)).reshape((3,N_particles,N_particles))
+              
+            jerk = -((dvel/(r**2 + softening**2)**(3/2) - 3*(np.sum((dpos*dvel), axis=0))*dpos/(r**2 + softening**2)**(5/2)) @ particles.mass).T
+            
+    elif softening_type=='Dehnen': 
+        acc = - (dpos* (5*softening**2 + 2*r**2)/(2*(r**2 + softening**2)**(5/2)) @ particles.mass).T
+        jerk= None
+        if return_jerk == True:
+            dvx = particles.vel[:, 0].reshape(N_particles, 1) - particles.vel[:, 0]  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix
+            dvy = particles.vel[:, 1].reshape(N_particles, 1) - particles.vel[:, 1]
+            dvz = particles.vel[:, 2].reshape(N_particles, 1) - particles.vel[:, 2] 
+        
+            dvel = np.concatenate((dvx, dvy, dvz)).reshape((3,N_particles,N_particles))
+              
+            jerk = -(  (dpos*(4*np.sum((dpos*dvel), axis=0))/(2*(r**2 + softening**2)**(5/2)) + dvel*(5*softening**2 + 2*r**2)/((r**2 + softening**2)**(5/2)) - 5*dpos*(np.sum((dpos*dvel), axis=0)*(5*softening**2 +2*r**2) )/(2*(r**2 + softening**2)**(7/2))   ) @ particles.mass).T
+
+    elif softening_type not in ('Plummer', 'Dehnen'):
+        raise Exception("The softening must me either Plummer (default) or Dehnen")
+
+     
+>>>>>>> origin/main
     pot = None
 
     return acc, jerk, pot
@@ -228,11 +321,12 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
 
     if not pyfalcon_load: return ImportError("Pyfalcon is not available")
 
-    acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening)
+    acc, pot = pyfalcon.gravity(particles.pos,particles.mass,softening,kernel=0)
     jerk = None
 
     return acc, jerk, pot
 
+<<<<<<< HEAD
 """""
 
 Di seguito la funzione di Diego. Non la usiamo nel pacchetto finale ma mi dispiace cancellarla.
@@ -296,3 +390,5 @@ def acceleration_direct_vectorised(particles: Particles, softening: float =0.) \
 """
 
 
+=======
+>>>>>>> origin/main
