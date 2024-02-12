@@ -203,13 +203,14 @@ class Point_Mass(Potential_Base):
 
     """
 
-    def __init__(self, Mass: float):
+    def __init__(self, Mass: float, softening: float):
         """
         Initialise the potential setting the mass of the point
 
         :param Mass: Mass of the point [nbody units]
         """
         self.Mass = Mass
+        self.softening = softening
 
     def _acceleration(self, particles: Particles, softening: float = 0.) \
             -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
