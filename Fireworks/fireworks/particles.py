@@ -76,14 +76,28 @@ class Particles:
 
         self.vel = np.array(np.atleast_2d(velocity), dtype=float)
         if self.vel.shape[1] != 3: print(f"Input velocity should contain a Nx3 array, current shape is {self.pos.shape}")
-        if len(self.vel) != len(self.pos): print(f"Position and velocity in input have not the same number of elemnts")
+        if len(self.vel) != len(self.pos): print(f"Position and velocity in input have not the same number of elements")
 
         self.mass = np.array(np.atleast_1d(mass), dtype=float)
-        if len(self.mass) != len(self.pos): print(f"Position and mass in input have not the same number of elemnts")
+        if len(self.mass) != len(self.pos): print(f"Position and mass in input have not the same number of elements")
 
         self.ID=np.arange(len(self.mass), dtype=int)
 
         self.acc=None
+
+        self.flag=None
+
+    def set_flag(self, flag: npt.NDArray[np.int64]):
+        """
+        Set the flag, 1 or 0, to check for system membership or non-membership, respectively. 
+
+        :param flag: A Nx1 numpy array containing the flag of the N particles
+        """
+
+        flag = np.atleast_1d(flag)
+        if flag.shape[1] != 1: print(f"Input flag should contain a Nx1 array, current shape is {flag.shape}")
+
+        self.flag=flag
 
     def set_acc(self, acceleration: npt.NDArray[np.float64]):
         """
