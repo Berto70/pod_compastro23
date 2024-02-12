@@ -95,7 +95,7 @@ class Particles:
         """
 
         flag = np.atleast_1d(flag)
-        if flag.shape[1] != 1: print(f"Input flag should contain a Nx1 array, current shape is {flag.shape}")
+        if flag.shape[0] != self.pos.shape[0]: print(f"Flag and position in input have not the same number of elements, current shape is {flag.shape}")
 
         self.flag=flag
 
