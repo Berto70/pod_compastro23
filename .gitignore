@@ -230,3 +230,6 @@ Fireworks/docs/*
 *.ipynb_checkpoints
 assignment_2/*
 *.rst
+project/gif/*
+project/orbit/Cluster_FoR/*.npy
+project/orbit/Galactic_FoR/*.npy
