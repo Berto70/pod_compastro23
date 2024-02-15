@@ -40,8 +40,8 @@ def acceleration_direct_vectorized(N_particles, pos, mass):
     return acc, jerk, pot
 
 def parallel_acc(a,b):
-   
-    # Questo può essere così oppure rendo global direttamente particles...
+
+    # global particles doesn't work
     global pos
     global N_particles
     global mass
@@ -56,7 +56,7 @@ def parallel_acc(a,b):
       
     r = np.sqrt(dx**2 + dy**2 + dz**2)
     r[r==0]=1
-    # New dpos shape is (3,N_particles,3000) since 
+    # New dpos shape is (3,N_subset,N_particles) since 
     # 3 is the number of dimensions, 
     # N_subset is the number of particles in the subset and
     # N_particles is the number of total particles
@@ -76,16 +76,16 @@ def parallel_integrator(a,b):
     global vel
     global pos 
     global tstep
-    #global acc 
+    # global acc 
     # acceleration is needed only to update vel and pos, so it is not needed as a global variable
-    # acc should be allocated in a memory specific to the process
-    acc, _ , _ = parallel_acc(a,b) # chissà se funziona
+    # should acc be allocated in a memory specific to the process?
+    acc, _ , _ = parallel_acc(a,b) 
 
     # Euler integration
     vel[a:b] = vel[a:b] + acc * tstep  # Update vel
     pos[a:b] = pos[a:b] + vel[a:b] * tstep  # Update pos
 
-    # there's no need to update acceleretion in my opinion...
+    # no need to update a global acceleration
 
     # Return the updated particles, the acceleration, jerk (can be None), and potential (can be None)
     return pos[a:b], vel[a:b]
@@ -96,14 +96,9 @@ def parallel_evo():
     #### MULTIPROCESSING ####
     # define the number of processes
     N_CORES = multiprocessing.cpu_count() # in my case 4 cores
-
-    # start a timer
-    #start = time.time()
-    
-    # how does it know N_particles? Lol
     N_PROCESSES = min(N_CORES, N_particles)
     # create a pool of processes
-    pool = ThreadPool(N_PROCESSES)
+    pool = ThreadPool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
 
 
     # submit multiple instances of the function full_evo 
@@ -135,12 +130,10 @@ def parallel_evo():
 
 def make_plot(pos_fast,pos_slow):
     # pos_fast.shape = (N_iterations, N_particles, 3)
-
-    # this is a 2D plot
-
+   
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
-    # all iterations, particle 0, x and y
+    # all iterations, particle i, x and y
     for i in range(pos_slow.shape[1]):
         ax[0].scatter(pos_slow[:,i,0],pos_slow[:,i,1],s=.5)
         ax[0].set_title("Serial")
@@ -179,7 +172,8 @@ if __name__ == "__main__":
     total_evo_time = 10
     positions = []
     for _ in range(int(total_evo_time/tstep)):
-      
+        # Pools are opened and closed at every iteration --> bottleneck?
+        # If I don't do so --> race condition
         results = parallel_evo()
        
         # update global variables directly
