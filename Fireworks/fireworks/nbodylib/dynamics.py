@@ -42,7 +42,7 @@ except:
 def acceleration_estimate_template(particles: Particles, softening: float =0.) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
-    This an empty function that can be used as a basic template for
+    This an empty functions that can be used as a basic template for
     implementing the other functions to estimate the gravitational acceleration.
     Every function of this kind needs to have two input parameters:
 
@@ -202,7 +202,6 @@ def acceleration_direct(particles: Particles, softening: float =0., softening_ty
     return (acc,jerk,pot)
 
 
-
 def acceleration_direct_vectorized(particles: Particles, softening: float =0., softening_type: str = None, return_jerk= False) \
         -> Tuple[npt.NDArray[np.float64],Optional[npt.NDArray[np.float64]],Optional[npt.NDArray[np.float64]]]:
     """
@@ -242,7 +241,6 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
     r[r==0]=1
     
     dpos = np.concatenate((dx, dy, dz)).reshape((3,N_particles,N_particles)) 
-
     if softening_type==None: #if this condition is met, the others are not considered
         acc = - (dpos/r**3 @ particles.mass).T
         jerk= None
@@ -282,7 +280,7 @@ def acceleration_direct_vectorized(particles: Particles, softening: float =0., s
     elif softening_type not in ('Plummer', 'Dehnen'):
         raise Exception("The softening must me either Plummer (default) or Dehnen")
 
-
+     
     pot = None
 
     return acc, jerk, pot
@@ -308,3 +306,4 @@ def acceleration_pyfalcon(particles: Particles, softening: float =0.) \
     jerk = None
 
     return acc, jerk, pot
+
