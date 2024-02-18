@@ -233,3 +233,6 @@ assignment_2/*
 project/gif/*
 project/orbit/Cluster_FoR/*.npy
 project/orbit/Galactic_FoR/*.npy
+project/integration*.py
+project/simulation copy.ipynb
+project/sampled_df.*
