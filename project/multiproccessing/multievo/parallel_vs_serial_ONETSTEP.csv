@@ -1,3 +1,4 @@
+index,n_particles,n_simulations,integrators,parallel_time,serial_time,std_numpy
 0,250,1,integrator_leapfrog,0.053455352783203125,0.02730870246887207,True
 0,250,2,integrator_leapfrog,0.0752420425415039,0.05208134651184082,True
 0,250,3,integrator_leapfrog,0.12315154075622559,0.08260178565979004,True

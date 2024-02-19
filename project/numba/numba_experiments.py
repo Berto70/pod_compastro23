@@ -246,11 +246,11 @@ def main(n_particles):
 
 
     df = pd.DataFrame({"N_particles":[n_particles],
-                  "Direct slow": [direct_slow],
-                  "Direct fast": [direct_fast],
-                  "Vectorized slow": [vect_slow],
-                  "Vectorized fast": [vect_fast],
-                  "Direct parallel": [direct_parallel]})
+                  "Direct_slow": [direct_slow],
+                  "Direct_fast": [direct_fast],
+                  "Vectorized_slow": [vect_slow],
+                  "Vectorized_fast": [vect_fast],
+                  "Direct_parallel": [direct_parallel]})
 
     df.to_csv("numba_timings.csv",mode="a",header=False)
     
