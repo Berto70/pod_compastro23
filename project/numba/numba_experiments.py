@@ -206,51 +206,61 @@ def main(n_particles):
     # Direct
     
     print("direct slow")
-    start_direct_slow = time.time()
+    direct_slow_times = []
     for t in range(100):
+        start_direct_slow = time.time()
         _ = acceleration_direct_slow(pos,mass,N,softening)
-    end_direct_slow = time.time()
+        end_direct_slow = time.time()
+        tot_time = end_direct_slow - start_direct_slow
+        direct_slow_times.append(tot_time)
+
     
     print("direct fast")
-    start_direct_fast = time.time() 
+    direct_fast_times = []
     for t in range(100):
+        start_direct_fast = time.time()
         _ = acceleration_direct_fast(pos,mass,N,softening)
-    end_direct_fast = time.time()
+        end_direct_fast = time.time()
+        tot_time = end_direct_fast - start_direct_fast
+        direct_fast_times.append(tot_time)
     
 
     # Vectorized
     print("vect slow")
-    start_vect_slow = time.time()
+    vect_slow_times = []
     for t in range(100):
+        start_vect_slow = time.time()
         _ = slow_acceleration_direct_vectorized(pos,N,mass,softening)
-    end_vect_slow = time.time()
+        end_vect_slow = time.time()
+        tot_time = end_vect_slow - start_vect_slow
+        vect_slow_times.append(tot_time)
 
     print("vect fast")
-    start_vect_fast = time.time()
+    vect_fast_times = []
     for t in range(100):
+        start_vect_fast = time.time()
         _ = fast_acceleration_direct_vectorized(pos,N,mass,softening)
-    end_vect_fast = time.time()
+        end_vect_fast = time.time()
+        tot_time = end_vect_fast - start_vect_fast
+        vect_fast_times.append(tot_time)
 
     # Direct parallel
     print("direct parallel")
-    start_direct_parallel = time.time()
+    parallel_direct_times = []  
     for t in range(100):
+        start_direct_parallel = time.time()
         _ = parallel_acceleration_direct_fast(pos,mass,N,softening)
-    end_direct_parallel = time.time()
-
-    direct_slow = (end_direct_slow - start_direct_slow)/100
-    direct_fast = (end_direct_fast - start_direct_fast)/100
-    vect_slow = (end_vect_slow - start_vect_slow)/100
-    vect_fast = (end_vect_fast - start_vect_fast)/100
-    direct_parallel = (end_direct_parallel - start_direct_parallel)/100
+        end_direct_parallel = time.time()
+        tot_time = end_direct_parallel - start_direct_parallel
+        parallel_direct_times.append(tot_time)
 
 
     df = pd.DataFrame({"N_particles":[n_particles],
-                  "Direct_slow": [direct_slow],
-                  "Direct_fast": [direct_fast],
-                  "Vectorized_slow": [vect_slow],
-                  "Vectorized_fast": [vect_fast],
-                  "Direct_parallel": [direct_parallel]})
+                  "direct_slow": direct_slow_times,
+                  "direct_fast": direct_fast_times,
+                  "vectorized_slow": vect_slow_times,
+                  "vectorized_fast": vect_fast_times,
+                  "direct_parallel": parallel_direct_times})
 
     df.to_csv("numba_timings.csv",mode="a",header=False)
     
