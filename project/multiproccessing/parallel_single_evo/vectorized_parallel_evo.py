@@ -1,3 +1,9 @@
+"""
+Here a single run is evolved. It is the computation of the acceleration that is parallelized.
+
+"""
+
+
 from fireworks.ic import ic_two_body as ic_two_body
 from fireworks.ic import ic_random_uniform as ic_random_uniform
 
@@ -18,6 +24,7 @@ from multiprocessing.pool import ThreadPool
 import os 
 
 from numba import njit
+import pandas as pd
 
 
 
@@ -72,7 +79,7 @@ def parallel_acc(a,b):
 
 
 def parallel_integrator(a,b):
-
+    
     global vel
     global pos 
     global tstep
@@ -91,14 +98,14 @@ def parallel_integrator(a,b):
     return pos[a:b], vel[a:b]
 
 
-def parallel_evo():
+def parallel_evo(N_particles):
 
     #### MULTIPROCESSING ####
     # define the number of processes
     N_CORES = multiprocessing.cpu_count() # in my case 4 cores
     N_PROCESSES = min(N_CORES, N_particles)
     # create a pool of processes
-    pool = ThreadPool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
+    pool = Pool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
 
 
     # submit multiple instances of the function full_evo 
@@ -152,12 +159,16 @@ def make_plot(pos_fast,pos_slow):
 
 
 
+def main(n_particles):
 
-if __name__ == "__main__":
-
+    global pos
+    global vel
+    global mass
+    global N_particles
+    global tstep
     
     #particles = ic_two_body(1,1,1,0)
-    particles = ic_random_uniform(300, [0,3],[0,3],[0,3])
+    particles = ic_random_uniform(n_particles, [0,3],[0,3],[0,3])
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
@@ -166,15 +177,18 @@ if __name__ == "__main__":
 
     print(particles)
 
-  
-    start_parallel = time.time()
+    start_single = time.time()
+    results = parallel_evo(N_particles)
+    end_single = time.time()
 
-    total_evo_time = 10
+    """
+    start_parallel = time.time()
+    total_evo_time = tstep * 10
     positions = []
     for _ in range(int(total_evo_time/tstep)):
         # Pools are opened and closed at every iteration --> bottleneck?
         # If I don't do so --> race condition
-        results = parallel_evo()
+        results = parallel_evo(N_particles)
        
         # update global variables directly
         pos = np.concatenate([results[i][0] for i in range(len(results))])
@@ -183,13 +197,14 @@ if __name__ == "__main__":
         positions.append(pos)
     
     end_parallel = time.time()
-
-    print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
-
-    
+    """
+    #print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
 
     # Now let's try to do the same with the serial version
-
+    start_single_serial = time.time()
+    _= intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct_vectorized,softening="Dehnen")
+    end_single_serial = time.time()  
+    """
     start_serial = time.time()
 
     positions_slow = []
@@ -201,10 +216,33 @@ if __name__ == "__main__":
     end_serial = time.time()
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
+    """
+    #make_plot(np.array(positions),np.array(positions_slow))
 
-    make_plot(np.array(positions),np.array(positions_slow))
+
+    time_single_parallel = end_single - start_single
+    #time_full_parallel   = end_parallel - start_parallel
+
+    time_single_serial = end_single_serial - start_single_serial
+    #time_full_serial   = end_serial - start_serial
+
     
+    save_me = {"n_particles": n_particles,
+                "time_single_parallel": time_single_parallel,
+                "time_single_serial": time_single_serial,
+                "Pool": True,
+                "ThreadPool": False}
+           
+
+    # Convert the save_me dictionary to a DataFrame
+    df = pd.DataFrame([save_me])
+    df.to_csv("POOL_single_evo_parallel_computation.csv", mode='a',header=False)
         
-            
+    print("#########\n")
 
 
+
+if __name__=="__main__":
+    import sys
+    n_particles = int(sys.argv[1])
+    main(n_particles)
