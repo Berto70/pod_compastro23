@@ -183,6 +183,7 @@ def parallel_acceleration_direct_fast(pos,mass,N,softening):
 
 def main(n_particles):
 
+    print("running with",n_particles)
 
     particles = ic_random_uniform(n_particles,[1,3],[1,3],[1,3])
     pos = particles.pos
@@ -203,39 +204,45 @@ def main(n_particles):
     ### 
 
     # Direct
+    
+    print("direct slow")
     start_direct_slow = time.time()
-    for t in range(10000):
+    for t in range(100):
         _ = acceleration_direct_slow(pos,mass,N,softening)
     end_direct_slow = time.time()
-
+    
+    print("direct fast")
     start_direct_fast = time.time() 
-    for t in range(10000):
+    for t in range(100):
         _ = acceleration_direct_fast(pos,mass,N,softening)
-        end_direct_fast = time.time()
+    end_direct_fast = time.time()
     
 
     # Vectorized
+    print("vect slow")
     start_vect_slow = time.time()
-    for t in range(10000):
+    for t in range(100):
         _ = slow_acceleration_direct_vectorized(pos,N,mass,softening)
     end_vect_slow = time.time()
 
+    print("vect fast")
     start_vect_fast = time.time()
-    for t in range(10000):
+    for t in range(100):
         _ = fast_acceleration_direct_vectorized(pos,N,mass,softening)
     end_vect_fast = time.time()
 
     # Direct parallel
+    print("direct parallel")
     start_direct_parallel = time.time()
-    for t in range(10000):
+    for t in range(100):
         _ = parallel_acceleration_direct_fast(pos,mass,N,softening)
     end_direct_parallel = time.time()
 
-    direct_slow = (end_vect_slow - start_vect_slow)/10000
-    direct_fast = (end_direct_fast - start_direct_fast)/10000
-    vect_slow = (end_vect_slow - start_vect_slow)/10000
-    vect_fast = (end_vect_fast - start_vect_fast)/10000
-    direct_parallel = (end_direct_parallel - start_direct_parallel)/10000
+    direct_slow = (end_direct_slow - start_direct_slow)/100
+    direct_fast = (end_direct_fast - start_direct_fast)/100
+    vect_slow = (end_vect_slow - start_vect_slow)/100
+    vect_fast = (end_vect_fast - start_vect_fast)/100
+    direct_parallel = (end_direct_parallel - start_direct_parallel)/100
 
 
     df = pd.DataFrame({"N_particles":[n_particles],
