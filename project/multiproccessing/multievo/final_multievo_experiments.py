@@ -1,5 +1,14 @@
-### Import useful libraries
+"""
+Evolve multiple integrators in parallel and compare the results with serial evolution.
+This script is needed to save timing relative to different configurations of the evolutions.
+It will be used for creating data of:
 
+- Serial timing with std numpy
+- Serial timing without std numpy (num threads = 1)
+- Parallel timing with std numpy
+- Parallel timing without std numpy (num threads = 1)
+
+"""
 
 import fireworks
 from fireworks.ic import ic_two_body as ic_two_body
@@ -10,6 +19,7 @@ from fireworks.nbodylib import integrators as intg
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 import multiprocessing
 from multiprocessing.pool import ThreadPool
@@ -18,15 +28,6 @@ from multiprocessing import Pool
 import os 
 import time
 
-## Functions needed
-
-def initialise(mass1=2, mass2=1, rp=2, e=0):
-    particles = ic_two_body(mass1, mass2, rp, e)
-
-    a = rp / (1 - e)  # Semi-major axis
-    period = 2 * np.pi * np.sqrt(a**3 / (mass1 + mass2))
-
-    return particles, period
 
 
 def simulate(int_part,tstep=0.01,total_time = 10):
@@ -36,7 +37,7 @@ def simulate(int_part,tstep=0.01,total_time = 10):
    N_particles = len(particles)
 
    integrator_name = integrator.__name__
-   print("integrator_name: ", integrator_name)
+  # print("integrator_name: ", integrator_name)
 
    acc_list       = np.array([])
    pos_list       = np.array([])
@@ -157,12 +158,12 @@ def parallel_evo(integrators,particles):
     # - starmap_async: allows to run the processes with a (iterable) list of arguments
     # - map_async    : is a similar function, supporting a single argument
 
-    future_results = pool.map(simulate, [(integrator,particles) for integrator in integrators])
+    future_results = pool.map_async(simulate, [(integrator,particles) for integrator in integrators])
 
     # to get the results all processes must have been completed
     # the get() function is therefore _blocking_ (equivalent to join) 
-    #results = future_results.get()
-    results = future_results
+    results = future_results.get()
+  
 
     # close the pool
     # Warning multiprocessing.pool objects have internal resources that need to be properly managed 
@@ -172,39 +173,70 @@ def parallel_evo(integrators,particles):
     return results
 
 
+def main(n_particles=2, n_simulations=1,std_numpy=True ):
+    print("Starting main")
+    print("std_numpy: ", std_numpy)
+    print("n_particles: ", n_particles)
+    print("n_simulations: ", n_simulations)
 
-if __name__ == "__main__":
-
-    #particles, period = initialise(mass1=1, mass2=1, rp=1, e=0)
-    particles = ic_random_uniform(300, [1,3],[1,3],[1,3])
-    period = 10 
-
+    if std_numpy == False:
+        # Set the number of threads to 1
+        # Check if autopilot did this correctly (I only know OPENBLAS)
+        os.environ["OMP_NUM_THREADS"] = "1"
+        os.environ["OPENBLAS_NUM_THREADS"] = "1"
+        os.environ["MKL_NUM_THREADS"] = "1"
+        os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+        os.environ["NUMEXPR_NUM_THREADS"] = "1"
+        os.environ["NUMBA_NUM_THREADS"] = "1"
     
+    particles = ic_random_uniform(n_particles, [1,3],[1,3],[1,3])
+    period = 10
+    """"
+    Here I will parallelize the same simulation with the same integrators. 
+
     integrators = [intg.integrator_euler,
                     intg.integrator_hermite,
                     intg.integrator_leapfrog,
                     intg.integrator_heun,
                     intg.integrator_rk4,
                     ]
+    """
+    # Using only leapfrog integrator
+    integrators = [intg.integrator_leapfrog for _ in range(n_simulations)]
 
     # MULTIPROCESSING
     start_mp = time.time()
     results = parallel_evo(integrators,particles)
     end_mp = time.time()
 
-    print("Multiprocessing time: ", end_mp - start_mp)
+    parallel_time = end_mp - start_mp
+    print("Multiprocessing time: ", parallel_time)
         
-    results_dict = {result["integrator_name"]: result for result in results}
-
     # Serial
     start = time.time()
     results_serial = [simulate((integrator,particles)) for integrator in integrators]
     end = time.time()
+    serial_time = end - start
+    print("Serial time: ",serial_time)
 
-    print("Serial time: ", end - start)
+    
+    save_me = {"n_particles": n_particles,
+               "n_simulations": n_simulations,
+               "integrators": integrators[0].__name__,
+                "parallel_time":parallel_time, 
+                "serial_time": serial_time,
+                "std_numpy":std_numpy}
+    # Convert the save_me dictionary to a DataFrame
+    df = pd.DataFrame([save_me])
+    df.to_csv("parallel_vs_serial.csv", mode='a',header=False)
+        
+    print("#########\n")
 
-    results_dict_serial = {result["integrator_name"]: result for result in results_serial}
-
-
-    # plot_sim("pos_list", results_dict)
-    plot_comparison("pos_list", results_dict_serial, results_dict)
+    
+    
+if __name__ == "__main__":
+    import sys
+    n_particles = int(sys.argv[1])
+    n_simulations = int(sys.argv[2])
+    #std_numpy = bool(sys.argv[3])
+    main(n_particles=n_particles, n_simulations=n_simulations, std_numpy=True)
