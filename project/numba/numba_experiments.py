@@ -263,7 +263,7 @@ def main(n_particles):
                   "direct_parallel": parallel_direct_times,
                   })
 
-    df.to_csv("numba_timings_NEW.csv",mode="a",header=False,index=False)
+    df.to_csv("numba_timings.csv",mode="a",header=False,index=False)
     
 
 if __name__ == "__main__":
