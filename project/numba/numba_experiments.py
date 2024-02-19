@@ -255,14 +255,15 @@ def main(n_particles):
         parallel_direct_times.append(tot_time)
 
 
-    df = pd.DataFrame({"N_particles":[n_particles],
+    df = pd.DataFrame({"N_particles":[n_particles for i in direct_slow_times],
                   "direct_slow": direct_slow_times,
                   "direct_fast": direct_fast_times,
                   "vectorized_slow": vect_slow_times,
                   "vectorized_fast": vect_fast_times,
-                  "direct_parallel": parallel_direct_times})
+                  "direct_parallel": parallel_direct_times,
+                  })
 
-    df.to_csv("numba_timings.csv",mode="a",header=False)
+    df.to_csv("numba_timings_NEW.csv",mode="a",header=False,index=False)
     
 
 if __name__ == "__main__":
