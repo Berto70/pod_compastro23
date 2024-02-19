@@ -30,45 +30,46 @@ import time
 
 
 
-def simulate(int_part,tstep=0.01,total_time = 10):
-
+def simulate(int_part,tstep=0.01,total_time = 10.0):
    
    integrator, particles = int_part
    N_particles = len(particles)
 
    integrator_name = integrator.__name__
-  # print("integrator_name: ", integrator_name)
-
-   acc_list       = np.array([])
-   pos_list       = np.array([])
-   vel_list       = np.array([])
-   kinetic_list   = np.array([])
-   potential_list = np.array([])
-   energy_list    = np.array([])
    
-   
-   for _ in range(int(total_time/tstep)):
+    # print("integrator_name: ", integrator_name)
+    
+   """
+    acc_list       = np.array([])
+    pos_list       = np.array([])
+    vel_list       = np.array([])
+    kinetic_list   = np.array([])
+    potential_list = np.array([])
+    energy_list    = np.array([])
+   """
+    #for _ in range(int(total_time/tstep)):
+    
+   particles, tstep, acc, jerk, _ = integrator(particles=particles, 
+                                                tstep=tstep, 
+                                                acceleration_estimator=dyn.acceleration_direct_vectorized,
+                                                softening=0.1,
+                                                )
+    
+   """
+    acc_list = np.append(acc_list, acc)
+    pos_list = np.append(pos_list, particles.pos)
+    vel_list = np.append(vel_list, particles.vel)
 
-      particles, tstep, acc, jerk, _ = integrator(particles=particles, 
-                                               tstep=tstep, 
-                                               acceleration_estimator=dyn.acceleration_direct_vectorized,
-                                               softening=0.1,
-                                               )
-      
-      acc_list = np.append(acc_list, acc)
-      pos_list = np.append(pos_list, particles.pos)
-      vel_list = np.append(vel_list, particles.vel)
-
-      kinetic_list   = np.append(kinetic_list, particles.Ekin())
-      potential_list = np.append(potential_list, particles.Epot(softening=0.1))
-      energy_list    = np.append(energy_list, particles.Etot(softening=0.1))
+    kinetic_list   = np.append(kinetic_list, particles.Ekin())
+    potential_list = np.append(potential_list, particles.Epot(softening=0.1))
+    energy_list    = np.append(energy_list, particles.Etot(softening=0.1))
 
 
-   acc_list = acc_list.reshape(int(total_time/tstep), N_particles, 3)
-   pos_list = pos_list.reshape(int(total_time/tstep), N_particles, 3)
-   vel_list = vel_list.reshape(int(total_time/tstep), N_particles, 3)
-
-   return {"integrator_name": integrator_name,"acc_list": acc_list, "pos_list": pos_list, "vel_list": vel_list, "energy_list": energy_list}
+    acc_list = acc_list.reshape(int(total_time/tstep), N_particles, 3)
+    pos_list = pos_list.reshape(int(total_time/tstep), N_particles, 3)
+    vel_list = vel_list.reshape(int(total_time/tstep), N_particles, 3)
+   """
+   #return {"integrator_name": integrator_name,"acc_list": acc_list, "pos_list": pos_list, "vel_list": vel_list, "energy_list": energy_list}
       
 
 
@@ -228,7 +229,7 @@ def main(n_particles=2, n_simulations=1,std_numpy=True ):
                 "std_numpy":std_numpy}
     # Convert the save_me dictionary to a DataFrame
     df = pd.DataFrame([save_me])
-    df.to_csv("parallel_vs_serial.csv", mode='a',header=False)
+    df.to_csv("parallel_vs_serial_ONETSTEP.csv", mode='a',header=False)
         
     print("#########\n")
 
