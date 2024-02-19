@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
     
     #particles = ic_two_body(1,1,1,0)
-    particles = ic_random_uniform(300, [0,3],[0,3],[0,3])
+    particles = ic_random_uniform(1500, [0,3],[0,3],[0,3])
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
