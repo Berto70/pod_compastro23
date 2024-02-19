@@ -1,6 +1,3 @@
-### Import useful libraries
-
-
 import fireworks
 from fireworks.ic import ic_two_body as ic_two_body
 from fireworks.ic import ic_random_uniform
@@ -18,7 +15,6 @@ from multiprocessing import Pool
 import os 
 import time
 
-## Functions needed
 
 def initialise(mass1=2, mass2=1, rp=2, e=0):
     particles = ic_two_body(mass1, mass2, rp, e)
@@ -71,7 +67,7 @@ def simulate(int_part,tstep=0.01,total_time = 10):
       
 
 
-
+#### IGNORE plot_sim #### USE plot_comparison INSTEAD ####
 # key is what you want to plot, simulation_data is the output of integration_loop function
 def plot_sim(key: str, simulation_data: dict):
 
@@ -87,7 +83,6 @@ def plot_sim(key: str, simulation_data: dict):
 
         for j in range(data.shape[1]):
             axs[i].scatter(data[:, j, 0], data[:, j, 1], label=f"Body {j}",s=.5)
-           # axs[i].plot(data[:, 1, 0], data[:, 1, 1], label="Star 2")
             axs[i].set_title(integrator)
             axs[i].legend()
 
