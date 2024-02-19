@@ -1,5 +1,9 @@
 """
 Here a single run is evolved. It is the computation of the acceleration that is parallelized.
+PRIMA DI CONSEGNARE CONTROLLA:
+1. CHE LE SIMULAZIONI SIANO CORRETTE
+2. COME APRI E CHIUDI IL POOL. NON SERVE RI RUNNARE PER PRENDERE NUOVI RISULTATI, BASTA MOSTRARE SOLO IL PLOT CON LA SINGOLA CHIAMATA
+E POI GIUSTIFICARE CHE APRO IL POOL UNA VOLTA SOPRA
 
 """
 
@@ -98,34 +102,43 @@ def parallel_integrator(a,b):
     return pos[a:b], vel[a:b]
 
 
-def parallel_evo(N_particles):
+def parallel_evo(N_particles,total_evo_time=10*tstep):
+    global pos
+    global vel
 
     #### MULTIPROCESSING ####
     # define the number of processes
     N_CORES = multiprocessing.cpu_count() # in my case 4 cores
     N_PROCESSES = min(N_CORES, N_particles)
     # create a pool of processes
-    pool = Pool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
+    pool = ThreadPool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
 
-
+    positions = []
     # submit multiple instances of the function full_evo 
     # - starmap_async: allows to run the processes with a (iterable) list of arguments
     # - map_async    : is a similar function, supporting a single argument
-
-    if N_particles < N_PROCESSES:
-        # 1 process per particle
-        future_results = pool.starmap_async(parallel_integrator, 
-                                    [(i, (i + 1)) for i in range(N_particles)])
-    else:
-        # divide in equal part the particles into N_PROCESSES
-        future_results = pool.starmap_async(parallel_integrator, 
+    for _ in range(int(total_evo_time/tstep)):
+        if N_particles < N_PROCESSES:
+            # 1 process per particle
+            future_results = pool.starmap_async(parallel_integrator, 
+                                        [(i, (i + 1)) for i in range(N_particles)])
+        else:
+            # divide in equal part the particles into N_PROCESSES
+            future_results = pool.starmap_async(parallel_integrator, 
                                     [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
 
 
 
-    # to get the results all processes must have been completed
-    # the get() function is therefore _blocking_ (equivalent to join) 
-    results = future_results.get()
+        # to get the results all processes must have been completed
+        # the get() function is therefore _blocking_ (equivalent to join) 
+        results = future_results.get()
+        
+        # update global variables directly
+        pos = np.concatenate([results[i][0] for i in range(len(results))])
+        vel = np.concatenate([results[i][1] for i in range(len(results))])
+        
+        positions.append(pos)
+    
 
     # close the pool
     # Warning multiprocessing.pool objects have internal resources that need to be properly managed 
@@ -172,39 +185,31 @@ def main(n_particles):
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
-    N_particles = len(particles)
+    N_particles = len(particles)   
     tstep = 0.01
 
     print(particles)
 
     start_single = time.time()
-    results = parallel_evo(N_particles)
+    _ = parallel_evo(N_particles)
     end_single = time.time()
-
-    """
+  
     start_parallel = time.time()
-    total_evo_time = tstep * 10
-    positions = []
-    for _ in range(int(total_evo_time/tstep)):
-        # Pools are opened and closed at every iteration --> bottleneck?
-        # If I don't do so --> race condition
-        results = parallel_evo(N_particles)
-       
-        # update global variables directly
-        pos = np.concatenate([results[i][0] for i in range(len(results))])
-        vel = np.concatenate([results[i][1] for i in range(len(results))])
-    
-        positions.append(pos)
+    # Pools are opened and closed at every iteration --> bottleneck?
+    # If I don't do so --> race condition
+    results = parallel_evo(total_evo_time= tstep * 10,N_particles=N_particles)
     
     end_parallel = time.time()
-    """
-    #print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
+
+    print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
+
+    
 
     # Now let's try to do the same with the serial version
     start_single_serial = time.time()
     _= intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct_vectorized,softening="Dehnen")
     end_single_serial = time.time()  
-    """
+
     start_serial = time.time()
 
     positions_slow = []
@@ -216,27 +221,27 @@ def main(n_particles):
     end_serial = time.time()
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
-    """
+
     #make_plot(np.array(positions),np.array(positions_slow))
 
 
     time_single_parallel = end_single - start_single
-    #time_full_parallel   = end_parallel - start_parallel
+    time_full_parallel   = end_parallel - start_parallel
 
     time_single_serial = end_single_serial - start_single_serial
-    #time_full_serial   = end_serial - start_serial
+    time_full_serial   = end_serial - start_serial
 
     
     save_me = {"n_particles": n_particles,
                 "time_single_parallel": time_single_parallel,
+                "time_full_parallel": time_full_parallel,
                 "time_single_serial": time_single_serial,
-                "Pool": True,
-                "ThreadPool": False}
-           
+                "time_full_serial": time_full_serial}
+    
 
     # Convert the save_me dictionary to a DataFrame
     df = pd.DataFrame([save_me])
-    df.to_csv("POOL_single_evo_parallel_computation.csv", mode='a',header=False)
+    df.to_csv("single_evo_parallel_computation.csv", mode='a',header=False)
         
     print("#########\n")
 

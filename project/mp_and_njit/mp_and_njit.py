@@ -197,7 +197,7 @@ def main(n_particles=2, n_simulations=1):
     
     # Convert the save_me dictionary to a DataFrame
     df = pd.DataFrame([save_me])
-    df.to_csv("multinumba.csv", mode='a',header=False)
+    df.to_csv("mp_and_njit.csv", mode='a',header=False)
         
     print("#########\n")
 
