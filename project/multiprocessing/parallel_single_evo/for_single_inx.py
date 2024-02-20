@@ -14,14 +14,13 @@ from fireworks.particles import Particles
 import time
 import multiprocessing
 from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
 from numba import njit
 import os 
 
-import pandas as pd
 
-
-def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening):
+def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening=.01):
     
     """
     Implements definition of acceleration for two bodies i,j with Dehnen softening
@@ -36,7 +35,8 @@ def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening):
 
     # Distance module
     r = np.sqrt(dx**2 + dy**2 + dz**2)
-
+    
+    
     # Cartesian component of the i,j force
     acceleration = np.zeros(3)
     acceleration[0] = -mass_2 * (5*softening**2 + 2*r**2) * dx / (2*(r**2 + softening**2)**(5/2))
@@ -60,15 +60,14 @@ def parallel_acceleration_direct(a,b,softening=0.1):
 
     # acc[i,:] ax,ay,az of particle i 
     acc  = np.zeros([N_SUBSET,3])
-
+   
     # For all particles in the subset compute acceleration wrt all the particles of the simulation
     for i in range(N_SUBSET): 
        # mass_1 = mass[i]
-        for j in range(N-1):
+        for j in range(N):
             # Compute relative acceleration given
             # position of particle i and j
-
-           
+            
             acc_ij = acc_2body_Dehnen_softening(position_1=pos[i,:], # using pos (subset)
                                                 position_2=pos[j,:], # using particles.pos (all particles)
                                                 mass_2=mass[j], 
@@ -77,7 +76,7 @@ def parallel_acceleration_direct(a,b,softening=0.1):
             # Update array with accelerations
             acc[i,:] += acc_ij
             #acc[j,:] -= mass_1 * acc_ij / mass_2 # because acc_2nbody already multiply by m[j]
-        
+           
     return (acc,jerk,pot)
 
 
@@ -92,8 +91,54 @@ def parallel_integrator(a,b):
     vel[a:b] = vel[a:b] + acc * tstep  # Update vel
     pos[a:b] = pos[a:b] + vel[a:b] * tstep  # Update pos
 
-
+    #print("pos[a:b]",pos[a:b])
+    #print("acc",acc)
+    #print("\n")
     return pos[a:b], vel[a:b]
+
+
+
+
+def parallel_evo():
+
+    #### MULTIPROCESSING ####
+    # define the number of processes
+    N_CORES = multiprocessing.cpu_count() # in my case 4 cores
+
+    # start a timer
+    #start = time.time()
+    
+    # how does it know N_particles? Lol
+    N_PROCESSES = min(N_CORES, N_particles)
+    # create a pool of processes
+    pool = ThreadPool(N_PROCESSES)
+
+
+    # submit multiple instances of the function full_evo 
+    # - starmap_async: allows to run the processes with a (iterable) list of arguments
+    # - map_async    : is a similar function, supporting a single argument
+
+    if N_particles < N_PROCESSES:
+        # 1 process per particle
+        future_results = pool.starmap_async(parallel_integrator, 
+                                    [(i, (i + 1)) for i in range(N_particles)])
+    else:
+        # divide in equal part the particles into N_PROCESSES
+        future_results = pool.starmap_async(parallel_integrator, 
+                                    [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
+
+
+
+    # to get the results all processes must have been completed
+    # the get() function is therefore _blocking_ (equivalent to join) 
+    results = future_results.get()
+
+    # close the pool
+    # Warning multiprocessing.pool objects have internal resources that need to be properly managed 
+    # (like any other resource) by using the pool as a context manager or by calling close() and terminate() manually. Failure to do this can lead to the process hanging on finalization.
+    pool.close()
+
+    return results
 
 
 
@@ -113,28 +158,27 @@ def make_plot(pos_fast,pos_slow):
         ax[1].set_title("Parallel")
 
     counter = 0
-    filename = "comparison.pdf"
-    while os._exists(filename):
+    filename = "comparison_for_0.pdf"
+    while os.path.exists(filename):
         counter += 1
-        filename = f"comparison{counter}.pdf"
+        filename = f"comparison_for_{counter}.pdf"
     plt.savefig(f"{filename}")
         
 
 
         
 
-def main(n_particles):
-    global pos
-    global vel
-    global mass
-    global tstep
-    global N_particles
-    global particles
 
-    particles = ic_random_uniform(n_particles, [0,3],[1,2],[3,4])
-    pos = particles.pos
-    vel = particles.vel
-    mass = particles.mass
+if __name__ == "__main__":
+
+    print("QUESTO SCRIPT NON VA E NON DOVRESTI USARLO")
+    print("C'è UN ERRORE NELL'INTEGRAZIONE PARALLELA")
+    
+    particles = ic_two_body(1,1,1,0)
+   # particles = ic_random_uniform(3, [0,3],[1,2],[3,4])
+    pos = particles.pos.copy()
+    vel = particles.vel.copy()
+    mass = particles.mass.copy()
     N_particles = len(particles)
     tstep = 0.01
 
@@ -143,60 +187,27 @@ def main(n_particles):
   
     start_parallel = time.time()
 
-    total_evo_time = tstep
+    total_evo_time = 10
     positions = []
 
-    #### MULTIPROCESSING ####
-    # define the number of processes
-    N_CORES = multiprocessing.cpu_count() # in my case 4 cores
-    
-    # how does it know N_particles? Lol
-    N_PROCESSES = min(N_CORES, N_particles)
+    for _ in range(int(total_evo_time/tstep)):
 
-    with Pool(N_PROCESSES) as p:
-
-        positions = []
-
-        if N_particles < N_PROCESSES:
-            for _ in range(int(total_evo_time/tstep)):
-              
-                 future_results = p.starmap_async(parallel_integrator, 
-                                            [(i, (i + 1)) for i in range(N_particles)]) 
-                 # to get the results all processes must have been completed
-                 # the get() function is therefore _blocking_ (equivalent to join)
-        
-
-                 results = future_results.get() # I dont want to close the pool... should I?
-                 p.close()
-                 pos_ = np.concatenate([results[i][0] for i in range(len(results))])
-                 vel_ = np.concatenate([results[i][1] for i in range(len(results))])
-                 positions.append(pos_)
-                        
+        results = parallel_evo()
+            
+        pos_ = np.concatenate([results[i][0] for i in range(len(results))])
+        vel_ = np.concatenate([results[i][1] for i in range(len(results))])
+        positions.append(pos_)
+                    
                
-        else:
-            for _ in range(int(total_evo_time/tstep)):
-            # divide in equal part the particles into N_PROCESSES
-                future_results = p.starmap_async(parallel_integrator, 
-                                                [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
-                # to get the results all processes must have been completed
-                # the get() function is therefore _blocking_ (equivalent to join)
                 
-                results = future_results.get() # I dont want to close the pool... should I?
-             
-                pos_ = np.concatenate([results[i][0] for i in range(len(results))])
-                vel_ = np.concatenate([results[i][1] for i in range(len(results))])
-                positions.append(pos_)
-                
-        
-        end_parallel = time.time()
-        
-        #positions = np.concatenate(positions)
-        #print("positions shape",positions.shape)
-      
-        print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
-        parallel_time = end_parallel - start_parallel
-        # close the pool
-        p.close()
+    
+    end_parallel = time.time()
+    
+    #positions = np.concatenate(positions)
+    #print("positions shape",positions.shape)
+    
+    print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
+
     
     #time.sleep(5)
     # Now let's try to do the same with the serial version
@@ -204,23 +215,19 @@ def main(n_particles):
     start_serial = time.time()
 
     positions_slow = []
+    #particles = ic_two_body(1,1,1,0)
+   
     for _ in range(int(total_evo_time/tstep)):
 
-        acc = intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct,softening="Dehnen")
+        particles, tstep, acc, jerk, potential = intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct,softening="Dehnen")
         positions_slow.append(particles.pos)
 
     end_serial = time.time()
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
-    serial_time = end_serial - start_serial
-    #make_plot(np.array(positions),np.array(positions_slow))
-    save_me = {"N_particles":n_particles,"parallel_time": parallel_time, "serial_time":serial_time, "tstep/tot_time":tstep/total_evo_time}
-    pd.DataFrame([save_me.values()]).to_csv("for_loop_single_evo_mpx.csv",header=False,mode="a")
+
+    make_plot(pos_fast=np.array(positions),pos_slow=np.array(positions_slow))
     
-if __name__ == "__main__":
-    import sys
-    n_particles = int(sys.argv[1])
-    main(n_particles)   
         
             
 
