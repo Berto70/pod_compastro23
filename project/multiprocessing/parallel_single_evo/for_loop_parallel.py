@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
     
    # particles = ic_two_body(1,1,1,0)
-    particles = ic_random_uniform(300, [0,3],[1,2],[3,4])
+    particles = ic_random_uniform(2000, [0,3],[1,2],[3,4])
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
