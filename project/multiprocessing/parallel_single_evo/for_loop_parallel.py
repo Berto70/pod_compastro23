@@ -207,7 +207,10 @@ if __name__ == "__main__":
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
 
-    make_plot(np.array(positions),np.array(positions_slow))
+    # I lost the version where I save the csv
+    # Keys should be :  n_particles,parallel_time,serial_time,
+    
+    #make_plot(np.array(positions),np.array(positions_slow))
     
         
             
