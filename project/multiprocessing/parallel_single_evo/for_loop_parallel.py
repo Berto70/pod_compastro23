@@ -17,6 +17,7 @@ from multiprocessing import Pool
 
 from numba import njit
 import os 
+import pandas as pd
 
 
 def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening):
@@ -111,10 +112,10 @@ def make_plot(pos_fast,pos_slow):
         ax[1].set_title("Parallel")
 
     counter = 0
-    filename = "comparison.pdf"
+    filename = "diagnostics.pdf"
     while os._exists(filename):
         counter += 1
-        filename = f"comparison{counter}.pdf"
+        filename = f"diagnostics{counter}.pdf"
     plt.savefig(f"{filename}")
         
 
@@ -122,11 +123,15 @@ def make_plot(pos_fast,pos_slow):
         
 
 
-if __name__ == "__main__":
+def main(n_particles):
 
+    global pos
+    global vel
+    global mass
+    global particles
+    global tstep
     
-   # particles = ic_two_body(1,1,1,0)
-    particles = ic_random_uniform(2000, [0,3],[1,2],[3,4])
+    particles = ic_random_uniform(n_particles, [0,3],[1,2],[3,4])
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
@@ -185,16 +190,13 @@ if __name__ == "__main__":
         
         end_parallel = time.time()
         
-        #positions = np.concatenate(positions)
-        #print("positions shape",positions.shape)
       
         print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
         # close the pool
         p.close()
     
-    time.sleep(5)
-    # Now let's try to do the same with the serial version
 
+    # Now let's try to do the same with the serial version
     start_serial = time.time()
 
     positions_slow = []
@@ -209,10 +211,27 @@ if __name__ == "__main__":
 
     # I lost the version where I save the csv
     # Keys should be :  n_particles,parallel_time,serial_time,
+
+
+    save_me = {"n_particles": n_particles,
+                "parallel_time": end_parallel - start_parallel,
+                "serial_time": end_serial - start_serial,
+                "tstep/total_evo_time": tstep/total_evo_time,
+                }
     
-    #make_plot(np.array(positions),np.array(positions_slow))
+
+    # Convert the save_me dictionary to a DataFrame
+    df = pd.DataFrame([save_me])
+    #df.to_csv("single_evo_parallel_computation.csv", mode='a',header=False)
+    
+    print("#########\n")
+    
+    make_plot(np.array(positions),np.array(positions_slow))
     
         
             
-
+if __name__ == "__main__":
+    import sys
+    n_particles = int(sys.argv[1])
+    main(n_particles)
 
