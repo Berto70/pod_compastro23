@@ -18,6 +18,8 @@ from multiprocessing import Pool
 from numba import njit
 import os 
 
+import pandas as pd
+
 
 def acc_2body_Dehnen_softening(position_1,position_2,mass_2, softening):
     
@@ -121,12 +123,15 @@ def make_plot(pos_fast,pos_slow):
 
         
 
+def main(n_particles):
+    global pos
+    global vel
+    global mass
+    global tstep
+    global N_particles
+    global particles
 
-if __name__ == "__main__":
-
-    
-   # particles = ic_two_body(1,1,1,0)
-    particles = ic_random_uniform(2000, [0,3],[1,2],[3,4])
+    particles = ic_random_uniform(n_particles, [0,3],[1,2],[3,4])
     pos = particles.pos
     vel = particles.vel
     mass = particles.mass
@@ -189,10 +194,11 @@ if __name__ == "__main__":
         #print("positions shape",positions.shape)
       
         print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
+        parallel_time = end_parallel - start_parallel
         # close the pool
         p.close()
     
-    time.sleep(5)
+    #time.sleep(5)
     # Now let's try to do the same with the serial version
 
     start_serial = time.time()
@@ -206,9 +212,15 @@ if __name__ == "__main__":
     end_serial = time.time()
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
-
-    make_plot(np.array(positions),np.array(positions_slow))
+    serial_time = end_serial - start_serial
+    #make_plot(np.array(positions),np.array(positions_slow))
+    save_me = {"N_particles":n_particles,"parallel_time": parallel_time, "serial_time":serial_time, "tstep/tot_time":tstep/total_evo_time}
+    pd.DataFrame([save_me.values()]).to_csv("for_loop_single_evo_mpx.csv",header=False,mode="a")
     
+if __name__ == "__main__":
+    import sys
+    n_particles = int(sys.argv[1])
+    main(n_particles)   
         
             
 
