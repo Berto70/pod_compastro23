@@ -1,12 +1,6 @@
 """
 Evolve multiple integrators in parallel and compare the results with serial evolution.
 This script is needed to save timing relative to different configurations of the evolutions.
-It will be used for creating data of:
-
-- Serial timing with std numpy
-- Serial timing without std numpy (num threads = 1)
-- Parallel timing with std numpy
-- Parallel timing without std numpy (num threads = 1)
 
 """
 
