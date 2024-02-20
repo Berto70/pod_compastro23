@@ -1,6 +1,6 @@
 """
 Here a single run is evolved. It is the computation of the acceleration that is parallelized.
-
+Using vectorized acceleration.
 """
 
 
@@ -111,15 +111,16 @@ def parallel_evo(N_particles):
     # submit multiple instances of the function full_evo 
     # - starmap_async: allows to run the processes with a (iterable) list of arguments
     # - map_async    : is a similar function, supporting a single argument
+    for _ in range(int(total_evo_time/tstep)): 
 
-    if N_particles < N_PROCESSES:
-        # 1 process per particle
-        future_results = pool.starmap_async(parallel_integrator, 
-                                    [(i, (i + 1)) for i in range(N_particles)])
-    else:
-        # divide in equal part the particles into N_PROCESSES
-        future_results = pool.starmap_async(parallel_integrator, 
-                                    [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
+        if N_particles < N_PROCESSES:
+            # 1 process per particle
+            future_results = pool.starmap_async(parallel_integrator, 
+                                        [(i, (i + 1)) for i in range(N_particles)])
+        else:
+            # divide in equal part the particles into N_PROCESSES
+            future_results = pool.starmap_async(parallel_integrator, 
+                                        [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
 
 
 
@@ -150,10 +151,10 @@ def make_plot(pos_fast,pos_slow):
         ax[1].set_title("Parallel")
 
     counter = 0
-    filename = "comparison.jpg"
+    filename = "diagnostics.jpg"
     while os.path.exists(filename):
         counter += 1
-        filename = f"comparison{counter}.jpg"
+        filename = f"diagnostics{counter}.jpg"
     plt.savefig(f"{filename}")
         
 
@@ -166,6 +167,7 @@ def main(n_particles):
     global mass
     global N_particles
     global tstep
+    global total_evo_time
     
     #particles = ic_two_body(1,1,1,0)
     particles = ic_random_uniform(n_particles, [0,3],[0,3],[0,3])
@@ -174,37 +176,17 @@ def main(n_particles):
     mass = particles.mass
     N_particles = len(particles)
     tstep = 0.01
-
+    total_evo_time = tstep # *10
     print(particles)
 
-    start_single = time.time()
-    results = parallel_evo(N_particles)
-    end_single = time.time()
-
-    """
     start_parallel = time.time()
-    total_evo_time = tstep * 10
-    positions = []
-    for _ in range(int(total_evo_time/tstep)):
-        # Pools are opened and closed at every iteration --> bottleneck?
-        # If I don't do so --> race condition
-        results = parallel_evo(N_particles)
-       
-        # update global variables directly
-        pos = np.concatenate([results[i][0] for i in range(len(results))])
-        vel = np.concatenate([results[i][1] for i in range(len(results))])
-    
-        positions.append(pos)
-    
+    results = parallel_evo(N_particles)
     end_parallel = time.time()
-    """
-    #print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
+
+    print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
 
     # Now let's try to do the same with the serial version
-    start_single_serial = time.time()
-    _= intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct_vectorized,softening="Dehnen")
-    end_single_serial = time.time()  
-    """
+    
     start_serial = time.time()
 
     positions_slow = []
@@ -216,30 +198,26 @@ def main(n_particles):
     end_serial = time.time()
 
     print(f"Serial evolution took {end_serial - start_serial} seconds")
-    """
-    #make_plot(np.array(positions),np.array(positions_slow))
+  
 
-
-    time_single_parallel = end_single - start_single
-    #time_full_parallel   = end_parallel - start_parallel
-
-    time_single_serial = end_single_serial - start_single_serial
-    #time_full_serial   = end_serial - start_serial
-
+    parallel_time = end_parallel - start_parallel
+    serial_time = end_serial - start_serial
+    
     
     save_me = {"n_particles": n_particles,
-                "time_single_parallel": time_single_parallel,
-                "time_single_serial": time_single_serial,
+                "parallel_time": parallel_time,
+                "serial_time": serial_time,
                 "Pool": True,
                 "ThreadPool": False}
-           
+            
 
     # Convert the save_me dictionary to a DataFrame
     df = pd.DataFrame([save_me])
     df.to_csv("POOL_single_evo_parallel_computation.csv", mode='a',header=False)
-        
+       
     print("#########\n")
 
+    #make_plot(np.array(positions),np.array(positions_slow))
 
 
 if __name__=="__main__":
