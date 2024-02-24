@@ -117,3 +117,5 @@ Fireworks/fireworks/nbodylib/.ipynb_checkpoints/potentials-checkpoint.py
 Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
 Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
 Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
+*.gif
+*.npy
