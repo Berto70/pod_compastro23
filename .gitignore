@@ -118,3 +118,6 @@ Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
 Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
 Fireworks/tests/.ipynb_checkpoints/test_acceleration_potentials-checkpoint.py
 Project/gif/Galaxy_FoR/.ipynb_checkpoints/5000_InitialPos5-checkpoint.gif
+*.npy
+*.gif
+*.gif
