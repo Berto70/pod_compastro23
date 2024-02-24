@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.nbodylib.acceleration_direct_vectorized &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="fireworks.nbodylib.acceleration_estimate_template" href="fireworks.nbodylib.dynamics.acceleration_estimate_template.html" />
+    <link rel="prev" title="fireworks.nbodylib.acceleration_direct" href="fireworks.nbodylib.dynamics.acceleration_direct.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="fireworks.html">fireworks</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="fireworks.ic.html">fireworks.ic</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="fireworks.nbodylib.html">fireworks.nbodylib</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="fireworks.nbodylib.html#n-body-simulations-library-fireworks-nbodylib">N-body simulations library (<code class="xref py py-mod docutils literal notranslate"><span class="pre">fireworks.nbodylib</span></code>)</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="fireworks.nbodylib.dynamics.html">fireworks.nbodylib.dynamics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="fireworks.nbodylib.integrators.html">fireworks.nbodylib.integrators</a></li>
+<li class="toctree-l4"><a class="reference internal" href="fireworks.nbodylib.nunits.html">fireworks.nbodylib.nunits</a></li>
+<li class="toctree-l4"><a class="reference internal" href="fireworks.nbodylib.potentials.html">fireworks.nbodylib.potentials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="fireworks.nbodylib.timesteps.html">fireworks.nbodylib.timesteps</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="fireworks.particles.html">fireworks.particles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fireworks.version.html">fireworks.version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API</a></li>
+          <li class="breadcrumb-item"><a href="fireworks.html">fireworks</a></li>
+          <li class="breadcrumb-item"><a href="fireworks.nbodylib.html">fireworks.nbodylib</a></li>
+          <li class="breadcrumb-item"><a href="fireworks.nbodylib.dynamics.html">fireworks.nbodylib.dynamics</a></li>
+      <li class="breadcrumb-item active">fireworks.nbodylib.acceleration_direct_vectorized</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/api/_autosummary/fireworks.nbodylib.dynamics.acceleration_direct_vectorized.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fireworks-nbodylib-acceleration-direct-vectorized">
+<h1>fireworks.nbodylib.acceleration_direct_vectorized<a class="headerlink" href="#fireworks-nbodylib-acceleration-direct-vectorized" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="fireworks.nbodylib.dynamics.acceleration_direct_vectorized">
+<span class="sig-prename descclassname"><span class="pre">fireworks.nbodylib.dynamics.</span></span><span class="sig-name descname"><span class="pre">acceleration_direct_vectorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="fireworks.particles.Particles.html#fireworks.particles.Particles" title="fireworks.particles.Particles"><span class="pre">Particles</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">softening</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">softening_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_jerk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/fireworks/nbodylib/dynamics.html#acceleration_direct_vectorized"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fireworks.nbodylib.dynamics.acceleration_direct_vectorized" title="Link to this definition"></a></dt>
+<dd><p>This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.
+If return_flag = True it returns also the jerk, otherwise it is set to None.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>particles, that is an instance of the class <a class="reference internal" href="fireworks.particles.Particles.html#fireworks.particles.Particles" title="fireworks.particles.Particles"><code class="xref py py-class docutils literal notranslate"><span class="pre">Particles</span></code></a></p></li>
+<li><p>softening, it is the gravitational softening. The parameters need to be included even
+if the function is not using it. Use a default value of 0.</p></li>
+</ul>
+</div></blockquote>
+<p>The function needs to return a tuple containing three elements:</p>
+<blockquote>
+<div><ul class="simple">
+<li><dl class="simple">
+<dt>acc, the acceleration estimated for each particle, it needs to be a Nx3 numpy array,</dt><dd><p>this element is mandatory it cannot be 0.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>jerk, time derivative of the acceleration, it is an optional value, if the method</dt><dd><p>does not estimate it, just set this element to None. If it is not None, it has
+to be a Nx3 numpy array.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>pot, gravitational potential at the position of each particle. it is an optional value, if the method</dt><dd><p>does not estimate it, just set this element to None. If it is not None, it has
+to be a Nx1 numpy array.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>particles</strong> – An instance of the class Particles</p></li>
+<li><p><strong>softening</strong> – Softening parameter</p></li>
+<li><p><strong>softening_type</strong> – The type of softening to use. Possible choice are ‘Plummer’ and ‘Dehnen’. Default is ‘None’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple with 3 elements:</p>
+<ul class="simple">
+<li><p>acc, Nx3 numpy array storing the acceleration for each particle</p></li>
+<li><p>jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</p></li>
+<li><p>pot, Nx1 numpy array storing the potential at each particle position, can be set to None</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fireworks.nbodylib.dynamics.acceleration_direct.html" class="btn btn-neutral float-left" title="fireworks.nbodylib.acceleration_direct" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fireworks.nbodylib.dynamics.acceleration_estimate_template.html" class="btn btn-neutral float-right" title="fireworks.nbodylib.acceleration_estimate_template" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

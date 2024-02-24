@@ -1,0 +1,38 @@
+﻿fireworks.nbodylib.integrators
+==============================
+
+.. automodule:: fireworks.nbodylib.integrators
+
+   
+      
+   
+
+   
+      
+         .. rubric:: Functions
+
+         .. autosummary::
+            :toctree:
+            :nosignatures:
+            :template: base.rst
+            
+               integrator_euler
+               integrator_hermite
+               integrator_heun
+               integrator_leapfrog
+               integrator_rk4
+               integrator_template
+               integrator_tsunami
+      
+   
+
+   
+      
+   
+
+   
+      
+   
+
+
+   

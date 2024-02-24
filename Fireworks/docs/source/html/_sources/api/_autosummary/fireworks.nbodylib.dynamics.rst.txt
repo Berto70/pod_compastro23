@@ -1,0 +1,35 @@
+﻿fireworks.nbodylib.dynamics
+===========================
+
+.. automodule:: fireworks.nbodylib.dynamics
+
+   
+      
+   
+
+   
+      
+         .. rubric:: Functions
+
+         .. autosummary::
+            :toctree:
+            :nosignatures:
+            :template: base.rst
+            
+               acceleration_direct
+               acceleration_direct_vectorized
+               acceleration_estimate_template
+               acceleration_pyfalcon
+      
+   
+
+   
+      
+   
+
+   
+      
+   
+
+
+   

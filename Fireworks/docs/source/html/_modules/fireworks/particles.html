@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.particles &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fireworks.particles</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fireworks.particles</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">==============================================================</span>
+<span class="sd">Particles data structure , (:mod:`fireworks.particles`)</span>
+<span class="sd">==============================================================</span>
+
+<span class="sd">This module contains the class used to store the Nbody particles data</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Particles&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Particles">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles">[docs]</a>
+<span class="k">class</span> <span class="nc">Particles</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple class to store the properties position, velocity, mass of the particles.</span>
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; from fireworks.particles import Particles</span>
+<span class="sd">    &gt;&gt;&gt; position=np.array([[1.,1.,1.],[2.,2.,2.],[3.,3.,3.]])</span>
+<span class="sd">    &gt;&gt;&gt; velocity=np.array([[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]])</span>
+<span class="sd">    &gt;&gt;&gt; mass=np.array([1.,1.,1.])</span>
+<span class="sd">    &gt;&gt;&gt; P=Particles(position,velocity,mass)</span>
+<span class="sd">    &gt;&gt;&gt; P.pos # particles&#39;positions</span>
+<span class="sd">    &gt;&gt;&gt; P.vel # particles&#39;velocities</span>
+<span class="sd">    &gt;&gt;&gt; P.mass # particles&#39;masses</span>
+<span class="sd">    &gt;&gt;&gt; P.ID # particles&#39;unique IDs</span>
+
+<span class="sd">    The class contains also methods to estimate the radius of all the particles (:func:`~Particles.radius`),</span>
+<span class="sd">    the module of the velociy of all the particles (:func:`~Particles.vel_mod`), and the module the positition and</span>
+<span class="sd">    velocity of the centre of mass (:func:`~Particles.com_pos` and :func:`~Particles.com_vel`)</span>
+
+<span class="sd">    &gt;&gt;&gt; P.radius() # return a Nx1 array with the particle&#39;s radius</span>
+<span class="sd">    &gt;&gt;&gt; P.vel_mod() # return a Nx1 array with the module of the particle&#39;s velocity</span>
+<span class="sd">    &gt;&gt;&gt; P.com() # array with the centre of mass position (xcom,ycom,zcom)</span>
+<span class="sd">    &gt;&gt;&gt; P.com() # array with the centre of mass velocity (vxcom,vycom,vzcom)</span>
+
+<span class="sd">    It is also possibile to set an acceleration for each particle, using the method set_acc</span>
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; acc= some_method_to_estimate_acc(P.position)</span>
+<span class="sd">    &gt;&gt;&gt; P.set_acc(acc)</span>
+<span class="sd">    &gt;&gt;&gt; P.acc # particles&#39;s accelerations</span>
+
+<span class="sd">    Notice, if never initialised, P.acc is equal to None</span>
+
+<span class="sd">    The class can be used also to estimate the total, kinetic and potential energy of the particles</span>
+<span class="sd">    using the methods :func:`~Particles.Etot`, :func:`~Particles.Ekin`, :func:`~Particles.Epot`</span>
+<span class="sd">    **NOTICE:** these methods need to be implemented by you!!!</span>
+
+<span class="sd">    The method :func:`~Particles.copy` can be used to be obtaining a safe copy of the current</span>
+<span class="sd">    Particles instances. Safe means that changing the members of the copied version will not</span>
+<span class="sd">    affect the members or the original instance</span>
+<span class="sd">    Example</span>
+
+<span class="sd">    &gt;&gt;&gt; P=Particles(position,velocity,mass)</span>
+<span class="sd">    &gt;&gt;&gt; P2=P.copy()</span>
+<span class="sd">    &gt;&gt;&gt; P2.pos[0] = np.array([10,10,10]) # P.pos[0] will not be modified!</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Particles.__init__">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">velocity</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span> <span class="n">mass</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class initialiser.</span>
+<span class="sd">        It assigns the values to the class member pos, vel, mass and ID.</span>
+<span class="sd">        ID is just a sequential integer number associated to each particle.</span>
+
+<span class="sd">        :param position: A Nx3 numpy array containing the positions of the N particles</span>
+<span class="sd">        :param velocity: A Nx3 numpy array containing the velocity of the N particles</span>
+<span class="sd">        :param mass: A Nx1 numpy array containing the mass of the N particles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">position</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input position should contain a Nx3 array, current shape is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">velocity</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input velocity should contain a Nx3 array, current shape is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position and velocity in input have not the same number of elemnts&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">mass</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">):</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Position and mass in input have not the same number of elemnts&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ID</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acc</span><span class="o">=</span><span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="Particles.set_acc">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.set_acc">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_acc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">acceleration</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the particle&#39;s acceleration</span>
+
+<span class="sd">        :param acceleration: A Nx3 numpy array containing the acceleration of the N particles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">acceleration</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">acceleration</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input acceleration should contain a Nx3 array, current shape is </span><span class="si">{</span><span class="n">acc</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">acc</span><span class="o">=</span><span class="n">acc</span></div>
+
+
+<div class="viewcode-block" id="Particles.radius">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.radius">[docs]</a>
+    <span class="k">def</span> <span class="nf">radius</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the particles distance from the origin of the frame of reference.</span>
+
+<span class="sd">        :return:  a Nx1 array containing the particles&#39; distance from the origin of the frame of reference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Particles.vel_mod">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.vel_mod">[docs]</a>
+    <span class="k">def</span> <span class="nf">vel_mod</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the module of the velocity of the particles</span>
+
+<span class="sd">        :return: a Nx1 array containing the module of the particles&#39;s velocity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Particles.com_pos">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.com_pos">[docs]</a>
+    <span class="k">def</span> <span class="nf">com_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the position of the centre of mass</span>
+
+<span class="sd">        :return: a numpy  array with three elements corresponding to the centre of mass position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Particles.com_vel">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.com_vel">[docs]</a>
+    <span class="k">def</span> <span class="nf">com_vel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the velocity of the centre of mass</span>
+
+<span class="sd">        :return: a numpy  array with three elements corresponding to centre of mass velocity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Particles.Ekin">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.Ekin">[docs]</a>
+    <span class="k">def</span> <span class="nf">Ekin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the total potential energy of the particles:</span>
+<span class="sd">        Ekin=0.5 sum_i mi vi*vi</span>
+
+<span class="sd">        :return: total kinetic energy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># #TOU HAVE TO IMPLEMENT IT</span>
+        <span class="c1"># # Use the class member, e.g. vel=self.vel, mass=self.mass</span>
+        <span class="c1"># raise NotImplementedError(&quot;Ekin method still not implemented&quot;)</span>
+
+        <span class="c1"># Ekin = 0.5 * np.sum(self.mass[:, np.newaxis] * self.vel**2)</span>
+
+        <span class="n">Ekin</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)))</span>
+
+        <span class="c1"># vel_squared = np.square(self.vel)</span>
+        <span class="c1"># Ekin = 0.5 * np.sum(self.mass * vel_squared) # this is prob more efficient for large arrays</span>
+
+        <span class="k">return</span> <span class="n">Ekin</span></div>
+
+
+<div class="viewcode-block" id="Particles.Epot">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.Epot">[docs]</a>
+    <span class="k">def</span> <span class="nf">Epot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the total potential energy of the particles:</span>
+<span class="sd">        Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)</span>
+<span class="sd">        where eps is the softening parameter</span>
+
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: The total potential energy of the particles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># #TOU HAVE TO IMPLEMENT IT</span>
+        <span class="c1"># # Use the class member, e.g. vel=self.vel, mass=self.mass</span>
+        <span class="c1"># raise NotImplementedError(&quot;Ekin method still not implemented&quot;)</span>
+
+            
+        <span class="c1"># rij = np.sqrt(np.sum((self.pos[:, np.newaxis] - self.pos) ** 2, axis=2))</span>
+        <span class="c1"># Epot = - np.sum(self.mass[:, np.newaxis] * self.mass / np.sqrt(rij ** 2 + softening ** 2))</span>
+
+        <span class="c1"># Calculate all pairwise distances between bodies</span>
+        <span class="n">rij</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># Exclude self-distances (diagonal elements) to avoid division by zero</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">rij</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        
+        <span class="c1"># Calculate potential energy using vectorized operations</span>
+        <span class="n">Epot_mat</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">rij</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="c1"># Sum over all unique pairs</span>
+        <span class="n">Epot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">triu</span><span class="p">(</span><span class="n">Epot_mat</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">Epot</span></div>
+
+
+    <span class="c1"># def Ekin(self) -&gt; float:</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Estimate the total potential energy of the particles:</span>
+    <span class="c1">#     Ekin=0.5 sum_i mi vi*vi</span>
+
+    <span class="c1">#     :return: total kinetic energy</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     mass = self.mass</span>
+    <span class="c1">#     mod_vel = np.sqrt(np.sum(self.vel**2, axis=1).astype(float))</span>
+
+    <span class="c1">#     Ekin = 0.5*np.sum(mass * mod_vel*mod_vel)</span>
+
+    <span class="c1">#     return Ekin</span>
+    <span class="c1">#     #TOU HAVE TO IMPLEMENT IT</span>
+    <span class="c1">#     # Use the class member, e.g. vel=self.vel, mass=self.mass</span>
+    <span class="c1">#     # raise NotImplementedError(&quot;Ekin method still not implemented&quot;)</span>
+
+    <span class="c1"># def Epot(self,softening: float = 0.) -&gt; float:</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Estimate the total potential energy of the particles:</span>
+    <span class="c1">#     Epot=-0.5 sumi sumj mi*mj / sqrt(rij^2 + eps^2)</span>
+    <span class="c1">#     where eps is the softening parameter</span>
+
+    <span class="c1">#     :param softening: Softening parameter</span>
+    <span class="c1">#     :return: The total potential energy of the particles</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+
+    <span class="c1">#     N_particles =  len(self.pos)</span>
+    <span class="c1">#     pos_x = self.pos[:, 0] - self.pos[:, 0].reshape(N_particles, 1)  #broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix</span>
+    <span class="c1">#     pos_y = self.pos[:, 1] - self.pos[:, 1].reshape(N_particles, 1) </span>
+    <span class="c1">#     pos_z = self.pos[:, 2] - self.pos[:, 2].reshape(N_particles, 1)</span>
+
+    <span class="c1">#     r_ij = np.sqrt((pos_x**2 + pos_y**2 + pos_z**2).astype(float))</span>
+
+    <span class="c1">#     mass_ij = self.mass * self.mass.reshape((N_particles, 1))</span>
+    <span class="c1">#     mass_ij[r_ij==0]=0.0    #in this way the m_i*m_i component are removed</span>
+    <span class="c1">#     r_ij[r_ij==0]=1.0       #in thi way we remove the division by zero for the r_ii component </span>
+        
+    <span class="c1">#     Epot = -0.5*np.sum(mass_ij/(np.abs(r_ij) + softening*softening))</span>
+
+    <span class="c1">#     return Epot</span>
+        
+    <span class="c1">#     #TOU HAVE TO IMPLEMENT IT</span>
+    <span class="c1">#     # Use the class member, e.g. vel=self.vel, mass=self.mass</span>
+    <span class="c1">#     # raise NotImplementedError(&quot;Ekin method still not implemented&quot;)</span>
+
+
+<div class="viewcode-block" id="Particles.Etot">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.Etot">[docs]</a>
+    <span class="k">def</span> <span class="nf">Etot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">,</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the total  energy of the particles: Etot=Ekintot + Epottot</span>
+
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: a tuple with</span>
+
+<span class="sd">            - Total energy</span>
+<span class="sd">            - Total kinetic energy</span>
+<span class="sd">            - Total potential energy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">Ekin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ekin</span><span class="p">()</span>
+        <span class="n">Epot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Epot</span><span class="p">(</span><span class="n">softening</span><span class="o">=</span><span class="n">softening</span><span class="p">)</span>
+        <span class="n">Etot</span> <span class="o">=</span> <span class="n">Ekin</span> <span class="o">+</span> <span class="n">Epot</span>
+
+        <span class="k">return</span> <span class="n">Etot</span><span class="p">,</span> <span class="n">Ekin</span><span class="p">,</span> <span class="n">Epot</span></div>
+
+
+<div class="viewcode-block" id="Particles.copy">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Particles</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a copy of this Particle class</span>
+
+<span class="sd">        :return: a copy of the Particle class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">par</span><span class="o">=</span><span class="n">Particles</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">acc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">par</span><span class="o">.</span><span class="n">acc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">acc</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Particles</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Particles.__len__">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.__len__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Special method to be called when  this class is used as argument</span>
+<span class="sd">        of the Python built-in function len()</span>
+<span class="sd">        :return: Return the number of particles</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Particles.__str__">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.__str__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Special method to be called when  this class is used as argument</span>
+<span class="sd">        of the Python built-in function print()</span>
+<span class="sd">        :return: short info message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Instance of the class Particles</span><span class="se">\n</span><span class="s2">Number of particles: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="fm">__len__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="Particles.__repr__">
+<a class="viewcode-back" href="../../api/_autosummary/fireworks.particles.Particles.html#fireworks.particles.Particles.__repr__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

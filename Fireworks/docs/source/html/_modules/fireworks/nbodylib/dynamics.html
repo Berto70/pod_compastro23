@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.nbodylib.dynamics &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fireworks.nbodylib.dynamics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fireworks.nbodylib.dynamics</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">====================================================================================================================</span>
+<span class="sd">Collection of functions to estimate the Gravitational forces and accelerations (:mod:`fireworks.nbodylib.dynamics`)</span>
+<span class="sd">====================================================================================================================</span>
+
+<span class="sd">This module contains a collection of functions to estimate acceleration due to</span>
+<span class="sd">gravitational  forces.</span>
+
+<span class="sd">Each method implemented in this module should follow the input-output structure show for the</span>
+<span class="sd">template function  :func:`~acceleration_estimate_template`:</span>
+
+<span class="sd">Every function needs to have two input parameters:</span>
+
+<span class="sd">    - particles, that is an instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    - softening, it is the gravitational softening. The parameters need to be included even</span>
+<span class="sd">        if the function is not using it. Use a default value of 0.</span>
+
+<span class="sd">The function needs to return a tuple containing three elements:</span>
+
+<span class="sd">    - acc, the acceleration estimated for each particle, it needs to be a Nx3 numpy array,</span>
+<span class="sd">        this element is mandatory it cannot be 0.</span>
+<span class="sd">    - jerk, time derivative of the acceleration, it is an optional value, if the method</span>
+<span class="sd">        does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">        to be a Nx3 numpy array.</span>
+<span class="sd">    - pot, gravitational potential at the position of each particle. it is an optional value, if the method</span>
+<span class="sd">        does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">        to be a Nx1 numpy array.</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">from</span> <span class="nn">..particles</span> <span class="kn">import</span> <span class="n">Particles</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyfalcon</span>
+    <span class="n">pyfalcon_load</span><span class="o">=</span><span class="kc">True</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">pyfalcon_load</span><span class="o">=</span><span class="kc">False</span>
+
+<div class="viewcode-block" id="acceleration_estimate_template">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.dynamics.acceleration_estimate_template.html#fireworks.nbodylib.dynamics.acceleration_estimate_template">[docs]</a>
+<span class="k">def</span> <span class="nf">acceleration_estimate_template</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span><span class="mf">0.</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This an empty functions that can be used as a basic template for</span>
+<span class="sd">    implementing the other functions to estimate the gravitational acceleration.</span>
+<span class="sd">    Every function of this kind needs to have two input parameters:</span>
+
+<span class="sd">        - particles, that is an instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">        - softening, it is the gravitational softening. The parameters need to be included even</span>
+<span class="sd">          if the function is not using it. Use a default value of 0.</span>
+
+<span class="sd">    The function needs to return a tuple containing three elements:</span>
+
+<span class="sd">        - acc, the acceleration estimated for each particle, it needs to be a Nx3 numpy array,</span>
+<span class="sd">            this element is mandatory it cannot be 0.</span>
+<span class="sd">        - jerk, time derivative of the acceleration, it is an optional value, if the method</span>
+<span class="sd">            does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">            to be a Nx3 numpy array.</span>
+<span class="sd">        - pot, gravitational potential at the position of each particle. it is an optional value, if the method</span>
+<span class="sd">            does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">            to be a Nx1 numpy array.</span>
+
+<span class="sd">    :param particles: An instance of the class Particles</span>
+<span class="sd">    :param softening: Softening parameter</span>
+<span class="sd">    :return: A tuple with 3 elements:</span>
+
+<span class="sd">        - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">acc</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">))</span>
+    <span class="n">jerk</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">acc</span><span class="p">,</span><span class="n">jerk</span><span class="p">,</span><span class="n">pot</span><span class="p">)</span></div>
+
+
+
+
+<div class="viewcode-block" id="acceleration_direct">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.dynamics.acceleration_direct.html#fireworks.nbodylib.dynamics.acceleration_direct">[docs]</a>
+<span class="k">def</span> <span class="nf">acceleration_direct</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">softening_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">    </span>
+<span class="w">  </span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes gravitational acceleration between particles using a direct method, considering optional softening.</span>
+
+<span class="sd">    This function estimates the gravitational acceleration between particles within a system. If &#39;softening&#39; is provided as 0, a direct estimate with two nested for loop is used;</span>
+<span class="sd">    otherwise, the specified &#39;softening&#39; parameter is utilized.</span>
+
+<span class="sd">    :param particles: An instance of the class Particles.</span>
+<span class="sd">    :param softening: Softening parameter for gravitational calculations. If softening == 0, specifying the softening_type dosen&#39;t change anything. </span>
+<span class="sd">    :param softening_type: The type of softening to use. Possible choice are &#39;Plummer&#39; and &#39;Dehnen&#39;. Default is &#39;None&#39;. </span>
+<span class="sd">    :return: A tuple with 3 elements:</span>
+
+<span class="sd">        - acc, Nx3 numpy array storing the acceleration for each particle.</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration (can be None).</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position (can be None).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Using direct force estimate applcation2 - see slides Lecture 3 p.16</span>
+    <span class="k">def</span> <span class="nf">acc_2body</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span><span class="n">position_2</span><span class="p">,</span><span class="n">mass_2</span><span class="p">):</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements definition of acceleration for two bodies i,j</span>
+<span class="sd">        </span>
+<span class="sd">        This is used in the following for loop</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Cartesian component of the i,j particles distance</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        
+
+        <span class="c1"># Distance module</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Cartesian component of the i,j force</span>
+        <span class="n">acceleration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="n">r</span><span class="o">**</span><span class="mi">3</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">/</span> <span class="n">r</span><span class="o">**</span><span class="mi">3</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">/</span> <span class="n">r</span><span class="o">**</span><span class="mi">3</span>
+
+        <span class="k">return</span> <span class="n">acceleration</span>
+        
+    <span class="k">def</span> <span class="nf">acc_2body_Plummer_softening</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span><span class="n">position_2</span><span class="p">,</span><span class="n">mass_2</span><span class="p">,</span> <span class="n">softening</span><span class="p">):</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements definition of acceleration for two bodies i,j with Plummer softening </span>
+<span class="sd">        </span>
+<span class="sd">        This is used in the following for loop</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Cartesian component of the i,j particles distance</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        
+
+        <span class="c1"># Distance module</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Cartesian component of the i,j force</span>
+        <span class="n">acceleration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">acceleration</span>
+        
+    <span class="k">def</span> <span class="nf">acc_2body_Dehnen_softening</span><span class="p">(</span><span class="n">position_1</span><span class="p">,</span><span class="n">position_2</span><span class="p">,</span><span class="n">mass_2</span><span class="p">,</span> <span class="n">softening</span><span class="p">):</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Implements definition of acceleration for two bodies i,j with Dehnen softening</span>
+<span class="sd">        </span>
+<span class="sd">        This is used in the following for loop</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Cartesian component of the i,j particles distance</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">position_1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">position_2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        
+
+        <span class="c1"># Distance module</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Cartesian component of the i,j force</span>
+        <span class="n">acceleration</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">acceleration</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">mass_2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dz</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">acceleration</span>
+        
+    <span class="n">jerk</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pot</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">pos</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span>
+    <span class="n">N</span>    <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span> 
+
+    <span class="c1"># acc[i,:] ax,ay,az of particle i </span>
+    <span class="n">acc</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">N</span><span class="p">):</span>
+            <span class="c1"># Compute relative acceleration given</span>
+            <span class="c1"># position of particle i and j</span>
+            <span class="n">mass_1</span> <span class="o">=</span> <span class="n">mass</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">mass_2</span> <span class="o">=</span> <span class="n">mass</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">softening_type</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span> <span class="c1">#if this condition is met, the others are not considered</span>
+                <span class="n">acc_ij</span> <span class="o">=</span> <span class="n">acc_2body</span><span class="p">(</span><span class="n">position_1</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span><span class="n">position_2</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span><span class="n">mass_2</span><span class="o">=</span><span class="n">mass_2</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">softening_type</span><span class="o">==</span><span class="s1">&#39;Plummer&#39;</span><span class="p">:</span> 
+                 <span class="n">acc_ij</span> <span class="o">=</span> <span class="n">acc_2body_Plummer_softening</span><span class="p">(</span><span class="n">position_1</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span><span class="n">position_2</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span><span class="n">mass_2</span><span class="o">=</span><span class="n">mass_2</span><span class="p">,</span> <span class="n">softening</span><span class="o">=</span><span class="n">softening</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">softening_type</span><span class="o">==</span><span class="s1">&#39;Dehnen&#39;</span><span class="p">:</span> 
+                 <span class="n">acc_ij</span> <span class="o">=</span> <span class="n">acc_2body_Dehnen_softening</span><span class="p">(</span><span class="n">position_1</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span><span class="n">position_2</span><span class="o">=</span><span class="n">pos</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span><span class="n">mass_2</span><span class="o">=</span><span class="n">mass_2</span><span class="p">,</span> <span class="n">softening</span><span class="o">=</span><span class="n">softening</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">softening_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Plummer&#39;</span><span class="p">,</span> <span class="s1">&#39;Dehnen&#39;</span><span class="p">):</span>
+                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The softening must me either Plummer (default) or Dehnen&quot;</span><span class="p">)</span>
+                
+            <span class="c1"># Update array with accelerations</span>
+            <span class="n">acc</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">+=</span> <span class="n">acc_ij</span>
+            <span class="n">acc</span><span class="p">[</span><span class="n">j</span><span class="p">,:]</span> <span class="o">-=</span> <span class="n">mass_1</span> <span class="o">*</span> <span class="n">acc_ij</span> <span class="o">/</span> <span class="n">mass_2</span> <span class="c1"># because acc_2nbody already multiply by m[j]</span>
+        
+    <span class="k">return</span> <span class="p">(</span><span class="n">acc</span><span class="p">,</span><span class="n">jerk</span><span class="p">,</span><span class="n">pot</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="acceleration_direct_vectorized">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.dynamics.acceleration_direct_vectorized.html#fireworks.nbodylib.dynamics.acceleration_direct_vectorized">[docs]</a>
+<span class="k">def</span> <span class="nf">acceleration_direct_vectorized</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">softening_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">return_jerk</span><span class="o">=</span> <span class="kc">False</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function compute the acceleration in a vectorized fashion using the broadcasting operations of numpy.array.</span>
+<span class="sd">    If return_flag = True it returns also the jerk, otherwise it is set to None.</span>
+
+<span class="sd">        - particles, that is an instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">        - softening, it is the gravitational softening. The parameters need to be included even</span>
+<span class="sd">          if the function is not using it. Use a default value of 0.</span>
+
+<span class="sd">    The function needs to return a tuple containing three elements:</span>
+
+<span class="sd">        - acc, the acceleration estimated for each particle, it needs to be a Nx3 numpy array,</span>
+<span class="sd">            this element is mandatory it cannot be 0.</span>
+<span class="sd">        - jerk, time derivative of the acceleration, it is an optional value, if the method</span>
+<span class="sd">            does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">            to be a Nx3 numpy array.</span>
+<span class="sd">        - pot, gravitational potential at the position of each particle. it is an optional value, if the method</span>
+<span class="sd">            does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">            to be a Nx1 numpy array.</span>
+
+<span class="sd">    :param particles: An instance of the class Particles</span>
+<span class="sd">    :param softening: Softening parameter</span>
+<span class="sd">    :param softening_type: The type of softening to use. Possible choice are &#39;Plummer&#39; and &#39;Dehnen&#39;. Default is &#39;None&#39;. </span>
+<span class="sd">    :return: A tuple with 3 elements:</span>
+
+<span class="sd">        - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N_particles</span> <span class="o">=</span>  <span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="c1">#broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> 
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> 
+      
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dy</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">dz</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">r</span><span class="p">[</span><span class="n">r</span><span class="o">==</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    
+    <span class="n">dpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">N_particles</span><span class="p">,</span><span class="n">N_particles</span><span class="p">))</span> 
+    <span class="k">if</span> <span class="n">softening_type</span><span class="o">==</span><span class="kc">None</span><span class="p">:</span> <span class="c1">#if this condition is met, the others are not considered</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">dpos</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">jerk</span><span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">return_jerk</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dvx</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1">#broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix</span>
+            <span class="n">dvy</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">dvz</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> 
+        
+            <span class="n">dvel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">dvx</span><span class="p">,</span> <span class="n">dvy</span><span class="p">,</span> <span class="n">dvz</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">N_particles</span><span class="p">,</span><span class="n">N_particles</span><span class="p">))</span>
+              
+            <span class="n">jerk</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="n">dvel</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">3</span> <span class="o">-</span> <span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">dpos</span><span class="o">*</span><span class="n">dvel</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">*</span><span class="n">dpos</span><span class="o">/</span><span class="n">r</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>                
+
+    <span class="k">elif</span> <span class="n">softening_type</span><span class="o">==</span><span class="s1">&#39;Plummer&#39;</span><span class="p">:</span> 
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">dpos</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">jerk</span><span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">return_jerk</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dvx</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1">#broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix</span>
+            <span class="n">dvy</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">dvz</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> 
+        
+            <span class="n">dvel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">dvx</span><span class="p">,</span> <span class="n">dvy</span><span class="p">,</span> <span class="n">dvz</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">N_particles</span><span class="p">,</span><span class="n">N_particles</span><span class="p">))</span>
+              
+            <span class="n">jerk</span> <span class="o">=</span> <span class="o">-</span><span class="p">((</span><span class="n">dvel</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">dpos</span><span class="o">*</span><span class="n">dvel</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">*</span><span class="n">dpos</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            
+    <span class="k">elif</span> <span class="n">softening_type</span><span class="o">==</span><span class="s1">&#39;Dehnen&#39;</span><span class="p">:</span> 
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">dpos</span><span class="o">*</span> <span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">jerk</span><span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">return_jerk</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">dvx</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c1">#broadcasting of (N,) on (N,1) array, obtain distance along x in an (N,N) matrix</span>
+            <span class="n">dvy</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">dvz</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N_particles</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> 
+        
+            <span class="n">dvel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">dvx</span><span class="p">,</span> <span class="n">dvy</span><span class="p">,</span> <span class="n">dvz</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="n">N_particles</span><span class="p">,</span><span class="n">N_particles</span><span class="p">))</span>
+              
+            <span class="n">jerk</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span>  <span class="p">(</span><span class="n">dpos</span><span class="o">*</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">dpos</span><span class="o">*</span><span class="n">dvel</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">dvel</span><span class="o">*</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="p">((</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">5</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="mi">5</span><span class="o">*</span><span class="n">dpos</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">dpos</span><span class="o">*</span><span class="n">dvel</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="n">softening</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">softening</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">7</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>   <span class="p">)</span> <span class="o">@</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">elif</span> <span class="n">softening_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Plummer&#39;</span><span class="p">,</span> <span class="s1">&#39;Dehnen&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The softening must me either Plummer (default) or Dehnen&quot;</span><span class="p">)</span>
+
+     
+    <span class="n">pot</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">pot</span></div>
+
+
+<div class="viewcode-block" id="acceleration_pyfalcon">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.dynamics.acceleration_pyfalcon.html#fireworks.nbodylib.dynamics.acceleration_pyfalcon">[docs]</a>
+<span class="k">def</span> <span class="nf">acceleration_pyfalcon</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span><span class="mf">0.</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Estimate the acceleration following the fast-multipole gravity Dehnen2002 solver (https://arxiv.org/pdf/astro-ph/0202512.pdf)</span>
+<span class="sd">    as implementd in pyfalcon (https://github.com/GalacticDynamics-Oxford/pyfalcon)</span>
+
+<span class="sd">    :param particles: An instance of the class Particles</span>
+<span class="sd">    :param softening: Softening parameter</span>
+<span class="sd">    :return: A tuple with 3 elements:</span>
+
+<span class="sd">        - Acceleration: a NX3 numpy array containing the acceleration for each particle</span>
+<span class="sd">        - Jerk: None, the jerk is not estimated</span>
+<span class="sd">        - Pot: a Nx1 numpy array containing the gravitational potential at each particle position</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pyfalcon_load</span><span class="p">:</span> <span class="k">return</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Pyfalcon is not available&quot;</span><span class="p">)</span>
+
+    <span class="n">acc</span><span class="p">,</span> <span class="n">pot</span> <span class="o">=</span> <span class="n">pyfalcon</span><span class="o">.</span><span class="n">gravity</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span><span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span><span class="n">softening</span><span class="p">,</span><span class="n">kernel</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">jerk</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">pot</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

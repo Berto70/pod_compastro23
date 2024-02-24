@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.nbodylib.nunits &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fireworks.nbodylib.nunits</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fireworks.nbodylib.nunits</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=====================================================================</span>
+<span class="sd">Utilities to deal with Nbody units (:mod:`fireworks.nbodylib.nunits`)</span>
+<span class="sd">=====================================================================</span>
+
+<span class="sd">This module contains functions and utilities to deal with N-body units</span>
+<span class="sd">and units conversion</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">..particles</span> <span class="kn">import</span> <span class="n">Particles</span>
+
+<div class="viewcode-block" id="Nbody_units">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units">[docs]</a>
+<span class="k">class</span> <span class="nc">Nbody_units</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is used to handle transformation from and to Nbody Units.</span>
+<span class="sd">    Internally it works considering the physical units in</span>
+
+<span class="sd">        - mass: Msun</span>
+<span class="sd">        - length: pc</span>
+<span class="sd">        - velocity: km/s</span>
+<span class="sd">        - time: Myr</span>
+
+<span class="sd">    However, such scales can be changed at the class initialisation thorugh</span>
+<span class="sd">    the intput value M, L, V, T. They indicate the scale of the input physical units</span>
+<span class="sd">    with respect to the standard one, e.g. L=1000 if your input data are in kpc.</span>
+<span class="sd">    Some examples:</span>
+
+<span class="sd">    &gt;&gt;&gt; nu = Nbody_units() # the physical inputs are assumed in  Msun,  pc, km/s, Myr</span>
+<span class="sd">    &gt;&gt;&gt;  nu = Nbody_units(M=1e3,L=1000,T=1000) # the physical inputs are assumed in units of 10^3 Msun, kpc, km/s, Gyr</span>
+
+<span class="sd">    Once initialised, the class can be used to convert to physical untis to Nbody units</span>
+<span class="sd">    and to Nbody units to the standard physical units (pc, Msun, km/s, Myr) or to the</span>
+<span class="sd">    physical units used in input.</span>
+<span class="sd">    For example, assume we have</span>
+
+<span class="sd">    &gt;&gt;&gt; x = 3  # kpc</span>
+<span class="sd">    &gt;&gt;&gt; vx = 10 # km/s</span>
+<span class="sd">    &gt;&gt;&gt; m=5  # Msun</span>
+<span class="sd">    &gt;&gt;&gt; t = 1 # Gyr</span>
+<span class="sd">    &gt;&gt;&gt; # let&#39;s set a Nbody_units instance</span>
+<span class="sd">    &gt;&gt;&gt; nu = Nbody_units(M=1,L=1000,V=1,T=1000)  # Msun, kpc, km/s Gyr</span>
+<span class="sd">    &gt;&gt;&gt; # transform to Nbody units</span>
+<span class="sd">    &gt;&gt;&gt; xn = nu.pos_to_Nbody(x) # x in kpc</span>
+<span class="sd">    &gt;&gt;&gt; vxn = nu.vel_to_Nbody(vx) # vx in km/s</span>
+<span class="sd">    &gt;&gt;&gt; mn = nu.m_to_Nbody(m) # m in Msun</span>
+<span class="sd">    &gt;&gt;&gt; tn = nu.m_to_Nbody(t) # t in Gyr</span>
+<span class="sd">    &gt;&gt;&gt; # Now transform to physical</span>
+<span class="sd">    &gt;&gt;&gt; xp  = nu.pos_to_physical(xn) # xn nbody, output in kpc (because of how we initialise nu)</span>
+<span class="sd">    &gt;&gt;&gt; xp2 = nu.pos_to_pc(xn) # xn nbody, output in pc (standard Nbody_units length scale)</span>
+<span class="sd">    &gt;&gt;&gt; vxp = nu.vel_to_physical(vxn) # vxn nbody, ouput in km/s (because of how we initialise nu)</span>
+<span class="sd">    &gt;&gt;&gt; tp = nu.t_to_physical(tn) # tn nbody, output in Gyr (because of how we initialise nu)</span>
+<span class="sd">    &gt;&gt;&gt; tp2 = nu.t_to_Myr(tn) # tn nbody, output in Myr (standard Nbody_units length scale)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">Gcgs</span> <span class="o">=</span> <span class="mf">6.67430e-8</span> <span class="c1">#Gravitational constants in cgs</span>
+    <span class="n">Lpc_cgs</span> <span class="o">=</span> <span class="mf">3.086e+18</span> <span class="c1">#From parsec to cm</span>
+    <span class="n">Lkpc_cgs</span> <span class="o">=</span> <span class="mf">3.086e21</span> <span class="c1">#From kpc to cm</span>
+    <span class="n">Msun_cgs</span> <span class="o">=</span> <span class="mf">1.9891e33</span> <span class="c1">#from Msun to gr</span>
+    <span class="n">Lsun_cgs</span> <span class="o">=</span> <span class="mf">6.96e10</span> <span class="c1">#from Rsun to cm</span>
+    <span class="n">Lau_cgs</span> <span class="o">=</span> <span class="mf">1.496e13</span> <span class="c1">#from AU to cm</span>
+    <span class="n">cms_to_kms</span> <span class="o">=</span> <span class="mf">1e-5</span> <span class="c1">#cm/s to km/s</span>
+    <span class="n">s_to_Myr</span> <span class="o">=</span> <span class="mf">3.1709791983765E-14</span> <span class="c1">#s to Myr</span>
+
+
+<div class="viewcode-block" id="Nbody_units.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class initialised.</span>
+<span class="sd">        The standard units are assumed in Msun (for the Mass), in pc (for the length),</span>
+<span class="sd">        in km/s (for the velocity), and in Myr (for the time).</span>
+<span class="sd">        These standards can be changes through the input parameter:</span>
+
+<span class="sd">        :param M:  Set the physical input Mass scale in units of Msun</span>
+<span class="sd">        :param L:  Set the physical input length scale in units of pc</span>
+<span class="sd">        :param V:  Set the physical input velocity scale in units of km/s</span>
+<span class="sd">        :param T:  Set the physical input time scale in units of Myr</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cms_to_kms</span> <span class="o">=</span> <span class="mf">1e-5</span>
+        <span class="n">s_to_Myr</span> <span class="o">=</span> <span class="mf">3.1709791983765E-14</span>
+
+        <span class="c1"># This are the units that are used as in input in units of</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lunits_scale</span> <span class="o">=</span> <span class="n">L</span>  <span class="c1"># pc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Munits_scale</span> <span class="o">=</span> <span class="n">M</span>  <span class="c1"># Msun</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vunits_scale</span> <span class="o">=</span> <span class="n">V</span>  <span class="c1"># km/s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tunits_scale</span> <span class="o">=</span> <span class="n">T</span>  <span class="c1"># Myr</span>
+
+        <span class="n">Gscale_cgs</span> <span class="o">=</span> <span class="n">Nbody_units</span><span class="o">.</span><span class="n">Gcgs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lscale</span> <span class="o">=</span> <span class="n">L</span>  <span class="c1"># pc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mscale</span> <span class="o">=</span> <span class="n">M</span>  <span class="c1"># Msun</span>
+        <span class="n">Mscale_cgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Munits_scale</span> <span class="o">*</span> <span class="n">Nbody_units</span><span class="o">.</span><span class="n">Msun_cgs</span>  <span class="c1"># Msun</span>
+        <span class="n">Lscale_cgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lunits_scale</span> <span class="o">*</span> <span class="n">Nbody_units</span><span class="o">.</span><span class="n">Lpc_cgs</span>  <span class="c1"># pc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Vscale</span> <span class="o">=</span> <span class="n">cms_to_kms</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Gscale_cgs</span> <span class="o">*</span> <span class="n">Mscale_cgs</span> <span class="o">/</span> <span class="n">Lscale_cgs</span><span class="p">)</span>  <span class="c1"># km/s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Tscale</span> <span class="o">=</span> <span class="n">s_to_Myr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">Lscale_cgs</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">/</span> <span class="p">(</span><span class="n">Gscale_cgs</span> <span class="o">*</span> <span class="n">Mscale_cgs</span><span class="p">))</span>  <span class="c1"># Myr</span></div>
+
+
+
+<div class="viewcode-block" id="Nbody_units.Lsun">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.Lsun">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">Lsun</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nbody_units</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to initialise the class using the solar radii as scale.</span>
+<span class="sd">        Usage:</span>
+
+<span class="sd">        &gt;&gt;&gt; from fireworks.nbodylib.nunits import Nbody_units</span>
+<span class="sd">        &gt;&gt;&gt; nu = Nbody_units.Lsun()</span>
+
+<span class="sd">        that is equivalent to</span>
+<span class="sd">        &gt;&gt;&gt; from fireworks.nbodylib.nunits import Nbody_units</span>
+<span class="sd">        &gt;&gt;&gt; nu = Nbody_units(L=Rsun_in_pc)</span>
+
+<span class="sd">        :param M:  Set the physical input Mass scale in units of Msun</span>
+<span class="sd">        :param V:  Set the physical input velocity scale in units of km/s</span>
+<span class="sd">        :param T:  Set the physical input time scale in units of Myr</span>
+<span class="sd">        :return: An Instance of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">Nbody_units</span><span class="o">.</span><span class="n">Lsun_cgs</span> <span class="o">/</span> <span class="n">Nbody_units</span><span class="o">.</span><span class="n">Lpc_cgs</span><span class="p">,</span> <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.Lkpc">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.Lkpc">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">Lkpc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nbody_units</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to initialise the class using 1 kpc as scale.</span>
+<span class="sd">        Usage:</span>
+
+<span class="sd">        &gt;&gt;&gt; from fireworks.nbodylib.nunits import Nbody_units</span>
+<span class="sd">        &gt;&gt;&gt; nu = Nbody_units.Lkpc()</span>
+
+<span class="sd">        that is equivalent to</span>
+<span class="sd">        &gt;&gt;&gt; from fireworks.nbodylib.nunits import Nbody_units</span>
+<span class="sd">        &gt;&gt;&gt; nu = Nbody_units(L=1000)</span>
+
+<span class="sd">        :param M:  Set the physical input Mass scale in units of Msun</span>
+<span class="sd">        :param V:  Set the physical input velocity scale in units of km/s</span>
+<span class="sd">        :param T:  Set the physical input time scale in units of Myr</span>
+<span class="sd">        :return: An Instance of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="mf">1e3</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.LAU">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.LAU">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">LAU</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">M</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nbody_units</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to initialise the class using 1 AU as scale.</span>
+<span class="sd">        Usage:</span>
+
+<span class="sd">        &gt;&gt;&gt; from fireworks.nbodylib.nunits import Nbody_units</span>
+<span class="sd">        &gt;&gt;&gt; nu = Nbody_units.LAU()</span>
+
+<span class="sd">        :param M:  Set the physical input Mass scale in units of Msun</span>
+<span class="sd">        :param V:  Set the physical input velocity scale in units of km/s</span>
+<span class="sd">        :param T:  Set the physical input time scale in units of Myr</span>
+<span class="sd">        :return: An Instance of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">Nbody_units</span><span class="o">.</span><span class="n">Lau_cgs</span> <span class="o">/</span> <span class="n">Nbody_units</span><span class="o">.</span><span class="n">Lpc_cgs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.Henon">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.Henon">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">Henon</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">L</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">V</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">Q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Nbody_units</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Special intialiser to use the Henon units.</span>
+<span class="sd">        In these units, the mass scale is the total mass of the Nbody particles.</span>
+<span class="sd">        In these units the total energy is always set to Etot=-1./4., so use these units</span>
+<span class="sd">        only for bound Nbody systems.</span>
+<span class="sd">        The scale radius is set so that it is related to the potential energy,</span>
+<span class="sd">        while the scale veloisty is related to the kinetic enery of the sytem.</span>
+<span class="sd">        The parameter Q set the virial ration Q=-Ekin/Epot, if Q=0.5 the system is virialised</span>
+<span class="sd">        and Epot=-1/2 and Ekin=1/4.</span>
+<span class="sd">        In case all the velocities are 0 Etot=Epot=-0.25.</span>
+
+<span class="sd">        :param particles: that is an instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">        :param L:  Set the physical input length scale in units of pc</span>
+<span class="sd">        :param V:  Set the physical input velocity scale in units of km/s</span>
+<span class="sd">        :param T:  Set the physical input time scale in units of Myr</span>
+<span class="sd">        :param Q:  Virial ratio, (0.5 virial equilibrium, &gt;0.5 super-virial, &lt;0.5 sub-virial)</span>
+<span class="sd">        :return: An Instance of the class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pcopy</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">Mtot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span>
+        <span class="n">pcopy</span><span class="o">.</span><span class="n">mass</span> <span class="o">=</span> <span class="n">pcopy</span><span class="o">.</span><span class="n">mass</span><span class="o">/</span><span class="n">Mtot</span>
+
+
+        <span class="n">Epot</span> <span class="o">=</span> <span class="n">pcopy</span><span class="o">.</span><span class="n">Epot</span><span class="p">(</span><span class="n">softening</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+        <span class="n">Rscale</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">Epot</span><span class="o">*</span><span class="p">(</span><span class="n">Q</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">Ekin</span> <span class="o">=</span> <span class="n">pcopy</span><span class="o">.</span><span class="n">Ekin</span><span class="p">()</span>
+
+
+        <span class="c1"># Since V is automatically rescale based on Mtot and Lscale, lets set it to 1, take</span>
+        <span class="c1"># the scale to remove it from the actual scaling for Henon units</span>
+        <span class="n">nu_test</span> <span class="o">=</span> <span class="n">Nbody_units</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="n">Mtot</span><span class="p">,</span><span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="o">/</span><span class="n">Rscale</span><span class="p">,</span><span class="n">V</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Vscale_original</span> <span class="o">=</span> <span class="n">nu_test</span><span class="o">.</span><span class="n">Vscale</span>
+
+        <span class="n">Vscale</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span> <span class="p">(</span><span class="n">Q</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">Q</span><span class="p">))</span><span class="o">/</span><span class="n">Ekin</span> <span class="p">)</span> <span class="o">*</span> <span class="n">Vscale_original</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">M</span><span class="o">=</span><span class="n">Mtot</span><span class="p">,</span> <span class="n">L</span><span class="o">=</span><span class="n">L</span><span class="o">/</span><span class="n">Rscale</span><span class="p">,</span> <span class="n">V</span><span class="o">=</span><span class="n">V</span><span class="o">/</span><span class="n">Vscale</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">T</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.pos_to_Nbody">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.pos_to_Nbody">[docs]</a>
+    <span class="k">def</span> <span class="nf">pos_to_Nbody</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform positions from physics to Nbody units.</span>
+
+<span class="sd">        :param pos: A Nx3 numpy array containing the positions of the N particles, the physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. L=1 units are in pc,</span>
+<span class="sd">                    L=1000 units are in kpc).</span>
+<span class="sd">        :return: A Nx3 numpy array containing the positions of the N particles scaled to Nbody units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First transform input to pc  ( pos*self.Lunits_scale)</span>
+        <span class="c1"># Then rescale by Lscale</span>
+
+        <span class="k">return</span> <span class="n">pos</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Lunits_scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.pos_to_pc">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.pos_to_pc">[docs]</a>
+    <span class="k">def</span> <span class="nf">pos_to_pc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform positions from  Nbody units to pc</span>
+
+<span class="sd">        :param pos:A Nx3 numpy array containing the positions of the N particles in Nbody units</span>
+<span class="sd">        :return: A Nx3 numpy array containing the positions of the N particles in pc</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">pos</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lscale</span></div>
+
+<div class="viewcode-block" id="Nbody_units.pos_to_physical">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.pos_to_physical">[docs]</a>
+    <span class="k">def</span> <span class="nf">pos_to_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform positions  Nbody units to  physical units.</span>
+<span class="sd">        the physics units depends on the scale used at the class initialisation (e.g. L=1 units are in pc,</span>
+<span class="sd">        L=1000 units are in kpc).</span>
+
+<span class="sd">        :param pos:A Nx3 numpy array containing the positions of the N particles in Nbody units</span>
+<span class="sd">        :return: A Nx3 numpy array containing the positions of the N particles in physical units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First transform Nbody input  to pc  ( pos*self.Lscae)</span>
+        <span class="c1"># Then rescale by input units</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_to_pc</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lunits_scale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.vel_to_Nbody">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.vel_to_Nbody">[docs]</a>
+    <span class="k">def</span> <span class="nf">vel_to_Nbody</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vel</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform velocities from physics to Nbody units</span>
+
+<span class="sd">        :param vel: A Nx3 numpy array containing the velocity of the N particles. the physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. V=1 units are in km/s,</span>
+<span class="sd">                    V=1e-3 units are in m/s).</span>
+<span class="sd">        :return: A Nx3 numpy array containing the velocities of the N particles scaled to Nbody units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First transform input to km/s  ( vel*self.Vunits_scale)</span>
+        <span class="c1"># Then rescale by Vscale to get Nbody units</span>
+
+        <span class="k">return</span> <span class="n">vel</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Vunits_scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vscale</span> <span class="c1">#*V / self.Vscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.vel_to_kms">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.vel_to_kms">[docs]</a>
+    <span class="k">def</span> <span class="nf">vel_to_kms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vel</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform velocities from  Nbody units to standard physics units km/s</span>
+
+<span class="sd">        :param vel: A Nx3 numpy array containing the velocities of the N particles in Nbody units</span>
+<span class="sd">        :return: A Nx3 numpy array containing the velocities of the N particles standard physics units (km/s)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">vel</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Vscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.vel_to_physical">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.vel_to_physical">[docs]</a>
+    <span class="k">def</span> <span class="nf">vel_to_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vel</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform velocities from Nbody  to physics units  (in km/s)</span>
+<span class="sd">        The physics units should be consistent with the scale used at the class initialisation (e.g. V=1 units are in km/s,</span>
+<span class="sd">        V=1e-3 units are in m/s).</span>
+
+<span class="sd">        :param vel: A Nx3 numpy array containing the velocities of the N particles in Nbody units</span>
+<span class="sd">        :return: A Nx3 numpy array containing the velocities of the N particles scaled in physics units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># First transform input to km/s  ( vel/self.Vscale)</span>
+        <span class="c1"># Then transform to input units</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel_to_kms</span><span class="p">(</span><span class="n">vel</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">Vunits_scale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.m_to_Nbody">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.m_to_Nbody">[docs]</a>
+    <span class="k">def</span> <span class="nf">m_to_Nbody</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform masses from physics to Nbody units</span>
+
+<span class="sd">        :param mass: A Nx1 numpy array (or a number) containing the mass of the  particles. the physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. M=1 units are in Msun,</span>
+<span class="sd">                    M=1e10 units are 10^{10} Msun).</span>
+<span class="sd">        :return: A Nx1 numpy array (or a number) containing the masses of the N particles scaled to Nbody units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">mass</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Munits_scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.m_to_Msun">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.m_to_Msun">[docs]</a>
+    <span class="k">def</span> <span class="nf">m_to_Msun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform ,asses from  Nbody units to standard physics units Msun</span>
+
+<span class="sd">        :param mass: A Nx1 numpy array (or a number) containing the mass of the  particles in Nbody units</span>
+<span class="sd">        :return: A Nx1 numpy array (or a number) containing the masses of the N particles in standard physics units (Msun)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">mass</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.m_to_physical">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.m_to_physical">[docs]</a>
+    <span class="k">def</span> <span class="nf">m_to_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform masses from Nbody units to physics</span>
+
+<span class="sd">        :param mass: A Nx1 numpy array (or a number) containing the masses of the N particles in Nbody units.</span>
+<span class="sd">        :return: A Nx1 numpy array (or a nunmber) containing the masses of the N particles scaled in physical units. The physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. M=1 units are in Msun,</span>
+<span class="sd">                    M=1e10 units are 10^{10} Msun).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_to_Msun</span><span class="p">(</span><span class="n">mass</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Munits_scale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.t_to_Nbody">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.t_to_Nbody">[docs]</a>
+    <span class="k">def</span> <span class="nf">t_to_Nbody</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="nb">float</span><span class="p">]</span> <span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform times from physics to Nbody units</span>
+
+<span class="sd">        :param t: A Nx1 numpy array (or a number) containing time(s) in physics units. the physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. T=1 units are in Myr,</span>
+<span class="sd">                    T=1e3 units are Gyr).</span>
+<span class="sd">        :return: A Nx1 numpy array (or a number) containing the time(s)  scaled to Nbody units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">t</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">Tunits_scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.t_to_Myr">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.t_to_Myr">[docs]</a>
+    <span class="k">def</span> <span class="nf">t_to_Myr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform times from Nbody units to standard physics units (Myr)</span>
+
+<span class="sd">        :param t: A Nx1 numpy array (or a number) containing time(s) in Nbody units.</span>
+<span class="sd">        :return: A Nx1 numpy array (or a nunmber) containing the time(s) scaled in  standard physics units (Myr).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tscale</span></div>
+
+
+<div class="viewcode-block" id="Nbody_units.t_to_physical">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.nunits.Nbody_units.html#fireworks.nbodylib.nunits.Nbody_units.t_to_physical">[docs]</a>
+    <span class="k">def</span> <span class="nf">t_to_physical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transform time(s) from Nbody units to physics (in Myr)</span>
+
+<span class="sd">        :param t: A Nx1 numpy array (or a number) containing the time(s)  scaled to Nbody units</span>
+<span class="sd">        :return: A Nx1 numpy array (or a number) containing time(s) in physics units. the physics units</span>
+<span class="sd">                    should be consistent with the scale used at the class initialisation (e.g. T=1 units are in Myr,</span>
+<span class="sd">                    T=1e3 units are Gyr).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_to_Myr</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">Tunits_scale</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
