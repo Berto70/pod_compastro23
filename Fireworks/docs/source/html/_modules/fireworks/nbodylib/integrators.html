@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.nbodylib.integrators &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fireworks.nbodylib.integrators</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fireworks.nbodylib.integrators</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=========================================================</span>
+<span class="sd">ODE integrators  (:mod:`fireworks.nbodylib.integrators`)</span>
+<span class="sd">=========================================================</span>
+
+<span class="sd">This module contains a collection of integrators to integrate one step of the ODE N-body problem</span>
+<span class="sd">The functions included in this module should follow the input/output structure</span>
+<span class="sd">of the template method :func:`~integrator_template`.</span>
+
+<span class="sd">All the functions need to have the following input parameters:</span>
+
+<span class="sd">    - particles, an instance of the  class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    - tstep, timestep to be used to advance the Nbody system using the integrator</span>
+<span class="sd">    - acceleration_estimator, it needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)</span>
+<span class="sd">        following the input/output style of the template function</span>
+<span class="sd">        (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).</span>
+<span class="sd">    - softening, softening values used to estimate the acceleration</span>
+<span class="sd">    - external_accelerations, this is an optional input, if not None, it has to be a list</span>
+<span class="sd">        of additional callable to estimate additional acceleration terms (e.g. an external potential or</span>
+<span class="sd">        some drag term depending on the particles velocity). Notice that if the integrator uses the jerk</span>
+<span class="sd">        all this additional terms should return the jerk otherwise the jerk estimate is biased.</span>
+
+<span class="sd">Then, all the functions need to return the a tuple with 5 elements:</span>
+
+<span class="sd">    - particles, an instance of the  class :class:`~fireworks.particles.Particles` containing the</span>
+<span class="sd">        updates Nbody properties after the integration timestep</span>
+<span class="sd">    - tstep, the effective timestep evolved in the simulation (for some integrator this can be</span>
+<span class="sd">        different wrt the input tstep)</span>
+<span class="sd">    - acc, the total acceleration estimated for each particle, it needs to be a Nx3 numpy array,</span>
+<span class="sd">        can be set to None</span>
+<span class="sd">    - jerk, total time derivative of the acceleration, it is an optional value, if the method</span>
+<span class="sd">        does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">        to be a Nx3 numpy array.</span>
+<span class="sd">    - pot, total  gravitational potential at the position of each particle. it is an optional value, if the method</span>
+<span class="sd">        does not estimate it, just set this element to None. If it is not None, it has</span>
+<span class="sd">        to be a Nx1 numpy array.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">from</span> <span class="nn">..particles</span> <span class="kn">import</span> <span class="n">Particles</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">tsunami</span>
+    <span class="n">tsunami_load</span><span class="o">=</span><span class="kc">True</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">tsunami_load</span><span class="o">=</span><span class="kc">False</span>
+
+<div class="viewcode-block" id="integrator_template">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_template.html#fireworks.nbodylib.integrators.integrator_template">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_template</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                        <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                        <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                        <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                        <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is an example template of the function you have to implement for the N-body integrators.</span>
+<span class="sd">    :param particles: Instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to</span>
+<span class="sd">    achieve the final result</span>
+<span class="sd">    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)</span>
+<span class="sd">    following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).</span>
+<span class="sd">    :param softening: softening parameter for the acceleration estimate, can use 0 as default value</span>
+<span class="sd">    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to</span>
+<span class="sd">    consider to estimate the final acceleration (and if available jerk) on the particles</span>
+<span class="sd">    :return: A tuple with 5 elements:</span>
+
+<span class="sd">        - The updated particles instance</span>
+<span class="sd">        - tstep, the effective timestep evolved in the simulation (for some integrator this can be</span>
+<span class="sd">            different wrt the input tstep)</span>
+<span class="sd">        - acc, Nx3 numpy array storing the final acceleration for each particle, ca be set to None</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="c1">#Exemple of an Euler estimate</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="n">tstep</span> <span class="c1"># Update pos</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">acc</span><span class="o">*</span><span class="n">tstep</span> <span class="c1"># Update vel</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span> <span class="c1">#Set acceleration</span>
+
+    <span class="c1"># Now return the updated particles, the acceleration, jerk (can be None) and potential (can be None)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_euler">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_euler.html#fireworks.nbodylib.integrators.integrator_euler">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_euler</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                     <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                     <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                     <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                     <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple implementation of a Modified Euler integrator for N-body simulations.</span>
+<span class="sd">    :param particles: Instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to</span>
+<span class="sd">    achieve the final result</span>
+<span class="sd">    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)</span>
+<span class="sd">    following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).</span>
+<span class="sd">    :param softening: softening parameter for the acceleration estimate, can use 0 as default value</span>
+<span class="sd">    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to</span>
+<span class="sd">    consider to estimate the final acceleration (and if available jerk) on the particles</span>
+<span class="sd">    :return: A tuple with 5 elements:</span>
+
+<span class="sd">        - The updated particles instance</span>
+<span class="sd">        - tstep, the effective timestep evolved in the simulation (for some integrator this can be</span>
+<span class="sd">            different wrt the input tstep)</span>
+<span class="sd">        - acc, Nx3 numpy array storing the final acceleration for each particle, ca be set to None</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1"># Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="c1"># Euler integration</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">acc</span> <span class="o">*</span> <span class="n">tstep</span>  <span class="c1"># Update vel</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">*</span> <span class="n">tstep</span>  <span class="c1"># Update pos</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>  <span class="c1"># Set acceleration</span>
+
+    <span class="c1"># Return the updated particles, the acceleration, jerk (can be None), and potential (can be None)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_hermite">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_hermite.html#fireworks.nbodylib.integrators.integrator_hermite">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_hermite</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                        <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                        <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                        <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                        <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1"># This integrator requires jerk</span>
+    <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Hermite integrator requires jerk&quot;</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="c1"># Preditor sub-step</span>
+    <span class="c1"># 9 </span>
+    <span class="n">vel_p</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">acc</span><span class="o">*</span><span class="n">tstep</span> <span class="o">+</span> <span class="p">(</span><span class="n">jerk</span> <span class="o">*</span> <span class="n">tstep</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="c1"># 10</span>
+    <span class="n">pos_p</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="n">tstep</span> <span class="o">+</span> <span class="p">(</span><span class="n">acc</span> <span class="o">*</span> <span class="n">tstep</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">jerk</span><span class="o">*</span><span class="n">tstep</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">6</span>
+
+    <span class="c1"># 11 # 12</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc_p</span><span class="p">,</span> <span class="n">jerk_p</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">pos_p</span><span class="p">,</span> <span class="n">vel_p</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc_p</span><span class="p">,</span> <span class="n">jerk_p</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">pos_p</span><span class="p">,</span> <span class="n">vel_p</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>        
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc_p</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk_p</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk_p</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+
+    <span class="c1"># Corrector sub-step</span>
+    <span class="c1"># alternative more accurate version p. 34</span>
+
+    <span class="c1"># First derivative jerk </span>
+    <span class="n">j_1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="n">acc</span> <span class="o">-</span> <span class="n">acc_p</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">jerk</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">jerk_p</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span><span class="p">)</span><span class="o">*</span> <span class="n">tstep</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+    
+    <span class="c1"># Second derivative jerk</span>
+    <span class="n">j_2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="o">*</span><span class="p">(</span><span class="n">acc</span> <span class="o">-</span> <span class="n">acc_p</span><span class="p">)</span> <span class="o">+</span> <span class="mi">6</span><span class="o">*</span><span class="p">(</span><span class="n">jerk</span> <span class="o">+</span> <span class="n">jerk_p</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span><span class="p">)</span><span class="o">*</span> <span class="n">tstep</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+    
+    <span class="c1"># 13b</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">vel_p</span> <span class="o">+</span> <span class="p">(</span><span class="n">tstep</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">j_1</span><span class="o">/</span><span class="mi">6</span> <span class="o">+</span> <span class="p">(</span><span class="n">tstep</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">j_2</span><span class="o">/</span><span class="mi">24</span>
+
+    <span class="c1"># 14b</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">pos_p</span> <span class="o">+</span> <span class="p">(</span><span class="n">tstep</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">j_1</span><span class="o">/</span><span class="mi">24</span> <span class="o">+</span> <span class="p">(</span><span class="n">tstep</span><span class="o">**</span><span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">j_2</span><span class="o">/</span><span class="mi">120</span>
+
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_leapfrog">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_leapfrog.html#fireworks.nbodylib.integrators.integrator_leapfrog">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_leapfrog</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                        <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                        <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                        <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                        <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple implementation of a symplectic Leapfrog (Verlet) integrator for N-body simulations.</span>
+<span class="sd">    </span>
+<span class="sd">    :param particles: Instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to achieve the final result</span>
+<span class="sd">    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`), following the input/output style of the template function (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).</span>
+<span class="sd">    :param softening: softening parameter for the acceleration estimate, can use 0 as default value</span>
+<span class="sd">    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to consider to estimate the final acceleration (and if available jerk) on the particles</span>
+<span class="sd">    :return: A tuple with 5 elements:</span>
+
+<span class="sd">        - The updated particles instance</span>
+<span class="sd">        - tstep, the effective timestep evolved in the simulation (for some integrator this can be</span>
+<span class="sd">            different wrt the input tstep)</span>
+<span class="sd">        - acc, Nx3 numpy array storing the final acceleration for each particle, ca be set to None</span>
+<span class="sd">        - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">        - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1"># Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="c1"># vel_m = particles.vel + 0.5*acc*tstep # half-step velocity</span>
+    <span class="c1"># particles.pos = particles.pos + vel_m*tstep # Update pos</span>
+    <span class="c1"># particles.vel = vel_m + 0.5*acc*tstep # Update vel</span>
+    <span class="c1"># particles.set_acc(acc)  # Set acceleration</span>
+
+
+    <span class="c1"># removing half-step velocity</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="n">tstep</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">acc</span><span class="o">*</span><span class="p">(</span><span class="n">tstep</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc2</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk2</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">pot2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot2</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">acc</span> <span class="o">+</span> <span class="n">acc2</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_heun">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_heun.html#fireworks.nbodylib.integrators.integrator_heun">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_heun</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                   <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                   <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                   <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                   <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    
+    <span class="c1"># 2nd order RK, Ralston&#39;s method: minimizes the truncation error.</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> 
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1"># Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k1r</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k1v</span> <span class="o">=</span> <span class="n">acc</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">k1r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">k1v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">k1r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">k1v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">)</span>
+        
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc2</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk2</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">pot2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot2</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k2r</span> <span class="o">=</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">k1v</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k2v</span> <span class="o">=</span> <span class="n">acc2</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">k1r</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">k2r</span><span class="p">)</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">k1v</span> <span class="o">+</span> <span class="mi">3</span><span class="o">*</span><span class="n">k2v</span><span class="p">)</span>
+
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_rk4">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_rk4.html#fireworks.nbodylib.integrators.integrator_rk4">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_rk4</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                   <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                   <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span><span class="n">List</span><span class="p">],</span>
+                   <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                   <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">args</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+
+    
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc</span><span class="p">,</span> <span class="n">jerk</span><span class="p">,</span> <span class="n">potential</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+
+
+    <span class="c1"># Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">jerk</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">potential</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">potential</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k1r</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k1v</span> <span class="o">=</span> <span class="n">acc</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k1r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k1v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc2</span><span class="p">,</span> <span class="n">jerk2</span><span class="p">,</span> <span class="n">pot2</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k1r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k1v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc2</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk2</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">pot2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot2</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k2r</span> <span class="o">=</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">k1v</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k2v</span> <span class="o">=</span> <span class="n">acc2</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc3</span><span class="p">,</span> <span class="n">jerk3</span><span class="p">,</span> <span class="n">pot3</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k2r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k2v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc3</span><span class="p">,</span> <span class="n">jerk3</span><span class="p">,</span> <span class="n">pot3</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k2r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">k2v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc3</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk3</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">pot3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot3</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k3r</span> <span class="o">=</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">k2v</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k3v</span> <span class="o">=</span> <span class="n">acc3</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">acc4</span><span class="p">,</span> <span class="n">jerk4</span><span class="p">,</span> <span class="n">pot4</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">k3r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">k3v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">acc4</span><span class="p">,</span> <span class="n">jerk4</span><span class="p">,</span> <span class="n">pot4</span> <span class="o">=</span> <span class="n">acceleration_estimator</span><span class="p">(</span><span class="n">Particles</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="n">k3r</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">k3v</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">),</span> <span class="n">softening</span><span class="p">)</span>
+
+    <span class="c1">#Check additional accelerations</span>
+    <span class="k">if</span> <span class="n">external_accelerations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext_acc_estimator</span> <span class="ow">in</span> <span class="n">external_accelerations</span><span class="p">:</span>
+            <span class="n">acct</span><span class="p">,</span> <span class="n">jerkt</span><span class="p">,</span> <span class="n">potentialt</span> <span class="o">=</span> <span class="n">ext_acc_estimator</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc4</span> <span class="o">+=</span> <span class="n">acct</span>
+            <span class="k">if</span> <span class="n">jerk4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jerkt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">jerk4</span> <span class="o">+=</span> <span class="n">jerkt</span>
+            <span class="k">if</span> <span class="n">pot4</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">potentialt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot4</span> <span class="o">+=</span> <span class="n">potentialt</span>
+
+    <span class="n">k4r</span> <span class="o">=</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="n">k3v</span><span class="p">)</span><span class="o">*</span><span class="n">tstep</span>
+    <span class="n">k4v</span> <span class="o">=</span> <span class="n">acc4</span><span class="o">*</span><span class="n">tstep</span>
+
+    <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">6</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">k1r</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k2r</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k3r</span> <span class="o">+</span> <span class="n">k4r</span><span class="p">)</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">6</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">k1v</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k2v</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">k3v</span> <span class="o">+</span> <span class="n">k4v</span><span class="p">)</span>
+    <span class="n">particles</span><span class="o">.</span><span class="n">set_acc</span><span class="p">(</span><span class="n">acc4</span><span class="p">)</span> 
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">tstep</span><span class="p">,</span> <span class="n">acc4</span><span class="p">,</span> <span class="n">jerk4</span><span class="p">,</span> <span class="n">pot4</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="integrator_tsunami">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.integrators.integrator_tsunami.html#fireworks.nbodylib.integrators.integrator_tsunami">[docs]</a>
+<span class="k">def</span> <span class="nf">integrator_tsunami</span><span class="p">(</span><span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span>
+                       <span class="n">tstep</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                       <span class="n">acceleration_estimator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                       <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span>
+                       <span class="n">external_accelerations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Special integrator that is actually a wrapper of the TSUNAMI integrator.</span>
+<span class="sd">    TSUNAMI is regularised and it has its own way to estimate the acceleration,</span>
+<span class="sd">    set the timestep and update the system.</span>
+<span class="sd">    Therefore in this case tstep should not be the timestep of the integration, but rather</span>
+<span class="sd">    the final time of our simulations, or an intermediate time in which we want to store</span>
+<span class="sd">    the properties or monitor the sytems.</span>
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; tstart=0</span>
+<span class="sd">    &gt;&gt;&gt; tintermediate=[5,10,15]</span>
+<span class="sd">    &gt;&gt;&gt; tcurrent=0</span>
+<span class="sd">    &gt;&gt;&gt; for t in tintermediate:</span>
+<span class="sd">    &gt;&gt;&gt;     tstep=t-tcurrent</span>
+<span class="sd">    &gt;&gt;&gt;     ## NOTICE: Sometime the efftime can be so large that the current time is now larger than the current t</span>
+<span class="sd">    &gt;&gt;&gt;     ## the simple check below allow to skip these steps and go directly to the t in tintermediate for which</span>
+<span class="sd">    &gt;&gt;&gt;     ## t&gt;tcurrent and we have to actually integrate the system</span>
+<span class="sd">    &gt;&gt;&gt;     if tstep&lt;=: continue # continue means go to the next step (i.e. next t in the array)</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt;     particles, efftime,_,_,_=integrator_tsunami(particles,tstep)</span>
+<span class="sd">    &gt;&gt;&gt;     # Here we can save stuff, plot stuff, etc.</span>
+<span class="sd">    &gt;&gt;&gt;     tcurrent=tcurrent+efftime</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        In general the TSUNAMI integrator is much faster than any integrator with can implement</span>
+<span class="sd">        in this module.</span>
+<span class="sd">        However, Before to start the proper integration, this function needs to perform some preliminary</span>
+<span class="sd">        steps to initialise the TSUNAMI integrator. This can add a overhead to the function call.</span>
+<span class="sd">        Therefore, do not use this integrator with too small timestep. Actually, the best timestep is the</span>
+<span class="sd">        one that bring the system directly to the final time. However, if you want to save intermediate steps</span>
+<span class="sd">        you can split the integration time windows in N sub-parts, calling N times this function.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        It is important to notice that given the nature of the integrator (based on chain regularisation)</span>
+<span class="sd">        the final time won&#39;t be exactly the one put in input. Take this in mind when using this integrator.</span>
+<span class="sd">        Notice also that the TSUNAMI integrator will rescale your system to the centre of mass frame of reference.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        Considering the way the TSUNAMI python wrapper is implemented, the particle positions and velocities are</span>
+<span class="sd">        updated in place. So if you store the particle.pos or particle.vel inside your loop in a list, each time</span>
+<span class="sd">        the integrator is called all the elements in the list are updated. Therefore, you will end with a list of pos</span>
+<span class="sd">        and vel that are or equal to the positions and velocities updated in the last tsunami call.</span>
+<span class="sd">        To avoid this issue, save a copy of the arrays in the list. For example</span>
+
+<span class="sd">        &gt;&gt;&gt; tstart=0</span>
+<span class="sd">        &gt;&gt;&gt; tintermediate=[5,10,15]</span>
+<span class="sd">        &gt;&gt;&gt; tcurrent=0</span>
+<span class="sd">        &gt;&gt;&gt; pos_list=[]</span>
+<span class="sd">        &gt;&gt;&gt; vel_list=[]</span>
+<span class="sd">        &gt;&gt;&gt; for t in tintermediate:</span>
+<span class="sd">        &gt;&gt;&gt;     tstep=t-tcurrent</span>
+<span class="sd">        &gt;&gt;&gt;     if tstep&lt;=: continue # continue means go to the next step (i.e. next t in the array)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;     particles, efftime,_,_,_=integrator_tsunami(particles,tstep)</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;     # Save the particles positions and velocities</span>
+<span class="sd">        &gt;&gt;&gt;     pos_list.append(particles.pos.copy())</span>
+<span class="sd">        &gt;&gt;&gt;     vel_list.append(particles.vel.copy())</span>
+<span class="sd">        &gt;&gt;&gt;</span>
+<span class="sd">        &gt;&gt;&gt;     # Here we can save stuff, plot stuff, etc.</span>
+<span class="sd">        &gt;&gt;&gt;     tcurrent=tcurrent+efftime</span>
+
+
+<span class="sd">    :param particles: Instance of the class :class:`~fireworks.particles.Particles`</span>
+<span class="sd">    :param tstep: final time of the current integration</span>
+<span class="sd">    :param acceleration_estimator: Not used</span>
+<span class="sd">    :param softening: Not used</span>
+<span class="sd">    :param external_accelerations: Not used</span>
+<span class="sd">    :return: A tuple with 5 elements:</span>
+
+<span class="sd">        - The updated particles instance</span>
+<span class="sd">        - tstep, the effective timestep evolved in the simulation, it wont&#39;be exactly the one in input</span>
+<span class="sd">        - acc, it is None</span>
+<span class="sd">        - jerk, it is None</span>
+<span class="sd">        - pot, it is None</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">tsunami_load</span><span class="p">:</span> <span class="k">return</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Tsunami is not available&quot;</span><span class="p">)</span>
+
+    <span class="n">code</span> <span class="o">=</span> <span class="n">tsunami</span><span class="o">.</span><span class="n">Tsunami</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">Conf</span><span class="o">.</span><span class="n">dcoll</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="c1">#Disable collisions</span>
+    <span class="c1"># Disable extra forces (already disabled by default)</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">Conf</span><span class="o">.</span><span class="n">wPNs</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># PNs</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">Conf</span><span class="o">.</span><span class="n">wEqTides</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Equilibrium tides</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">Conf</span><span class="o">.</span><span class="n">wDynTides</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Dynamical tides</span>
+
+    <span class="n">r</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span>
+    <span class="n">st</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">add_particle_set</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">mass</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">st</span><span class="p">)</span>
+    <span class="c1"># Synchronize internal code coordinates with the Python interface</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">sync_internal_state</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">)</span>
+    <span class="c1"># Evolve system from 0 to tstep - NOTE: the system final time won&#39;t be exacly tstep, but close</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">evolve_system</span><span class="p">(</span><span class="n">tstep</span><span class="p">)</span>
+    <span class="c1"># Synchronize realt to the real internal system time</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">time</span>
+    <span class="c1"># Synchronize coordinates to Python interface</span>
+    <span class="n">code</span><span class="o">.</span><span class="n">sync_internal_state</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="n">particles</span><span class="o">.</span><span class="n">vel</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

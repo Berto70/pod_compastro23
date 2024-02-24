@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fireworks.nbodylib.potentials &mdash; fireworks 0.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=7026087e"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            fireworks
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">fireworks</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fireworks.nbodylib.potentials</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fireworks.nbodylib.potentials</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">==================================================================================================================</span>
+<span class="sd">Collection of classes to estimate the Gravitational forces from potentials (:mod:`fireworks.nbodylib.potentials`)</span>
+<span class="sd">==================================================================================================================</span>
+
+<span class="sd">This module contains a collection of classes and functions to estimate acceleration due to</span>
+<span class="sd">gravitational  forces of a fixed potential</span>
+
+<span class="sd">In Fireworks that functions to estimate the acceleration depends only by the particles and the softening.</span>
+<span class="sd">However, the potential can depend on a number of additional parameters.</span>
+<span class="sd">Therefore instead of creating directly the function each Potential is created through a calls derived</span>
+<span class="sd">from the basic class :class:`~.Potential_Base`, this class returns the acceleration through the method</span>
+<span class="sd">:func:`~.Potential_Base.acceleration`. This is method is just a wrapper of the specific method</span>
+<span class="sd">:func:`~.Potential_Base._acceleration` that needs to be implemented for each potential.</span>
+<span class="sd">So a Potential needs to add an __init__ method that takes into account all the parameters necessary</span>
+<span class="sd">to define the potential and the method _acceleration to properly estimate and return the acceleration.</span>
+<span class="sd">Then this method can be used inside the fireworks integrators (:mod:`fireworks.nbodylib.integrators`)</span>
+
+<span class="sd">Example</span>
+
+<span class="sd">&gt;&gt;&gt; from fireworks.nbodylib.potentials import Example_Potential</span>
+<span class="sd">&gt;&gt;&gt; pot = Example_Potential(par1=1,par2=2) # Instantiate the potential</span>
+<span class="sd">&gt;&gt;&gt; accfunc = pot.acceleration # This method can be used with the fireworks integrators</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span> <span class="k">as</span> <span class="nn">scisp</span>
+<span class="kn">from</span> <span class="nn">..particles</span> <span class="kn">import</span> <span class="n">Particles</span>
+
+<div class="viewcode-block" id="Potential_Base">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Potential_Base.html#fireworks.nbodylib.potentials.Potential_Base">[docs]</a>
+<span class="k">class</span> <span class="nc">Potential_Base</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Basic class to be used as a parent class to instantiate new potentials.</span>
+<span class="sd">    Each new class needs to define:</span>
+
+<span class="sd">        - an __init__ method in which to set the potential parameters</span>
+<span class="sd">        - the method _acceleration. This method needs to accept as parameters</span>
+<span class="sd">          an object of class particles and the softening as a float with default value =0 (even if it practically not used).</span>
+<span class="sd">          it has to return a Nx3 array containing the accelerations, and optionally a Nx3 array containing the jerk, and a Nx1 containing the potential</span>
+<span class="sd">          If the jerk and/or the potential are not estimated they have to be set to 0.</span>
+
+<span class="sd">    Then, to initialise and use the potential</span>
+
+<span class="sd">    &gt;&gt;&gt; from fireworks.potentials import Example_Potential</span>
+<span class="sd">    &gt;&gt;&gt; pot = Example_Potential(par1=1,par2=2) # Instantiate the potential</span>
+<span class="sd">    &gt;&gt;&gt; accfunc = pot.acceleration # This method can be used with the fireworks integrators</span>
+
+<span class="sd">    See the implementation  of the potential :class:`~.Point_Mass` to have an idea on how to create a new potential</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Potential_Base.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Potential_Base.html#fireworks.nbodylib.potentials.Potential_Base.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Potential_Base.acceleration">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Potential_Base.html#fireworks.nbodylib.potentials.Potential_Base.acceleration">[docs]</a>
+    <span class="k">def</span> <span class="nf">acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the acceleration (and optionally the jerk and the potential)</span>
+
+<span class="sd">        :param particles: An instance of the class Particles</span>
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: A tuple with 3 elements:</span>
+
+<span class="sd">            - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_acceleration</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Potential_Base.evaluate">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Potential_Base.html#fireworks.nbodylib.potentials.Potential_Base.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">softening</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the acceleration at given point in cylindrical coordinates</span>
+
+<span class="sd">        :param R: radial cylindrical coordinate</span>
+<span class="sd">        :param z: height above the plane</span>
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: A tuple with 3 elements:</span>
+
+<span class="sd">            - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">R</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="n">z</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+
+        <span class="n">pos</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">R</span><span class="p">),</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">R</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">pos</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">R</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pos</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">R</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">pos</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pos</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">z</span>
+
+        <span class="n">vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">mass</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
+
+        <span class="n">part</span><span class="o">=</span><span class="n">Particles</span><span class="p">(</span><span class="n">position</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="n">vel</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="n">mass</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">acceleration</span><span class="p">(</span><span class="n">part</span><span class="p">,</span><span class="n">softening</span><span class="p">)</span></div>
+
+
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the acceleration (and optionally the jerk and the potential)</span>
+
+<span class="sd">        :param particles: An instance of the class Particles</span>
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: A tuple with 3 elements:</span>
+
+<span class="sd">            - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Method _acceleration for the </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> is not implemented yet&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultiPotential">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.MultiPotential.html#fireworks.nbodylib.potentials.MultiPotential">[docs]</a>
+<span class="k">class</span> <span class="nc">MultiPotential</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class can be used to instantiate an objected dertive from the :class:`~.Potential_Base`</span>
+<span class="sd">    combining multiple objects from that class. It can be used for example to estimate the potential</span>
+<span class="sd">    of a Galaxy composed by multiple mass components (for example a disc, a bulge and a halo).</span>
+<span class="sd">    Internally, the function :func:`~.MultiPotential._acceleration` estimate the total acceleration</span>
+<span class="sd">    summing the contribution of all the components set during the initialisation.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; from firworks.nbodylib.potentials import Pot1,Pot2,Pot3,MultiPotential</span>
+<span class="sd">    &gt;&gt;&gt; # Example a Galaxy composed by a halo, bulge and disc</span>
+<span class="sd">    &gt;&gt;&gt; halo = Pot1(param1=100) # Use and instantiate a Pot1 object to describe a Galaxy halo</span>
+<span class="sd">    &gt;&gt;&gt; bulge = Pot2(param1=3,param2=5,param3=4) # Use and instantiate a Pot2 object to describe a Galaxy bulge</span>
+<span class="sd">    &gt;&gt;&gt; disc = Pot3(param1=20, param2=0.2) # Use and instantiate a Pot3 object to describe a Galaxy disc</span>
+<span class="sd">    &gt;&gt;&gt; galaxy_pot = MultiPotential([Pot1,Pot2,Pot3]) # Instantiate a Multipotential object</span>
+<span class="sd">    &gt;&gt;&gt; galaxy_pot.acceleration  # This method can be used with the fireworks integrators</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MultiPotential.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.MultiPotential.html#fireworks.nbodylib.potentials.MultiPotential.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">potential_list</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the object</span>
+
+<span class="sd">        :param potential_list: list of instances (at least one) of classes derived from the class :class:`~.Potential_Base`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_potentials</span> <span class="o">=</span> <span class="n">potential_list</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iteratively estimate the total acceleration (and jerk and potential) obtained</span>
+<span class="sd">        summing the contributions of all the potentials objects used to initialise the class.</span>
+<span class="sd">        The acceleration is always a Nx3 numpy array (where N is the number of particles).</span>
+<span class="sd">        For the Jerk and Potential, if at least one of the potential returns None, they are set to None</span>
+
+
+<span class="sd">        :param particles: An instance of the class Particles</span>
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: A tuple with 3 elements:</span>
+
+<span class="sd">            - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">            - jerk, Nx3 numpy array storing the time derivative of the acceleration, can be set to None</span>
+<span class="sd">            - pot, Nx1 numpy array storing the potential at each particle position, can be set to None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">acc</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">jerk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pot_tot</span>  <span class="o">=</span>  <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">pot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_potentials</span><span class="p">:</span>
+
+            <span class="n">this_acc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">this_pot</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">acceleration</span><span class="p">(</span><span class="n">particles</span><span class="o">=</span><span class="n">particles</span><span class="p">,</span><span class="n">softening</span><span class="o">=</span><span class="n">softening</span><span class="p">)</span>
+            <span class="n">acc</span><span class="o">+=</span><span class="n">this_acc</span>
+            <span class="k">if</span> <span class="n">this_pot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pot_tot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span> <span class="n">pot_tot</span><span class="o">+=</span><span class="n">this_pot</span>
+            <span class="k">else</span><span class="p">:</span> <span class="n">pot_tot</span><span class="o">=</span><span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="n">jerk</span><span class="p">,</span><span class="n">pot_tot</span></div>
+
+
+
+
+<div class="viewcode-block" id="Point_Mass">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Point_Mass.html#fireworks.nbodylib.potentials.Point_Mass">[docs]</a>
+<span class="k">class</span> <span class="nc">Point_Mass</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple point mass potential.</span>
+<span class="sd">    It assumes the presence of a point of mass M fixed at centre of the frame of reference.</span>
+<span class="sd">    The potential is:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \Phi = - \\frac{M}{\sqrt{r^2 + \epsilon^2}},</span>
+
+<span class="sd">    where epsilon is the softening.</span>
+
+<span class="sd">    The potential is spherically symmetric and considering the Nbody units, the circular velocity</span>
+<span class="sd">    at r=1 is v=sqrt(Mass)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Point_Mass.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Point_Mass.html#fireworks.nbodylib.potentials.Point_Mass.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialise the potential setting the mass of the point</span>
+
+<span class="sd">        :param Mass: Mass of the point [nbody units]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softening</span> <span class="o">=</span> <span class="n">softening</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the acceleration for a point mass potential, vec(F)= - M/|r^2+epsilon^2| *(vec(r)/r)</span>
+
+<span class="sd">        :param particles: An instance of the class Particles</span>
+<span class="sd">        :param softening: Softening parameter</span>
+<span class="sd">        :return: A tuple with 3 elements:</span>
+
+<span class="sd">            - acc, Nx3 numpy array storing the acceleration for each particle</span>
+<span class="sd">            - jerk, set to None</span>
+<span class="sd">            - pot, set to None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+        <span class="n">reff2</span> <span class="o">=</span> <span class="n">r</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">softening</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">softening</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="n">reff2</span> <span class="o">*</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="o">/</span><span class="n">r</span><span class="p">)</span> <span class="c1"># p.pos/r means x/r, y/r, z/r, these are the three components of the acceleration</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>  <span class="c1"># not include jerk and potential atm</span></div>
+
+
+<div class="viewcode-block" id="MyamotoNagai">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.MyamotoNagai.html#fireworks.nbodylib.potentials.MyamotoNagai">[docs]</a>
+<span class="k">class</span> <span class="nc">MyamotoNagai</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="MyamotoNagai.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.MyamotoNagai.html#fireworks.nbodylib.potentials.MyamotoNagai.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span></div>
+
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">a</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">b</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+        <span class="n">z2</span><span class="o">=</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="n">Dz</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">z2</span> <span class="o">+</span> <span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="p">))</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,:</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">Dz</span><span class="o">*</span><span class="n">Dz</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="n">D</span><span class="o">**</span><span class="mf">1.5</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="n">acc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">K</span><span class="o">*</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">acc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">K</span><span class="o">*</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">kz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">b</span><span class="o">*</span><span class="n">b</span><span class="o">+</span><span class="n">z2</span><span class="p">)</span>
+        <span class="n">acc</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">K</span><span class="o">*</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="n">kz</span><span class="p">)</span><span class="o">/</span><span class="n">kz</span>
+
+        <span class="n">pot</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">D</span><span class="p">)[:,</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+        <span class="k">return</span>  <span class="n">acc</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pot</span></div>
+
+
+
+<div class="viewcode-block" id="Plummer">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Plummer.html#fireworks.nbodylib.potentials.Plummer">[docs]</a>
+<span class="k">class</span> <span class="nc">Plummer</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Plummer.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Plummer.html#fireworks.nbodylib.potentials.Plummer.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+        <span class="n">reff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">r</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="p">(</span><span class="n">reff</span><span class="o">*</span><span class="n">reff</span><span class="o">*</span><span class="n">reff</span><span class="p">)</span> <span class="o">*</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="n">reff</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span></div>
+
+
+<div class="viewcode-block" id="Hernquist">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Hernquist.html#fireworks.nbodylib.potentials.Hernquist">[docs]</a>
+<span class="k">class</span> <span class="nc">Hernquist</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Hernquist.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Hernquist.html#fireworks.nbodylib.potentials.Hernquist.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+        <span class="n">reff</span> <span class="o">=</span> <span class="n">r</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">/</span> <span class="p">(</span><span class="n">reff</span> <span class="o">*</span> <span class="n">reff</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="o">/</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">/</span><span class="n">reff</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span></div>
+
+
+<div class="viewcode-block" id="Jaffe">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Jaffe.html#fireworks.nbodylib.potentials.Jaffe">[docs]</a>
+<span class="k">class</span> <span class="nc">Jaffe</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Jaffe.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.Jaffe.html#fireworks.nbodylib.potentials.Jaffe.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+        <span class="n">reff</span> <span class="o">=</span> <span class="n">r</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">/</span> <span class="p">(</span><span class="n">reff</span> <span class="o">*</span> <span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">/</span><span class="n">r</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span></div>
+
+
+<div class="viewcode-block" id="LogHalo">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.LogHalo.html#fireworks.nbodylib.potentials.LogHalo">[docs]</a>
+<span class="k">class</span> <span class="nc">LogHalo</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LogHalo.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.LogHalo.html#fireworks.nbodylib.potentials.LogHalo.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vflat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vflat</span> <span class="o">=</span> <span class="n">vflat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+        <span class="n">vflat2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vflat</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">vflat</span>
+        <span class="n">reff2</span> <span class="o">=</span> <span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="n">vflat2</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">reff2</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">particles</span><span class="o">.</span><span class="n">pos</span><span class="o">/</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="n">vflat2</span> <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">reff2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span></div>
+
+
+<div class="viewcode-block" id="TruncatedPlaw">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.TruncatedPlaw.html#fireworks.nbodylib.potentials.TruncatedPlaw">[docs]</a>
+<span class="k">class</span> <span class="nc">TruncatedPlaw</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TruncatedPlaw.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.TruncatedPlaw.html#fireworks.nbodylib.potentials.TruncatedPlaw.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Mass</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rt</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mass</span> <span class="o">=</span> <span class="n">Mass</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">gamma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rt</span> <span class="o">=</span> <span class="n">rt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">r</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">rt</span>
+        <span class="n">Kgamma</span> <span class="o">=</span> <span class="n">scisp</span><span class="o">.</span><span class="n">gammainc</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">),</span><span class="n">x</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mass</span><span class="o">*</span><span class="n">Kgamma</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span>
+
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="NFW">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.NFW.html#fireworks.nbodylib.potentials.NFW">[docs]</a>
+<span class="k">class</span> <span class="nc">NFW</span><span class="p">(</span><span class="n">Potential_Base</span><span class="p">):</span>
+
+<div class="viewcode-block" id="NFW.__init__">
+<a class="viewcode-back" href="../../../api/_autosummary/fireworks.nbodylib.potentials.NFW.html#fireworks.nbodylib.potentials.NFW.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Mvir</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Mvir</span> <span class="o">=</span> <span class="n">Mvir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="n">c</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">c</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_acceleration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">particles</span><span class="p">:</span> <span class="n">Particles</span><span class="p">,</span> <span class="n">softening</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]],</span><span class="n">Optional</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]]]:</span>
+
+        <span class="n">r</span>  <span class="o">=</span> <span class="n">particles</span><span class="o">.</span><span class="n">radius</span><span class="p">()</span>
+
+        <span class="n">NUM</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">+</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">r</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="n">r</span>
+        <span class="n">DEN</span> <span class="o">=</span> <span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="n">r</span><span class="o">*</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="o">+</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dc</span>
+
+        <span class="n">acc</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mvir</span><span class="o">*</span><span class="n">NUM</span><span class="o">/</span><span class="n">DEN</span> <span class="o">*</span> <span class="n">particles</span><span class="o">.</span><span class="n">pos</span>
+        <span class="n">pot</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">Mvir</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">r</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">a</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">r</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dc</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">acc</span><span class="p">,</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Giuliano Iorio.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

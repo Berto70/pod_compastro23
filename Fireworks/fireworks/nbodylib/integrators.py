@@ -215,14 +215,12 @@ def integrator_leapfrog(particles: Particles,
                         args: Optional[dict] = None):
     """
     Simple implementation of a symplectic Leapfrog (Verlet) integrator for N-body simulations.
+    
     :param particles: Instance of the class :class:`~fireworks.particles.Particles`
-    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to
-    achieve the final result
-    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`)
-    following the input/output style of the template function  (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
+    :param tstep: Times-step for current integration (notice some methods can use smaller sub-time step to achieve the final result
+    :param acceleration_estimator: It needs to be a function from the module (:mod:`fireworks.nbodylib.dynamics`), following the input/output style of the template function (:func:`fireworks.nbodylib.dynamics.acceleration_estimate_template`).
     :param softening: softening parameter for the acceleration estimate, can use 0 as default value
-    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to
-    consider to estimate the final acceleration (and if available jerk) on the particles
+    :param external_accelerations: a list of additional force estimators (e.g. an external potential field) to consider to estimate the final acceleration (and if available jerk) on the particles
     :return: A tuple with 5 elements:
 
         - The updated particles instance
