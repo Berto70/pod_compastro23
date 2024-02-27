@@ -204,7 +204,7 @@ def main(n_particles):
     ### 
 
     # Direct
-    
+    """
     print("direct slow")
     direct_slow_times = []
     for t in range(100):
@@ -243,7 +243,7 @@ def main(n_particles):
         end_vect_fast = time.time()
         tot_time = end_vect_fast - start_vect_fast
         vect_fast_times.append(tot_time)
-
+    """
     # Direct parallel
     print("direct parallel")
     parallel_direct_times = []  
@@ -254,7 +254,7 @@ def main(n_particles):
         tot_time = end_direct_parallel - start_direct_parallel
         parallel_direct_times.append(tot_time)
 
-
+    """
     df = pd.DataFrame({"N_particles":[n_particles for i in direct_slow_times],
                   "direct_slow": direct_slow_times,
                   "direct_fast": direct_fast_times,
@@ -264,7 +264,7 @@ def main(n_particles):
                   })
 
     df.to_csv("numba_timings.csv",mode="a",header=False,index=False)
-    
+    """
 
 if __name__ == "__main__":
     import sys

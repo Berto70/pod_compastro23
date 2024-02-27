@@ -63,7 +63,7 @@ def parallel_acceleration_direct(a,b,softening=0.1):
     # For all particles in the subset compute acceleration wrt all the particles of the simulation
     for i in range(N_SUBSET): 
        # mass_1 = mass[i]
-        for j in range(N-1):
+        for j in range(N):
             # Compute relative acceleration given
             # position of particle i and j
 
@@ -105,6 +105,7 @@ def parallel_evo(N_particles):
     pool = Pool(N_PROCESSES) # ThreadPool is faster than simple Pool for I/O bound tasks
 
 
+    positions = []
     # submit multiple instances of the function full_evo 
     # - starmap_async: allows to run the processes with a (iterable) list of arguments
     # - map_async    : is a similar function, supporting a single argument
@@ -112,32 +113,32 @@ def parallel_evo(N_particles):
 
         if N_particles < N_PROCESSES:
             # 1 process per particle
-            future_results = pool.starmap_async(parallel_integrator, 
+            future_results = pool.starmap_sync(parallel_integrator, 
                                         [(i, (i + 1)) for i in range(N_particles)])
         else:
             # divide in equal part the particles into N_PROCESSES
-            future_results = pool.starmap_async(parallel_integrator, 
+            future_results = pool.starmap_sync(parallel_integrator, 
                                         [(i * N_particles // N_PROCESSES, (i + 1) * N_particles // N_PROCESSES) for i in range(N_PROCESSES)])
 
 
 
-    # to get the results all processes must have been completed
-    # the get() function is therefore _blocking_ (equivalent to join) 
-    results = future_results.get()
-
+        # to get the results all processes must have been completed
+        # the get() function is therefore _blocking_ (equivalent to join) 
+        results = future_results.get()
+        positions.append(results)
     # close the pool
     # Warning multiprocessing.pool objects have internal resources that need to be properly managed 
     # (like any other resource) by using the pool as a context manager or by calling close() and terminate() manually. Failure to do this can lead to the process hanging on finalization.
     pool.close()
 
-    return results
+    return results,positions
 
 
 
 def make_plot(pos_fast,pos_slow):
     # pos_fast.shape = (N_iterations, N_particles, 3)
-
-
+    print("posfast",pos_fast)
+    print("posfast_shape",pos_fast.shape)
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
 
     # all iterations, particle 0, x and y
@@ -194,7 +195,7 @@ def main(n_particles):
     
 
     start_parallel = time.time()
-    results = parallel_evo(N_particles)
+    results,positions = parallel_evo(N_particles)
     end_parallel = time.time()
 
     print(f"Parallel evolution took {end_parallel - start_parallel} seconds")
@@ -208,6 +209,7 @@ def main(n_particles):
 
         acc = intg.integrator_euler(particles=particles, tstep=tstep, acceleration_estimator= dyn.acceleration_direct,softening="Dehnen")
         positions_slow.append(particles.pos)
+        print(particles.pos)
 
     end_serial = time.time()
 
@@ -225,12 +227,12 @@ def main(n_particles):
     
 
     # Convert the save_me dictionary to a DataFrame
-    df = pd.DataFrame([save_me])
-    df.to_csv("single_evo_parallel_computation.csv", mode='a',header=False)
+    #df = pd.DataFrame([save_me])
+   # df.to_csv("single_evo_parallel_computation.csv", mode='a',header=False)
     
     print("#########\n")
     # Uncomment this to make diagnostic plots
-    #make_plot(np.array(positions),np.array(positions_slow))
+    make_plot(np.array(positions),np.array(positions_slow))
     
         
             
