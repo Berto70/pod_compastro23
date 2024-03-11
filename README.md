@@ -66,8 +66,9 @@ Fireworks contains the following submodules:
 - `Docker`: it contains the files to create a Docker container with the `tsunami` integrator.
 - `Fireworks`: it contains the scripts of the `fireworks` module.
 - `Project`: it contains several subfolders regarding the final project:
-    - `images`: 
-        -`plummer_sph`: it contains plots and images produced during the _part 2_ of the project.
+    - `images`:
+        - `plummer_sph`: it contains plots and images produced during the _part 2_ of the project.   
+        - `attachments_cpu`: it contains a .zip file with additional material regarding the CPU optimization part.
     - `plummer_sph_data`: it contains different initial realizations of a Plummer sphere in virial equilibrium.
     - `reports`: it contains the final reports divided in two parts.
     - `presentations`: it contains the link for the .pptx presentation of the project.
