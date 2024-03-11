@@ -34,7 +34,7 @@ Stellar clusters orbiting in and around a galaxy are subject to the tidal field 
 
 $$
 \begin{equation*}
-r_t \approx r_G \biggl(\frac{m_{cl}}{M_G}\biggr)^{\frac{1}{3}}
+r_t \approx r_G \biggl(\frac{m_{cl}}{M_G}\biggr)^{1/3}
 \end{equation*}
 $$
 
