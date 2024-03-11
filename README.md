@@ -61,3 +61,26 @@ Fireworks contains the following submodules:
     - `potentials`: it contains a collection of classes and functions to estimate acceleration due to gravitational forces of a fixed potential. In this module, we can find some classes among them `Potential_Base`, used to initialize new potentials, and `Point_Mass`, which assumes the presence of a point of mass M fixed at the center of the frame of reference.
   
     - `timesteps`: it contains functions to estimate the adaptive timestep for the N-body integrations.
+
+### Folders organization
+- `Docker`: it contains the files to create a Docker container with the `tsunami` integrator.
+- `Fireworks`: it contains the scripts of the `fireworks` module.
+- `Project`: it contains several subfolders regarding the final project:
+    - `images`: 
+        -`plummer_sph`: it contains plots and images produced during the _part 2_ of the project.
+    - `plummer_sph_data`: it contains different initial realizations of a Plummer sphere in virial equilibrium.
+    - `reports`: it contains the final reports divided in two parts.
+    - `presentations`: it contains the link for the .pptx presentation of the project.
+
+- `assignmet_*`: it contains the material produced for the in-itinere assignments.
+
+## Contribution
+- Gabriele Bertinelli (@Berto70)
+- Diego Bonato (@diegobonato)
+- Giacomo Di Prima (@GiacomoDiPrima)
+- Giuseppe Viterbo (@vepe99)
+
+------
+##### Mark
+
+30 e Lode (30/30 with honors)
